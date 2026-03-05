@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { CheckCircle2, Flame, Trophy, Target, TrendingUp } from 'lucide-react';
 
-export function Dashboard() {
+export function Goals() {
     const { user } = useAuth();
     const { tasks, habits, goals, leaderboard } = useData();
 
@@ -24,9 +24,9 @@ export function Dashboard() {
         <div className="max-w-7xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Welcome back, {user?.name}!
+                    Goals
                 </h1>
-                <p className="text-gray-600">Here's your progress overview</p>
+                <p className="text-gray-600">Track your long-term objectives</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -96,10 +96,10 @@ export function Dashboard() {
                                 >
                                     <div
                                         className={`w-2 h-2 rounded-full ${task.priority === 'high'
-                                                ? 'bg-red-500'
-                                                : task.priority === 'medium'
-                                                    ? 'bg-orange-500'
-                                                    : 'bg-green-500'
+                                            ? 'bg-red-500'
+                                            : task.priority === 'medium'
+                                                ? 'bg-orange-500'
+                                                : 'bg-green-500'
                                             }`}
                                     />
                                     <div className="flex-1">
@@ -110,8 +110,8 @@ export function Dashboard() {
                                     </div>
                                     <span
                                         className={`text-xs px-2 py-1 rounded ${task.status === 'in_progress'
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-gray-100 text-gray-700'
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : 'bg-gray-100 text-gray-700'
                                             }`}
                                     >
                                         {task.status.replace('_', ' ')}
@@ -138,8 +138,8 @@ export function Dashboard() {
                                     </div>
                                     <div
                                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCompletedToday
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-gray-200 text-gray-400'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-200 text-gray-400'
                                             }`}
                                     >
                                         {isCompletedToday ? '✓' : '○'}
