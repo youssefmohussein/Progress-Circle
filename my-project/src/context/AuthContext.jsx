@@ -1,39 +1,62 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI } from '../api/authAPI';
 
-// 1. Removed the AuthContextType interface and the User type import
 const AuthContext = createContext(undefined);
 
-const mockUser = {
-    id: '1',
-    name: 'Alex Johnson',
-    email: 'alex@example.com',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400',
-    points: 1250,
-    streak: 12,
-    joinedAt: '2024-01-15',
-};
-
 export function AuthProvider({ children }) {
-    // 2. Removed <User | null> generic
-    const [user, setUser] = useState(mockUser);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true); // wait until we verify token
 
-    // 3. Removed type annotations from function parameters
+    // On mount: try to restore session from localStorage token
+    useEffect(() => {
+        const restoreSession = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const res = await authAPI.getMe();
+                setUser(res.data.data);
+            } catch {
+                localStorage.removeItem('token'); // expired / invalid token
+            } finally {
+                setLoading(false);
+            }
+        };
+        restoreSession();
+    }, []);
+
     const login = async (email, password) => {
-        console.log('Login:', email, password);
-        setUser(mockUser);
+        const res = await authAPI.login(email, password);
+        const { token, user: userData } = res.data.data;
+        localStorage.setItem('token', token);
+        setUser(userData);
     };
 
     const register = async (name, email, password) => {
-        console.log('Register:', name, email, password);
-        setUser({ ...mockUser, name, email });
+        const res = await authAPI.register(name, email, password);
+        const { token, user: userData } = res.data.data;
+        localStorage.setItem('token', token);
+        setUser(userData);
     };
 
     const logout = () => {
+        localStorage.removeItem('token');
         setUser(null);
     };
 
+    // Show nothing while we're restoring the session
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-gray-500 text-lg">Loading...</div>
+            </div>
+        );
+    }
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, setUser, login, register, logout, isAuthenticated: !!user }}>
             {children}
         </AuthContext.Provider>
     );

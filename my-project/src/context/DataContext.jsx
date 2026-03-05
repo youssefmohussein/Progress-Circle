@@ -1,200 +1,92 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { tasksAPI } from '../api/tasksAPI';
+import { habitsAPI } from '../api/habitsAPI';
+import { goalsAPI } from '../api/goalsAPI';
+import { leaderboardAPI } from '../api/leaderboardAPI';
+import { useAuth } from './AuthContext';
 
 const DataContext = createContext(undefined);
 
-const mockTasks = [
-    {
-        id: '1',
-        userId: '1',
-        title: 'Complete React Tutorial',
-        description: 'Finish the advanced hooks section',
-        priority: 'high',
-        status: 'in_progress',
-        deadline: '2024-03-10',
-        createdAt: '2024-03-05',
-    },
-    {
-        id: '2',
-        userId: '1',
-        title: 'Gym Session',
-        priority: 'medium',
-        status: 'pending',
-        createdAt: '2024-03-05',
-    },
-    {
-        id: '3',
-        userId: '1',
-        title: 'Read Chapter 5',
-        description: 'Database Design Principles',
-        priority: 'low',
-        status: 'pending',
-        deadline: '2024-03-08',
-        createdAt: '2024-03-04',
-    },
-];
-
-const mockHabits = [
-    {
-        id: '1',
-        userId: '1',
-        name: 'Daily Coding',
-        description: 'Code for at least 1 hour',
-        streak: 12,
-        completedDates: ['2024-03-05', '2024-03-04', '2024-03-03', '2024-03-02', '2024-03-01'],
-        createdAt: '2024-02-20',
-    },
-    {
-        id: '2',
-        userId: '1',
-        name: 'Exercise',
-        description: 'Workout or run',
-        streak: 8,
-        completedDates: ['2024-03-05', '2024-03-04', '2024-03-03'],
-        createdAt: '2024-02-25',
-    },
-    {
-        id: '3',
-        userId: '1',
-        name: 'Reading',
-        description: 'Read 30 minutes',
-        streak: 5,
-        completedDates: ['2024-03-04', '2024-03-03', '2024-03-02'],
-        createdAt: '2024-02-28',
-    },
-];
-
-const mockGoals = [
-    {
-        id: '1',
-        userId: '1',
-        title: 'Learn TypeScript',
-        description: 'Master TypeScript fundamentals and advanced patterns',
-        progress: 65,
-        targetDate: '2024-04-01',
-        status: 'active',
-        createdAt: '2024-02-01',
-    },
-    {
-        id: '2',
-        userId: '1',
-        title: 'Build Portfolio Website',
-        progress: 40,
-        targetDate: '2024-03-20',
-        status: 'active',
-        createdAt: '2024-02-15',
-    },
-    {
-        id: '3',
-        userId: '1',
-        title: 'Complete Online Course',
-        description: 'Full Stack Development Bootcamp',
-        progress: 80,
-        status: 'active',
-        createdAt: '2024-01-15',
-    },
-];
-
-const mockUsers = [
-    {
-        id: '1',
-        name: 'Alex Johnson',
-        email: 'alex@example.com',
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400',
-        points: 1250,
-        streak: 12,
-        joinedAt: '2024-01-15',
-    },
-    {
-        id: '2',
-        name: 'Sarah Miller',
-        email: 'sarah@example.com',
-        avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400',
-        points: 1180,
-        streak: 15,
-        joinedAt: '2024-01-10',
-    },
-    {
-        id: '3',
-        name: 'Mike Chen',
-        email: 'mike@example.com',
-        avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=400',
-        points: 980,
-        streak: 8,
-        joinedAt: '2024-01-20',
-    },
-];
-
 export function DataProvider({ children }) {
-    const [tasks, setTasks] = useState(mockTasks);
-    const [habits, setHabits] = useState(mockHabits);
-    const [goals, setGoals] = useState(mockGoals);
-    const [leaderboard] = useState(
-        mockUsers.map((user, index) => ({
-            user,
-            rank: index + 1,
-            weeklyPoints: user.points - index * 100,
-        }))
-    );
+    const { isAuthenticated } = useAuth();
 
-    const addTask = (task) => {
-        const newTask = {
-            ...task,
-            id: Date.now().toString(),
-            createdAt: new Date().toISOString(),
-        };
-        setTasks([newTask, ...tasks]);
+    const [tasks, setTasks] = useState([]);
+    const [habits, setHabits] = useState([]);
+    const [goals, setGoals] = useState([]);
+    const [leaderboard, setLeaderboard] = useState([]);
+
+    // Fetch all data when user is authenticated
+    const fetchAll = useCallback(async () => {
+        if (!isAuthenticated) return;
+        try {
+            const [tasksRes, habitsRes, goalsRes, leaderboardRes] = await Promise.all([
+                tasksAPI.getAll(),
+                habitsAPI.getAll(),
+                goalsAPI.getAll(),
+                leaderboardAPI.get(),
+            ]);
+            setTasks(tasksRes.data.data.map(normalizeId));
+            setHabits(habitsRes.data.data.map(normalizeId));
+            setGoals(goalsRes.data.data.map(normalizeId));
+            setLeaderboard(leaderboardRes.data.data);
+        } catch (error) {
+            console.error('Failed to fetch data:', error.message);
+        }
+    }, [isAuthenticated]);
+
+    useEffect(() => {
+        fetchAll();
+    }, [fetchAll]);
+
+    // Map MongoDB _id to id for frontend consistency
+    const normalizeId = (item) => ({ ...item, id: item._id });
+
+    // ─── Tasks ─────────────────────────────────────────────────────────────────
+    const addTask = async (task) => {
+        const res = await tasksAPI.create(task);
+        setTasks((prev) => [normalizeId(res.data.data), ...prev]);
     };
 
-    const updateTask = (id, updates) => {
-        setTasks(tasks.map(task => (task.id === id ? { ...task, ...updates } : task)));
+    const updateTask = async (id, updates) => {
+        const res = await tasksAPI.update(id, updates);
+        setTasks((prev) => prev.map((t) => (t.id === id ? normalizeId(res.data.data) : t)));
     };
 
-    const deleteTask = (id) => {
-        setTasks(tasks.filter(task => task.id !== id));
+    const deleteTask = async (id) => {
+        await tasksAPI.delete(id);
+        setTasks((prev) => prev.filter((t) => t.id !== id));
     };
 
-    const addHabit = (habit) => {
-        const newHabit = {
-            ...habit,
-            id: Date.now().toString(),
-            streak: 0,
-            completedDates: [],
-            createdAt: new Date().toISOString(),
-        };
-        setHabits([newHabit, ...habits]);
+    // ─── Habits ────────────────────────────────────────────────────────────────
+    const addHabit = async (habit) => {
+        const res = await habitsAPI.create(habit);
+        setHabits((prev) => [normalizeId(res.data.data), ...prev]);
     };
 
-    const toggleHabitToday = (id) => {
-        const today = new Date().toISOString().split('T')[0];
-        setHabits(
-            habits.map(habit => {
-                if (habit.id === id) {
-                    const isCompletedToday = habit.completedDates.includes(today);
-                    const completedDates = isCompletedToday
-                        ? habit.completedDates.filter(date => date !== today)
-                        : [...habit.completedDates, today];
-                    return {
-                        ...habit,
-                        completedDates,
-                        streak: isCompletedToday ? Math.max(0, habit.streak - 1) : habit.streak + 1,
-                    };
-                }
-                return habit;
-            })
-        );
+    const toggleHabitToday = async (id) => {
+        const res = await habitsAPI.toggle(id);
+        setHabits((prev) => prev.map((h) => (h.id === id ? normalizeId(res.data.data) : h)));
     };
 
-    const addGoal = (goal) => {
-        const newGoal = {
-            ...goal,
-            id: Date.now().toString(),
-            createdAt: new Date().toISOString(),
-        };
-        setGoals([newGoal, ...goals]);
+    const deleteHabit = async (id) => {
+        await habitsAPI.delete(id);
+        setHabits((prev) => prev.filter((h) => h.id !== id));
     };
 
-    const updateGoal = (id, updates) => {
-        setGoals(goals.map(goal => (goal.id === id ? { ...goal, ...updates } : goal)));
+    // ─── Goals ─────────────────────────────────────────────────────────────────
+    const addGoal = async (goal) => {
+        const res = await goalsAPI.create(goal);
+        setGoals((prev) => [normalizeId(res.data.data), ...prev]);
+    };
+
+    const updateGoal = async (id, updates) => {
+        const res = await goalsAPI.update(id, updates);
+        setGoals((prev) => prev.map((g) => (g.id === id ? normalizeId(res.data.data) : g)));
+    };
+
+    const deleteGoal = async (id) => {
+        await goalsAPI.delete(id);
+        setGoals((prev) => prev.filter((g) => g.id !== id));
     };
 
     return (
@@ -209,8 +101,11 @@ export function DataProvider({ children }) {
                 deleteTask,
                 addHabit,
                 toggleHabitToday,
+                deleteHabit,
                 addGoal,
                 updateGoal,
+                deleteGoal,
+                refreshData: fetchAll,
             }}
         >
             {children}
