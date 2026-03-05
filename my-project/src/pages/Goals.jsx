@@ -1,180 +1,156 @@
-import { Card } from '../components/Card';
-import { ProgressBar } from '../components/ProgressBar';
-import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Target, Pencil, Trash2, Calendar } from 'lucide-react';
 import { useData } from '../context/DataContext';
-import { CheckCircle2, Flame, Trophy, Target, TrendingUp } from 'lucide-react';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { Modal } from '../components/Modal';
+import { ProgressBar } from '../components/ProgressBar';
+import { StatusBadge } from '../components/Badge';
+import { EmptyState } from '../components/EmptyState';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { toast } from 'sonner';
 
 export function Goals() {
-    const { user } = useAuth();
-    const { tasks, habits, goals, leaderboard } = useData();
+    const { goals, addGoal, updateGoal, deleteGoal } = useData();
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editGoal, setEditGoal] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [form, setForm] = useState({ title: '', description: '', targetDate: '', progress: 0, status: 'active' });
 
-    // Logic remains identical in JS
-    const todaysTasks = tasks.filter(task => task.status !== 'completed');
-    const completedTasks = tasks.filter(task => task.status === 'completed');
-    const activeGoals = goals.filter(goal => goal.status === 'active');
+    if (!goals) return <LoadingSpinner />;
 
-    const today = new Date().toISOString().split('T')[0];
-    const habitsCompletedToday = habits.filter(habit =>
-        habit.completedDates.includes(today)
-    );
+    const openAdd = () => {
+        setEditGoal(null);
+        setForm({ title: '', description: '', targetDate: '', progress: 0, status: 'active' });
+        setModalOpen(true);
+    };
 
-    const userRank = leaderboard.find(entry => entry.user.id === user?.id)?.rank || 0;
+    const openEdit = (g) => {
+        setEditGoal(g);
+        setForm({ title: g.title, description: g.description || '', targetDate: g.targetDate || '', progress: g.progress, status: g.status });
+        setModalOpen(true);
+    };
+
+    const handleSave = async () => {
+        if (!form.title.trim()) return toast.error('Title is required');
+        setSaving(true);
+        try {
+            if (editGoal) {
+                await updateGoal(editGoal.id, form);
+                toast.success('Goal updated');
+            } else {
+                await addGoal(form);
+                toast.success('Goal created!');
+            }
+            setModalOpen(false);
+        } catch { toast.error('Failed to save goal'); }
+        finally { setSaving(false); }
+    };
+
+    const handleDelete = async (id) => {
+        try { await deleteGoal(id); toast.success('Goal deleted'); }
+        catch { toast.error('Failed to delete goal'); }
+    };
+
+    const active = goals.filter((g) => g.status === 'active');
+    const completed = goals.filter((g) => g.status === 'completed');
 
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Goals
-                </h1>
-                <p className="text-gray-600">Track your long-term objectives</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="border-l-4 border-blue-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Current Streak</p>
-                            <p className="text-3xl font-bold text-gray-900">{user?.streak} days</p>
-                        </div>
-                        <div className="bg-blue-100 p-3 rounded-lg">
-                            <Flame className="text-blue-600 streak-pulse" size={28} />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="border-l-4 border-green-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Total Points</p>
-                            <p className="text-3xl font-bold text-gray-900">{user?.points}</p>
-                        </div>
-                        <div className="bg-green-100 p-3 rounded-lg">
-                            <Trophy className="text-green-600" size={28} />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="border-l-4 border-orange-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Your Rank</p>
-                            <p className="text-3xl font-bold text-gray-900">#{userRank}</p>
-                        </div>
-                        <div className="bg-orange-100 p-3 rounded-lg">
-                            <TrendingUp className="text-orange-600" size={28} />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="border-l-4 border-violet-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Tasks Done</p>
-                            <p className="text-3xl font-bold text-gray-900">{completedTasks.length}</p>
-                        </div>
-                        <div className="bg-violet-100 p-3 rounded-lg">
-                            <CheckCircle2 className="text-violet-600" size={28} />
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <Card>
-                    <div className="flex items-center gap-2 mb-4">
-                        <CheckCircle2 className="text-blue-600" size={24} />
-                        <h2 className="text-xl font-semibold text-gray-900">Today's Tasks</h2>
-                    </div>
-                    {todaysTasks.length === 0 ? (
-                        <p className="text-gray-500 text-center py-8">All tasks completed!</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {todaysTasks.slice(0, 4).map(task => (
-                                <div
-                                    key={task.id}
-                                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                >
-                                    <div
-                                        className={`w-2 h-2 rounded-full ${task.priority === 'high'
-                                            ? 'bg-red-500'
-                                            : task.priority === 'medium'
-                                                ? 'bg-orange-500'
-                                                : 'bg-green-500'
-                                            }`}
-                                    />
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-900">{task.title}</p>
-                                        {task.deadline && (
-                                            <p className="text-sm text-gray-500">Due: {task.deadline}</p>
-                                        )}
-                                    </div>
-                                    <span
-                                        className={`text-xs px-2 py-1 rounded ${task.status === 'in_progress'
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-gray-100 text-gray-700'
-                                            }`}
-                                    >
-                                        {task.status.replace('_', ' ')}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </Card>
-
-                <Card>
-                    <div className="flex items-center gap-2 mb-4">
-                        <Flame className="text-orange-600" size={24} />
-                        <h2 className="text-xl font-semibold text-gray-900">Habit Tracker</h2>
-                    </div>
-                    <div className="space-y-4">
-                        {habits.slice(0, 3).map(habit => {
-                            const isCompletedToday = habit.completedDates.includes(today);
-                            return (
-                                <div key={habit.id} className="flex items-center justify-between">
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-900">{habit.name}</p>
-                                        <p className="text-sm text-gray-500">{habit.streak} day streak</p>
-                                    </div>
-                                    <div
-                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCompletedToday
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-gray-200 text-gray-400'
-                                            }`}
-                                    >
-                                        {isCompletedToday ? '✓' : '○'}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </Card>
-            </div>
-
-            <Card>
-                <div className="flex items-center gap-2 mb-6">
-                    <Target className="text-blue-600" size={24} />
-                    <h2 className="text-xl font-semibold text-gray-900">Active Goals</h2>
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif' }}>Goals</h1>
+                    <p className="text-sm text-muted mt-1">{active.length} active · {completed.length} completed</p>
                 </div>
-                <div className="space-y-6">
-                    {activeGoals.slice(0, 3).map(goal => (
-                        <div key={goal.id}>
-                            <div className="flex justify-between items-start mb-2">
-                                <div>
-                                    <h3 className="font-medium text-gray-900">{goal.title}</h3>
-                                    {goal.description && (
-                                        <p className="text-sm text-gray-500">{goal.description}</p>
-                                    )}
-                                </div>
-                                {goal.targetDate && (
-                                    <span className="text-sm text-gray-500">Due: {goal.targetDate}</span>
+                <Button onClick={openAdd}><Plus size={16} />New Goal</Button>
+            </div>
+
+            {goals.length === 0 ? (
+                <EmptyState icon={Target} title="No goals yet" description="Set long-term goals and track your progress." action={<Button onClick={openAdd}><Plus size={14} />Add Goal</Button>} />
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <AnimatePresence>
+                        {goals.map((goal, i) => (
+                            <motion.div
+                                key={goal.id}
+                                initial={{ opacity: 0, scale: 0.97 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ delay: i * 0.05 }}
+                                className="pc-card pc-card-lift group relative"
+                            >
+                                {goal.progress === 100 && (
+                                    <div className="absolute top-3 right-3 text-lg">🏆</div>
                                 )}
-                            </div>
-                            <ProgressBar progress={goal.progress} />
-                        </div>
-                    ))}
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1 min-w-0 pr-2">
+                                        <h3 className="font-bold text-base mb-1" style={{ color: 'var(--color-text)', fontFamily: 'Manrope, sans-serif' }}>
+                                            {goal.title}
+                                        </h3>
+                                        {goal.description && <p className="text-xs text-muted truncate">{goal.description}</p>}
+                                    </div>
+                                    <StatusBadge status={goal.status} />
+                                </div>
+
+                                <div className="mb-3">
+                                    <div className="flex justify-between items-center mb-1.5">
+                                        <span className="text-xs text-muted">Progress</span>
+                                        <span className="text-sm font-bold text-indigo-500">{goal.progress}%</span>
+                                    </div>
+                                    <ProgressBar progress={goal.progress} color={goal.progress === 100 ? 'green' : 'indigo'} />
+                                </div>
+
+                                {goal.targetDate && (
+                                    <p className="text-xs text-muted flex items-center gap-1 mb-3">
+                                        <Calendar size={11} /> Target: {goal.targetDate}
+                                    </p>
+                                )}
+
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => openEdit(goal)} className="pc-btn pc-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1"><Pencil size={12} />Edit</button>
+                                    <button onClick={() => handleDelete(goal.id)} className="pc-btn pc-btn-danger text-xs px-3 py-1.5 flex items-center gap-1"><Trash2 size={12} />Delete</button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
-            </Card>
+            )}
+
+            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editGoal ? 'Edit Goal' : 'New Goal'} maxWidth="max-w-lg">
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Title</label>
+                        <input className="pc-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Goal title..." />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Description</label>
+                        <textarea className="pc-input resize-none" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What will success look like?" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Target Date</label>
+                            <input className="pc-input" type="date" value={form.targetDate} onChange={(e) => setForm({ ...form, targetDate: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Status</label>
+                            <select className="pc-input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Progress: {form.progress}%</label>
+                        <input type="range" min="0" max="100" value={form.progress} onChange={(e) => setForm({ ...form, progress: Number(e.target.value) })} className="w-full accent-indigo-500" />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <Button className="flex-1" loading={saving} onClick={handleSave}>{editGoal ? 'Save Changes' : 'Create Goal'}</Button>
+                        <Button variant="secondary" className="flex-1" onClick={() => setModalOpen(false)}>Cancel</Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

@@ -1,145 +1,109 @@
-import { Card } from '../components/Card';
+import { motion } from 'framer-motion';
+import { Trophy, Medal, Award, Flame, TrendingUp } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, Medal, Award, TrendingUp } from 'lucide-react';
+import { Card } from '../components/Card';
+import { Avatar } from '../components/Avatar';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { EmptyState } from '../components/EmptyState';
+
+const MEDALS = [
+    { rank: 1, icon: Trophy, color: 'text-yellow-500', bg: 'from-yellow-400/20 to-amber-400/10', border: 'border-yellow-400/30', emoji: '🥇' },
+    { rank: 2, icon: Medal, color: 'text-gray-400', bg: 'from-gray-400/20 to-slate-300/10', border: 'border-gray-300/30', emoji: '🥈' },
+    { rank: 3, icon: Award, color: 'text-orange-600', bg: 'from-orange-500/20 to-amber-600/10', border: 'border-orange-400/30', emoji: '🥉' },
+];
 
 export function Leaderboard() {
     const { leaderboard } = useData();
     const { user } = useAuth();
 
-    const getRankIcon = (rank) => {
-        switch (rank) {
-            case 1:
-                return <Trophy className="text-yellow-500" size={32} />;
-            case 2:
-                return <Medal className="text-gray-400" size={32} />;
-            case 3:
-                return <Award className="text-orange-600" size={32} />;
-            default:
-                return <div className="w-8 h-8 flex items-center justify-center font-bold text-gray-500">#{rank}</div>;
-        }
-    };
+    if (!leaderboard) return <LoadingSpinner />;
+
+    if (leaderboard.length === 0) {
+        return <EmptyState icon={Trophy} title="Leaderboard is empty" description="Be the first to score points by completing tasks and habits!" />;
+    }
+
+    const top3 = leaderboard.slice(0, 3);
+    const rest = leaderboard.slice(3);
+
+    // Reorder top3 for podium: [2nd, 1st, 3rd]
+    const podium = [top3[1], top3[0], top3[2]].filter(Boolean);
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Leaderboard</h1>
-                <p className="text-gray-600">See how you rank among your friends</p>
+        <div className="space-y-8">
+            <div>
+                <h1 className="text-3xl font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif' }}>Leaderboard</h1>
+                <p className="text-sm text-muted mt-1">Compete with your peers and rise to the top.</p>
             </div>
 
-            {/* Top 3 Podium */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {leaderboard.slice(0, 3).map(entry => (
-                    <Card
-                        key={entry.user.id}
-                        className={`text-center ${entry.rank === 1 ? 'border-2 border-yellow-400' : ''}`}
-                    >
-                        <div className="flex justify-center mb-3">{getRankIcon(entry.rank)}</div>
-                        <div className="flex justify-center mb-3">
-                            <img
-                                src={entry.user.avatar || 'https://via.placeholder.com/80'}
-                                alt={entry.user.name}
-                                className="w-16 h-16 rounded-full object-cover border-4 border-gray-100"
-                            />
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-1">{entry.user.name}</h3>
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                            <TrendingUp size={16} className="text-blue-600" />
-                            <span className="text-2xl font-bold text-gray-900">{entry.user.points}</span>
-                        </div>
-                        <p className="text-sm text-gray-600">points</p>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Full Rankings Table */}
-            <Card>
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Full Rankings</h2>
-                <div className="space-y-2">
-                    {leaderboard.map(entry => {
-                        const isCurrentUser = entry.user.id === user?.id;
+            {/* Podium */}
+            {top3.length >= 1 && (
+                <div className="flex items-end justify-center gap-4">
+                    {podium.map((entry, i) => {
+                        if (!entry) return null;
+                        const isFirst = entry.rank === 1;
+                        const m = MEDALS[entry.rank - 1];
+                        const heights = { 1: 'h-36', 2: 'h-28', 3: 'h-24' };
+                        const isMe = entry.user?.id === user?.id;
                         return (
-                            <div
-                                key={entry.user.id}
-                                className={`flex items-center gap-4 p-4 rounded-lg transition-all ${isCurrentUser
-                                        ? 'bg-blue-50 border-2 border-blue-300'
-                                        : 'bg-gray-50 hover:bg-gray-100'
-                                    }`}
+                            <motion.div
+                                key={entry.user?.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`flex flex-col items-center gap-2 ${isFirst ? 'order-2' : i === 0 ? 'order-1' : 'order-3'}`}
                             >
-                                <div className="flex-shrink-0 w-12 flex justify-center">
-                                    {entry.rank <= 3 ? (
-                                        getRankIcon(entry.rank)
-                                    ) : (
-                                        <span className="text-xl font-bold text-gray-500">#{entry.rank}</span>
-                                    )}
+                                <span className="text-2xl">{m.emoji}</span>
+                                <Avatar src={entry.user?.avatar} name={entry.user?.name || ''} size={isFirst ? 'xl' : 'lg'} />
+                                <div className="text-center">
+                                    <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
+                                    <p className="text-xs text-indigo-500 font-semibold">{entry.user?.points} pts</p>
                                 </div>
-
-                                <img
-                                    src={entry.user.avatar || 'https://via.placeholder.com/50'}
-                                    alt={entry.user.name}
-                                    className="w-12 h-12 rounded-full object-cover"
-                                />
-
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
-                                        {entry.user.name}
-                                        {isCurrentUser && (
-                                            <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">
-                                                You
-                                            </span>
-                                        )}
-                                    </h3>
-                                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                                        <span className="flex items-center gap-1">
-                                            <TrendingUp size={14} />
-                                            {entry.weeklyPoints} this week
-                                        </span>
-                                        <span>{entry.user.streak} day streak</span>
-                                    </div>
+                                <div className={`w-24 rounded-t-xl bg-gradient-to-t ${m.bg} border border-solid ${m.border} ${heights[entry.rank]} flex items-end justify-center pb-2`}>
+                                    <span className={`text-2xl font-black ${m.color}`} style={{ fontFamily: 'Manrope, sans-serif' }}>#{entry.rank}</span>
                                 </div>
-
-                                <div className="text-right">
-                                    <div className="text-2xl font-bold text-gray-900">{entry.user.points}</div>
-                                    <div className="text-sm text-gray-600">points</div>
-                                </div>
-                            </div>
+                            </motion.div>
                         );
                     })}
                 </div>
-            </Card>
+            )}
 
-            {/* Scoring Legend */}
-            <Card className="mt-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">How Points Work</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                        <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">10</div>
-                        <div>
-                            <p className="font-medium text-gray-900">Complete a Task</p>
-                            <p className="text-sm text-gray-600">Earn points for each completed task</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                        <div className="w-8 h-8 bg-green-600 text-white rounded-lg flex items-center justify-center font-bold">5</div>
-                        <div>
-                            <p className="font-medium text-gray-900">Complete a Habit</p>
-                            <p className="text-sm text-gray-600">Daily habit completion</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
-                        <div className="w-8 h-8 bg-orange-600 text-white rounded-lg flex items-center justify-center font-bold">50</div>
-                        <div>
-                            <p className="font-medium text-gray-900">Achieve a Goal</p>
-                            <p className="text-sm text-gray-600">Complete long-term goals</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 bg-violet-50 rounded-lg">
-                        <div className="w-8 h-8 bg-violet-600 text-white rounded-lg flex items-center justify-center font-bold">2</div>
-                        <div>
-                            <p className="font-medium text-gray-900">Maintain Streak</p>
-                            <p className="text-sm text-gray-600">Points per day of active streak</p>
-                        </div>
-                    </div>
+            {/* Full rankings */}
+            <Card>
+                <h2 className="text-lg font-bold mb-5" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Full Rankings</h2>
+                <div className="space-y-2">
+                    {leaderboard.map((entry, i) => {
+                        const isMe = entry.user?.id === user?.id;
+                        const m = MEDALS[entry.rank - 1];
+                        return (
+                            <motion.div
+                                key={entry.user?.id}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.03 }}
+                                className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${isMe ? 'border-2 border-indigo-400/40' : 'hover:opacity-90'
+                                    }`}
+                                style={{ background: isMe ? 'rgba(99,102,241,0.08)' : 'var(--color-surface-2)' }}
+                            >
+                                <div className="w-8 flex-shrink-0 flex justify-center">
+                                    {m ? <span className="text-xl">{m.emoji}</span> : <span className="text-sm font-bold text-muted">#{entry.rank}</span>}
+                                </div>
+                                <Avatar src={entry.user?.avatar} name={entry.user?.name || ''} size="sm" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+                                        {entry.user?.name} {isMe && <span className="text-xs text-indigo-400 font-normal">(you)</span>}
+                                    </p>
+                                    <p className="text-xs text-muted flex items-center gap-1">
+                                        <Flame size={10} className="text-orange-400" />{entry.user?.streak} day streak
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-base font-bold text-indigo-500" style={{ fontFamily: 'Manrope, sans-serif' }}>{entry.user?.points}</p>
+                                    <p className="text-xs text-muted">points</p>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </Card>
         </div>

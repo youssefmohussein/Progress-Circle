@@ -1,123 +1,77 @@
-import { Card } from '../components/Card';
+import { motion } from 'framer-motion';
+import { Trophy, Calendar, Target, TrendingUp, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { User, Trophy, Target, Calendar, TrendingUp } from 'lucide-react';
+import { Card } from '../components/Card';
+import { Avatar } from '../components/Avatar';
+import { StatCard } from '../components/StatCard';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 
 export function Profile() {
     const { user } = useAuth();
     const { tasks, habits, goals } = useData();
 
-    const completedTasks = tasks.filter(t => t.status === 'completed').length;
-    const activeHabits = habits.length;
-    const completedGoals = goals.filter(g => g.status === 'completed').length;
+    if (!user || !tasks) return <LoadingSpinner />;
 
-    const memberSince = user?.joinedAt
-        ? new Date(user.joinedAt).toLocaleDateString('en-US', {
-            month: 'long',
-            year: 'numeric',
-        })
-        : '';
+    const completedTasks = tasks.filter((t) => t.status === 'completed').length;
+    const completedGoals = goals.filter((g) => g.status === 'completed').length;
+    const avgProgress = goals.length > 0
+        ? Math.round(goals.reduce((s, g) => s + (g.progress || 0), 0) / goals.length)
+        : 0;
 
-    const stats = [
-        { label: 'Tasks Completed', value: completedTasks, icon: Trophy, color: 'blue' },
-        { label: 'Active Habits', value: activeHabits, icon: Calendar, color: 'green' },
-        { label: 'Goals Achieved', value: completedGoals, icon: Target, color: 'orange' },
-        { label: 'Current Streak', value: user?.streak || 0, icon: TrendingUp, color: 'violet' },
-    ];
-
-    const colorClasses = {
-        blue: 'bg-blue-100 text-blue-600',
-        green: 'bg-green-100 text-green-600',
-        orange: 'bg-orange-100 text-orange-600',
-        violet: 'bg-violet-100 text-violet-600',
-    };
+    const joined = user.joinedAt ? new Date(user.joinedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Profile</h1>
-
-            <Card className="mb-8">
-                <div className="flex items-start gap-6">
-                    <div className="flex-shrink-0">
-                        {user?.avatar ? (
-                            <img
-                                src={user.avatar}
-                                alt={user.name}
-                                className="w-24 h-24 rounded-full object-cover border-4 border-gray-100"
-                            />
-                        ) : (
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
-                                <User className="text-white" size={48} />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">{user?.name}</h2>
-                        <p className="text-gray-600 mb-4">{user?.email}</p>
-                        <div className="flex items-center gap-6 text-sm text-gray-600">
-                            <div>
-                                <span className="font-medium text-gray-900">{user?.points || 0}</span> Points
-                            </div>
-                            <div>
-                                <span className="font-medium text-gray-900">{user?.streak || 0}</span> Day
-                                Streak
-                            </div>
-                            <div>Member since {memberSince}</div>
+        <div className="space-y-6 max-w-3xl">
+            {/* Profile header */}
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pc-card">
+                <div className="flex items-center gap-6">
+                    <Avatar src={user.avatar} name={user.name} size="xl" />
+                    <div>
+                        <h2 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>{user.name}</h2>
+                        <p className="text-sm text-muted">{user.email}</p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-muted">
+                            <span className="font-semibold text-indigo-500">{user.points || 0} pts</span>
+                            <span>·</span>
+                            <span>{user.streak || 0} day streak 🔥</span>
+                            {joined && <><span>·</span><span>Member since {joined}</span></>}
                         </div>
                     </div>
                 </div>
-            </Card>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {stats.map(stat => {
-                    const Icon = stat.icon;
-                    return (
-                        <Card key={stat.label} className="flex items-center gap-4">
-                            <div className={`p-4 rounded-lg ${colorClasses[stat.color]}`}>
-                                <Icon size={32} />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">{stat.label}</p>
-                                <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                            </div>
-                        </Card>
-                    );
-                })}
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="indigo" delay={0} />
+                <StatCard label="Active Habits" value={habits.length} icon={Calendar} color="orange" delay={0.05} />
+                <StatCard label="Goals Achieved" value={completedGoals} icon={Target} color="green" delay={0.1} />
+                <StatCard label="Avg Progress" value={avgProgress} suffix="%" icon={TrendingUp} color="sky" delay={0.15} />
             </div>
 
+            {/* Activity summary */}
             <Card>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Activity Summary</h3>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700">Total Tasks</span>
-                        <span className="font-semibold text-gray-900">{tasks.length}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700">Tasks Completed</span>
-                        <span className="font-semibold text-gray-900">{completedTasks}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700">Active Habits</span>
-                        <span className="font-semibold text-gray-900">{activeHabits}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700">Total Goals</span>
-                        <span className="font-semibold text-gray-900">{goals.length}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700">Goals Completed</span>
-                        <span className="font-semibold text-gray-900">{completedGoals}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700">Average Goal Progress</span>
-                        <span className="font-semibold text-gray-900">
-                            {goals.length > 0
-                                ? Math.round(goals.reduce((sum, g) => sum + g.progress, 0) / goals.length)
-                                : 0}
-                            %
-                        </span>
-                    </div>
+                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Activity Summary</h3>
+                <div className="space-y-3">
+                    {[
+                        { label: 'Total Tasks', value: tasks.length },
+                        { label: 'Tasks Completed', value: completedTasks },
+                        { label: 'Active Habits', value: habits.length },
+                        { label: 'Total Goals', value: goals.length },
+                        { label: 'Goals Completed', value: completedGoals },
+                        { label: 'Avg Goal Progress', value: `${avgProgress}%` },
+                    ].map((row, i) => (
+                        <motion.div
+                            key={row.label}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                            className="flex justify-between items-center py-2.5 px-4 rounded-xl"
+                            style={{ background: 'var(--color-surface-2)' }}
+                        >
+                            <span className="text-sm text-muted">{row.label}</span>
+                            <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>{row.value}</span>
+                        </motion.div>
+                    ))}
                 </div>
             </Card>
         </div>

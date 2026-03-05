@@ -1,88 +1,229 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
 @import "tailwindcss";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    /* Ensuring a smooth font rendering and consistent background */
-    @apply bg-gray-50 text-gray-900 antialiased;
-  }
+/* CSS variables for theming */
+:root {
+  --bg: #f5f7ff;
+  --surface: #ffffff;
+  --surface2: #eef0ff;
+  --border: #e2e5f0;
+  --text: #0f172a;
+  --muted: #64748b;
 }
 
-@layer utilities {
-  .card-shadow {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  }
-
-  .card-shadow-hover {
-    @apply transition-shadow duration-300;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-
-  /* Custom scrollbar for a cleaner look in task lists */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
-  }
+.dark {
+  --bg: #0f1117;
+  --surface: #1a1d2e;
+  --surface2: #232638;
+  --border: #2d3154;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
 }
 
-/* Logic-based Animations */
-
-/* Trigger this when a task is checked off */
-.task-complete-animation {
-  animation: completeTask 0.5s ease-in-out;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@keyframes completeTask {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.02);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+html {
+  scroll-behavior: smooth;
 }
 
-/* Use this for the 'High Streak' badges or active timers */
-.streak-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-
-  50% {
-    opacity: 0.9;
-    filter: brightness(1.1);
-  }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Manrope', 'Inter', sans-serif;
 }
 
-/* Smooth entry for modal overlays */
-.modal-fade-in {
-  animation: fadeIn 0.2s ease-out;
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
 }
 
-@keyframes fadeIn {
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3730a3;
+}
+
+/* Input base */
+.pc-input {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: var(--text);
+  font-size: 0.9375rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pc-input::placeholder {
+  color: var(--muted);
+}
+
+.pc-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Card */
+.pc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.06), 0 4px 16px rgba(99, 102, 241, 0.07);
+  padding: 1.5rem;
+  transition: box-shadow 0.25s, transform 0.2s;
+}
+
+.pc-card:hover {
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.13);
+}
+
+.pc-card-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+.pc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+}
+
+.pc-btn:active {
+  transform: scale(0.97);
+}
+
+.pc-btn-primary {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.pc-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  transform: translateY(-1px);
+}
+
+.pc-btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.pc-btn-secondary:hover {
+  filter: brightness(0.97);
+}
+
+.pc-btn-ghost {
+  background: transparent;
+  color: var(--muted);
+}
+
+.pc-btn-ghost:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.pc-btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+}
+
+/* Gradient text */
+.pc-gradient-text {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Sidebar */
+.pc-sidebar {
+  background: linear-gradient(180deg, #1e1b4b 0%, #0f0e2a 100%);
+}
+
+/* Animations */
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px)
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0)
   }
+}
+
+@keyframes streakGlow {
+
+  0%,
+  100% {
+    filter: brightness(1)
+  }
+
+  50% {
+    filter: brightness(1.3) drop-shadow(0 0 4px #f97316)
+  }
+}
+
+@keyframes progressFill {
+  from {
+    width: 0
+  }
+}
+
+.pc-fade-up {
+  animation: fadeInUp 0.35s ease both;
+}
+
+.pc-streak-glow {
+  animation: streakGlow 2s ease-in-out infinite;
+}
+
+/* Range slider accent */
+input[type=range] {
+  accent-color: #6366f1;
+}
+
+/* Select */
+select.pc-input {
+  appearance: auto;
 }

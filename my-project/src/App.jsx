@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
@@ -9,81 +11,36 @@ import { Habits } from './pages/Habits';
 import { Goals } from './pages/Goals';
 import { Leaderboard } from './pages/Leaderboard';
 import { Profile } from './pages/Profile';
+import { AdminDashboard } from './pages/Admin/AdminDashboard';
 
-// Removed the TS interface for props
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
-
-  // If authenticated, render children; otherwise, redirect to login
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 }
 
-
+function AdminRoute({ children }) {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!user?.isAdmin) return <Navigate to="/" />;
+  return <>{children}</>;
+}
 
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Dashboard />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/tasks"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Tasks />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/habits"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Habits />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/goals"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Goals />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/leaderboard"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Leaderboard />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Profile />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
+
+      <Route path="/" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
+      <Route path="/tasks" element={<PrivateRoute><Layout><Tasks /></Layout></PrivateRoute>} />
+      <Route path="/habits" element={<PrivateRoute><Layout><Habits /></Layout></PrivateRoute>} />
+      <Route path="/goals" element={<PrivateRoute><Layout><Goals /></Layout></PrivateRoute>} />
+      <Route path="/leaderboard" element={<PrivateRoute><Layout><Leaderboard /></Layout></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
+
+      <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }
@@ -91,11 +48,24 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <DataProvider>
-          <AppRoutes />
-        </DataProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <DataProvider>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              richColors
+              expand={false}
+              toastOptions={{
+                style: {
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '14px',
+                },
+              }}
+            />
+          </DataProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

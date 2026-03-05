@@ -1,180 +1,158 @@
-import { Card } from '../components/Card';
-import { ProgressBar } from '../components/ProgressBar';
+import { motion } from 'framer-motion';
+import { CheckCircle2, Flame, Trophy, Target, TrendingUp, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { CheckCircle2, Flame, Trophy, Target, TrendingUp } from 'lucide-react';
+import { StatCard } from '../components/StatCard';
+import { ProgressBar } from '../components/ProgressBar';
+import { Card } from '../components/Card';
+import { PriorityBadge, StatusBadge } from '../components/Badge';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { EmptyState } from '../components/EmptyState';
+
+const QUOTES = [
+    'Great work today!',
+    'Consistency builds greatness.',
+    'One more step forward.',
+    'Small habits, extraordinary results.',
+    'You\'re making progress every day.',
+];
+
+function getGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+}
 
 export function Dashboard() {
     const { user } = useAuth();
     const { tasks, habits, goals, leaderboard } = useData();
 
-    // Logic remains identical in JS
-    const todaysTasks = tasks.filter(task => task.status !== 'completed');
-    const completedTasks = tasks.filter(task => task.status === 'completed');
-    const activeGoals = goals.filter(goal => goal.status === 'active');
+    const loading = !tasks;
+    if (loading) return <LoadingSpinner />;
 
+    const todaysTasks = tasks.filter((t) => t.status !== 'completed').slice(0, 5);
+    const completedTasks = tasks.filter((t) => t.status === 'completed');
+    const activeGoals = goals.filter((g) => g.status === 'active').slice(0, 3);
     const today = new Date().toISOString().split('T')[0];
-    const habitsCompletedToday = habits.filter(habit =>
-        habit.completedDates.includes(today)
-    );
-
-    const userRank = leaderboard.find(entry => entry.user.id === user?.id)?.rank || 0;
+    const habitsToday = habits.filter((h) => h.completedDates?.includes(today));
+    const userRank = leaderboard.find((e) => e.user?.id === user?.id)?.rank || '—';
+    const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
 
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Welcome back, {user?.name}!
+        <div className="space-y-8">
+            {/* Header */}
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+                <p className="text-sm font-medium text-indigo-500 mb-1">{quote}</p>
+                <h1 className="text-3xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>
+                    {getGreeting()}, {user?.name?.split(' ')[0]} 👋
                 </h1>
-                <p className="text-gray-600">Here's your progress overview</p>
+                <p className="text-sm text-muted mt-1">Ready to build momentum today?</p>
+            </motion.div>
+
+            {/* Stat Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard label="Current Streak" value={user?.streak ?? 0} suffix=" days" icon={Flame} color="orange" delay={0} />
+                <StatCard label="Total Points" value={user?.points ?? 0} icon={Trophy} color="indigo" delay={0.05} />
+                <StatCard label="Your Rank" value={`#${userRank}`} icon={TrendingUp} color="sky" delay={0.1} />
+                <StatCard label="Tasks Done" value={completedTasks.length} icon={CheckCircle2} color="green" delay={0.15} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="border-l-4 border-blue-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Current Streak</p>
-                            <p className="text-3xl font-bold text-gray-900">{user?.streak} days</p>
-                        </div>
-                        <div className="bg-blue-100 p-3 rounded-lg">
-                            <Flame className="text-blue-600 streak-pulse" size={28} />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="border-l-4 border-green-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Total Points</p>
-                            <p className="text-3xl font-bold text-gray-900">{user?.points}</p>
-                        </div>
-                        <div className="bg-green-100 p-3 rounded-lg">
-                            <Trophy className="text-green-600" size={28} />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="border-l-4 border-orange-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Your Rank</p>
-                            <p className="text-3xl font-bold text-gray-900">#{userRank}</p>
-                        </div>
-                        <div className="bg-orange-100 p-3 rounded-lg">
-                            <TrendingUp className="text-orange-600" size={28} />
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="border-l-4 border-violet-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Tasks Done</p>
-                            <p className="text-3xl font-bold text-gray-900">{completedTasks.length}</p>
-                        </div>
-                        <div className="bg-violet-100 p-3 rounded-lg">
-                            <CheckCircle2 className="text-violet-600" size={28} />
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Today's Tasks */}
                 <Card>
-                    <div className="flex items-center gap-2 mb-4">
-                        <CheckCircle2 className="text-blue-600" size={24} />
-                        <h2 className="text-xl font-semibold text-gray-900">Today's Tasks</h2>
+                    <div className="flex items-center gap-2 mb-5">
+                        <CheckCircle2 size={20} className="text-indigo-500" />
+                        <h2 className="text-lg font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>
+                            Today's Tasks
+                        </h2>
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 font-semibold dark:bg-indigo-900/30">
+                            {todaysTasks.length} remaining
+                        </span>
                     </div>
                     {todaysTasks.length === 0 ? (
-                        <p className="text-gray-500 text-center py-8">All tasks completed!</p>
+                        <EmptyState icon={CheckCircle2} title="All caught up!" description="No pending tasks. Great work! 🎉" />
                     ) : (
-                        <div className="space-y-3">
-                            {todaysTasks.slice(0, 4).map(task => (
-                                <div
-                                    key={task.id}
-                                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                >
-                                    <div
-                                        className={`w-2 h-2 rounded-full ${task.priority === 'high'
-                                                ? 'bg-red-500'
-                                                : task.priority === 'medium'
-                                                    ? 'bg-orange-500'
-                                                    : 'bg-green-500'
-                                            }`}
-                                    />
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-900">{task.title}</p>
+                        <div className="space-y-2.5">
+                            {todaysTasks.map((task) => (
+                                <div key={task.id} className="flex items-center gap-3 p-3 rounded-xl transition-colors" style={{ background: 'var(--color-surface-2)' }}>
+                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-orange-400' : 'bg-green-500'
+                                        }`} />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{task.title}</p>
                                         {task.deadline && (
-                                            <p className="text-sm text-gray-500">Due: {task.deadline}</p>
+                                            <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                                                <Clock size={11} /> Due {task.deadline}
+                                            </p>
                                         )}
                                     </div>
-                                    <span
-                                        className={`text-xs px-2 py-1 rounded ${task.status === 'in_progress'
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-gray-100 text-gray-700'
-                                            }`}
-                                    >
-                                        {task.status.replace('_', ' ')}
-                                    </span>
+                                    <PriorityBadge priority={task.priority} />
                                 </div>
                             ))}
                         </div>
                     )}
                 </Card>
 
+                {/* Habit Tracker */}
                 <Card>
-                    <div className="flex items-center gap-2 mb-4">
-                        <Flame className="text-orange-600" size={24} />
-                        <h2 className="text-xl font-semibold text-gray-900">Habit Tracker</h2>
+                    <div className="flex items-center gap-2 mb-5">
+                        <Flame size={20} className="text-orange-500 animate-streak" />
+                        <h2 className="text-lg font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>
+                            Habit Tracker
+                        </h2>
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold dark:bg-green-900/30">
+                            {habitsToday.length}/{habits.length} today
+                        </span>
                     </div>
-                    <div className="space-y-4">
-                        {habits.slice(0, 3).map(habit => {
-                            const isCompletedToday = habit.completedDates.includes(today);
-                            return (
-                                <div key={habit.id} className="flex items-center justify-between">
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-900">{habit.name}</p>
-                                        <p className="text-sm text-gray-500">{habit.streak} day streak</p>
+                    {habits.length === 0 ? (
+                        <EmptyState icon={Flame} title="No habits yet" description="Add habits to track your daily routines." />
+                    ) : (
+                        <div className="space-y-3">
+                            {habits.slice(0, 4).map((habit) => {
+                                const done = habit.completedDates?.includes(today);
+                                return (
+                                    <div key={habit.id} className="flex items-center gap-3">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-bold transition-all ${done ? 'bg-green-500 text-white' : 'text-muted'
+                                            }`} style={!done ? { background: 'var(--color-surface-2)' } : {}}>
+                                            {done ? '✓' : '○'}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{habit.name}</p>
+                                            <p className="text-xs text-muted">{habit.streak} day streak 🔥</p>
+                                        </div>
                                     </div>
-                                    <div
-                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCompletedToday
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-gray-200 text-gray-400'
-                                            }`}
-                                    >
-                                        {isCompletedToday ? '✓' : '○'}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </Card>
             </div>
 
-            <Card>
-                <div className="flex items-center gap-2 mb-6">
-                    <Target className="text-blue-600" size={24} />
-                    <h2 className="text-xl font-semibold text-gray-900">Active Goals</h2>
-                </div>
-                <div className="space-y-6">
-                    {activeGoals.slice(0, 3).map(goal => (
-                        <div key={goal.id}>
-                            <div className="flex justify-between items-start mb-2">
-                                <div>
-                                    <h3 className="font-medium text-gray-900">{goal.title}</h3>
-                                    {goal.description && (
-                                        <p className="text-sm text-gray-500">{goal.description}</p>
-                                    )}
+            {/* Active Goals */}
+            {activeGoals.length > 0 && (
+                <Card>
+                    <div className="flex items-center gap-2 mb-5">
+                        <Target size={20} className="text-indigo-500" />
+                        <h2 className="text-lg font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>
+                            Active Goals
+                        </h2>
+                    </div>
+                    <div className="space-y-5">
+                        {activeGoals.map((goal) => (
+                            <div key={goal.id}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{goal.title}</p>
+                                    <span className="text-sm font-bold text-indigo-500">{goal.progress}%</span>
                                 </div>
+                                <ProgressBar progress={goal.progress} showLabel={false} />
                                 {goal.targetDate && (
-                                    <span className="text-sm text-gray-500">Due: {goal.targetDate}</span>
+                                    <p className="text-xs text-muted mt-1">Target: {goal.targetDate}</p>
                                 )}
                             </div>
-                            <ProgressBar progress={goal.progress} />
-                        </div>
-                    ))}
-                </div>
-            </Card>
+                        ))}
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

@@ -1,10 +1,14 @@
+import { motion } from 'framer-motion';
+
 export function Card({ children, className = '', hover = false }) {
     return (
-        <div
-            className={`bg-white rounded-xl p-6 card-shadow ${hover ? 'transition-shadow duration-200 hover:card-shadow-hover' : ''
-                } ${className}`}
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`pc-card ${hover ? 'pc-card-lift cursor-pointer' : ''} ${className}`}
         >
             {children}
-        </div>
+        </motion.div>
     );
 }
