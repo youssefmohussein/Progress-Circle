@@ -42,6 +42,22 @@ const userSchema = new mongoose.Schema(
         isAdmin: {
             type: Boolean,
             default: false,
+        },
+        savingsEnabled: {
+            type: Boolean,
+            default: false,
+        },
+        fitnessEnabled: {
+            type: Boolean,
+            default: false,
+        },
+        totalMoney: {
+            type: Number,
+            default: 0,
+        },
+        monthlyIncome: {
+            type: Number,
+            default: 0,
         }
     },
     { timestamps: true }

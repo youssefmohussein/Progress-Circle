@@ -12,6 +12,8 @@ import { Habits } from './pages/Habits';
 import { Info } from './pages/Info';
 import { Profile } from './pages/Profile';
 import { AdminDashboard } from './pages/Admin/AdminDashboard';
+import { Savings } from './pages/Savings';
+import { Fitness } from './pages/Fitness';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -36,6 +38,8 @@ function AppRoutes() {
       <Route path="/leaderboard" element={<PrivateRoute><Layout><Leaderboard /></Layout></PrivateRoute>} />
       <Route path="/info" element={<PrivateRoute><Layout><Info /></Layout></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
+      <Route path="/savings" element={<PrivateRoute><Layout><Savings /></Layout></PrivateRoute>} />
+      <Route path="/fitness" element={<PrivateRoute><Layout><Fitness /></Layout></PrivateRoute>} />
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
 

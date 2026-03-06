@@ -15,6 +15,8 @@ const getProfile = async (req, res) => {
             points: user.points,
             streak: user.streak,
             joinedAt: user.createdAt,
+            savingsEnabled: user.savingsEnabled,
+            fitnessEnabled: user.fitnessEnabled,
         },
     });
 };
@@ -24,11 +26,17 @@ const getProfile = async (req, res) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
     try {
-        const { name, avatar } = req.body;
+        const { name, avatar, savingsEnabled, fitnessEnabled } = req.body;
+
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (avatar !== undefined) updateData.avatar = avatar;
+        if (savingsEnabled !== undefined) updateData.savingsEnabled = savingsEnabled;
+        if (fitnessEnabled !== undefined) updateData.fitnessEnabled = fitnessEnabled;
 
         const user = await User.findByIdAndUpdate(
             req.user._id,
-            { name, avatar },
+            updateData,
             { new: true, runValidators: true }
         );
 
@@ -42,6 +50,8 @@ const updateProfile = async (req, res, next) => {
                 points: user.points,
                 streak: user.streak,
                 joinedAt: user.createdAt,
+                savingsEnabled: user.savingsEnabled,
+                fitnessEnabled: user.fitnessEnabled,
             },
         });
     } catch (error) {

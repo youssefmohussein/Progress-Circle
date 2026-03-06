@@ -15,6 +15,8 @@ const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
+const savingsRoutes = require('./routes/savingsRoutes');
+const fitnessRoutes = require('./routes/fitnessRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -69,6 +71,8 @@ app.use('/api/admin', adminRoutes);
 
 app.use('/api/categories', categoryRoutes);
 app.use('/api/sessions', sessionRoutes);
+app.use('/api/savings', savingsRoutes);
+app.use('/api/fitness', fitnessRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

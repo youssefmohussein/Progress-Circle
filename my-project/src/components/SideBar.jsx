@@ -3,19 +3,32 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Trophy,
-    User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal, HelpCircle
+    User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal, HelpCircle,
+    Wallet, Activity
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar } from './Avatar';
 
-const navItems = [
+const baseNavItems = [
     { path: '/', icon: LayoutDashboard, label: 'Home' },
     { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
     { path: '/habits', icon: Repeat, label: 'Habits' },
     { path: '/leaderboard', icon: Trophy, label: 'Board' },
     { path: '/profile', icon: User, label: 'Profile' },
 ];
+
+function getNavItems(user) {
+    let items = [...baseNavItems];
+    if (user?.savingsEnabled) {
+        // Insert before Profile
+        items.splice(items.length - 1, 0, { path: '/savings', icon: Wallet, label: 'Savings' });
+    }
+    if (user?.fitnessEnabled) {
+        items.splice(items.length - 1, 0, { path: '/fitness', icon: Activity, label: 'Fitness' });
+    }
+    return items;
+}
 
 const sidebarBase = {
     background: 'linear-gradient(180deg,#1e1b4b 0%,#0f0e2a 100%)',
@@ -60,7 +73,7 @@ function SidebarContent({ onClose }) {
 
             {/* Nav links */}
             <nav style={{ flex: 1, padding: '8px 12px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {navItems.map(({ path, icon: Icon, label }) => {
+                {getNavItems(user).map(({ path, icon: Icon, label }) => {
                     const active = location.pathname === path;
                     return (
                         <Link
@@ -202,6 +215,7 @@ function MoreDrawer({ onClose }) {
 export function Sidebar() {
     const [moreOpen, setMoreOpen] = useState(false);
     const location = useLocation();
+    const { user } = useAuth();
 
     return (
         <>
@@ -220,7 +234,7 @@ export function Sidebar() {
                     padding: '6px 4px calc(6px + env(safe-area-inset-bottom))',
                 }}
             >
-                {navItems.map(({ path, icon: Icon, label }) => {
+                {getNavItems(user).filter((_, i) => i < 5).map(({ path, icon: Icon, label }) => {
                     const active = location.pathname === path;
                     return (
                         <Link

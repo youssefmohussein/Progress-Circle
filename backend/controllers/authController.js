@@ -43,6 +43,8 @@ const register = async (req, res, next) => {
                     completedAssignments: user.completedAssignments || 0,
                     workoutStreak: user.workoutStreak || 0,
                     joinedAt: user.createdAt,
+                    savingsEnabled: user.savingsEnabled || false,
+                    fitnessEnabled: user.fitnessEnabled || false,
                 },
             },
         });
@@ -86,6 +88,8 @@ const login = async (req, res, next) => {
                     completedAssignments: user.completedAssignments || 0,
                     workoutStreak: user.workoutStreak || 0,
                     joinedAt: user.createdAt,
+                    savingsEnabled: user.savingsEnabled || false,
+                    fitnessEnabled: user.fitnessEnabled || false,
                 },
             },
         });
@@ -114,6 +118,8 @@ const getMe = async (req, res) => {
             completedAssignments: user.completedAssignments || 0,
             workoutStreak: user.workoutStreak || 0,
             joinedAt: user.createdAt,
+            savingsEnabled: user.savingsEnabled || false,
+            fitnessEnabled: user.fitnessEnabled || false,
         },
     });
 };
