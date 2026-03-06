@@ -199,12 +199,11 @@ export function Sidebar() {
 
             {/* ── Mobile Bottom Navigation ── */}
             <nav
-                className="lg:hidden"
+                className="flex lg:hidden items-center justify-around"
                 style={{
                     position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 45,
                     background: 'linear-gradient(180deg,#1e1b4b 0%,#0f0e2a 100%)',
                     borderTop: '1px solid rgba(255,255,255,0.08)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-around',
                     padding: '6px 4px calc(6px + env(safe-area-inset-bottom))',
                 }}
             >

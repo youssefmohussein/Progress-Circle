@@ -16,9 +16,8 @@ export function Layout({ children }) {
                   Desktop: px-8 pt-8 pb-16
                 */}
                 <div
-                    className="lg:pt-8 lg:px-8 lg:pb-16"
+                    className="pt-5 px-4 pb-24 lg:pt-8 lg:px-8 lg:pb-16"
                     style={{
-                        padding: '1.25rem 1rem 6rem',
                         maxWidth: '1100px',
                         margin: '0 auto',
                     }}
