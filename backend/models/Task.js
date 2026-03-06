@@ -7,6 +7,11 @@ const taskSchema = new mongoose.Schema(
             ref: 'User',
             required: true,
         },
+        categoryId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Category',
+            default: null,
+        },
         title: {
             type: String,
             required: [true, 'Task title is required'],
@@ -30,8 +35,42 @@ const taskSchema = new mongoose.Schema(
             default: 'pending',
         },
         deadline: {
-            type: String, // stored as YYYY-MM-DD string for simplicity
+            type: Date,
             default: null,
+        },
+        estimatedTime: {
+            type: Number, // in minutes
+            default: 0,
+        },
+        actualTimeSpent: {
+            type: Number, // in minutes
+            default: 0,
+        },
+        isBigTask: {
+            type: Boolean,
+            default: false,
+        },
+        parentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Task',
+            default: null,
+        },
+        notes: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        totalWork: {
+            type: Number, // e.g., 10 lessons
+            default: 0,
+        },
+        completedWork: {
+            type: Number, // e.g., 3 lessons finished
+            default: 0,
+        },
+        alertsEnabled: {
+            type: Boolean,
+            default: false,
         },
         completedAt: {
             type: Date,

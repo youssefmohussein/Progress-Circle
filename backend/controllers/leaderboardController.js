@@ -5,14 +5,14 @@ const User = require('../models/User');
 // @access  Private
 const getLeaderboard = async (req, res, next) => {
     try {
-        const users = await User.find({}, 'name email avatar points streak studyHours completedAssignments workoutStreak createdAt')
+        const users = await User.find({}, 'name email avatar points streak createdAt')
             .sort({ points: -1 })
             .limit(50)
             .lean();
 
         const leaderboard = users.map((user, index) => ({
             rank: index + 1,
-            weeklyPoints: user.points, // simplified; extend with weekly logic if needed
+            weeklyPoints: user.points,
             user: {
                 id: user._id,
                 name: user.name,
@@ -20,9 +20,6 @@ const getLeaderboard = async (req, res, next) => {
                 avatar: user.avatar,
                 points: user.points,
                 streak: user.streak,
-                studyHours: user.studyHours || 0,
-                completedAssignments: user.completedAssignments || 0,
-                workoutStreak: user.workoutStreak || 0,
                 joinedAt: user.createdAt,
             },
         }));

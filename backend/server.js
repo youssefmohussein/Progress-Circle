@@ -13,12 +13,8 @@ const goalRoutes = require('./routes/goalRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const courseRoutes = require('./routes/courseRoutes');
-const assignmentRoutes = require('./routes/assignmentRoutes');
-const examRoutes = require('./routes/examRoutes');
-const workoutRoutes = require('./routes/workoutRoutes');
-const learningRoutes = require('./routes/learningRoutes');
-const scheduleRoutes = require('./routes/scheduleRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -29,7 +25,7 @@ const app = express();
 app.use(
     cors({
         origin: process.env.FRONTEND_URL,
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     })
 );
@@ -69,12 +65,8 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.use('/api/courses', courseRoutes);
-app.use('/api/assignments', assignmentRoutes);
-app.use('/api/exams', examRoutes);
-app.use('/api/workouts', workoutRoutes);
-app.use('/api/learning', learningRoutes);
-app.use('/api/schedule', scheduleRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/sessions', sessionRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

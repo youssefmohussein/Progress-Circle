@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Trophy, Medal, Award, Flame, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Award, Flame, TrendingUp, CheckSquare } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/Card';
@@ -94,9 +94,8 @@ export function Leaderboard() {
                                         {entry.user?.name} {isMe && <span className="text-xs text-indigo-400 font-normal">(you)</span>}
                                     </p>
                                     <p className="text-xs text-muted flex items-center gap-2 mt-1">
-                                        <span className="flex items-center gap-1"><Flame size={10} className="text-orange-400" />{entry.user?.streak}</span>
-                                        <span className="flex items-center gap-1"><GraduationCap size={10} className="text-indigo-400" />{entry.user?.studyHours}h</span>
-                                        <span className="flex items-center gap-1"><FileText size={10} className="text-emerald-400" />{entry.user?.completedAssignments}</span>
+                                        <span className="flex items-center gap-1"><Flame size={10} className="text-orange-400" />{entry.user?.streak} days</span>
+                                        <span className="flex items-center gap-1"><CheckSquare size={10} className="text-indigo-400" />{entry.user?.points} total</span>
                                     </p>
                                 </div>
                                 <div className="text-right">

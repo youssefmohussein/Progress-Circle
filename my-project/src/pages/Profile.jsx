@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Trophy, Calendar, Target, TrendingUp, User } from 'lucide-react';
+import { Trophy, Calendar, TrendingUp, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { Card } from '../components/Card';
@@ -9,18 +9,11 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 
 export function Profile() {
     const { user } = useAuth();
-    const { tasks, habits, goals } = useData();
+    const { tasks } = useData();
 
     if (!user || !tasks) return <LoadingSpinner />;
 
     const completedTasks = tasks.filter((t) => t.status === 'completed').length;
-    const completedGoals = goals.filter((g) => g.status === 'completed').length;
-
-    // Stats from user object
-    const studyHours = user.studyHours || 0;
-    const completedAssignments = user.completedAssignments || 0;
-    const workoutStreak = user.workoutStreak || 0;
-
     const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
 
     return (
@@ -43,11 +36,9 @@ export function Profile() {
             </motion.div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="indigo" delay={0} />
-                <StatCard label="Study Hours" value={studyHours} icon={GraduationCap} color="orange" delay={0.05} />
-                <StatCard label="Assignments" value={completedAssignments} icon={FileText} color="green" delay={0.1} />
-                <StatCard label="Gym Streak" value={workoutStreak} suffix=" days" icon={Dumbbell} color="sky" delay={0.15} />
+                <StatCard label="Total Nodes" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
             </div>
 
             {/* Activity summary */}
@@ -57,11 +48,7 @@ export function Profile() {
                     {[
                         { label: 'Total Tasks', value: tasks.length },
                         { label: 'Tasks Completed', value: completedTasks },
-                        { label: 'Study Hours', value: `${studyHours}h` },
-                        { label: 'Assignments Done', value: completedAssignments },
-                        { label: 'Gym Streak', value: `${workoutStreak} days` },
-                        { label: 'Total Goals', value: goals.length },
-                        { label: 'Goals Completed', value: completedGoals },
+                        { label: 'Pending Nodes', value: tasks.length - completedTasks },
                     ].map((row, i) => (
                         <motion.div
                             key={row.label}
