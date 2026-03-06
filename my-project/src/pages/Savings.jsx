@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Settings } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Settings, Receipt, ArrowUpCircle, ArrowDownCircle, Users, BarChart3, CreditCard, Banknote, ShieldCheck } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/Card';
@@ -16,11 +16,16 @@ export function Savings() {
 
     // Config state
     const [showConfig, setShowConfig] = useState(false);
-    const [configData, setConfigData] = useState({ totalMoney: user?.totalMoney || 0, monthlyIncome: user?.monthlyIncome || 0 });
+    const [configData, setConfigData] = useState({
+        totalMoney: user?.totalMoney || 0,
+        monthlyIncome: user?.monthlyIncome || 0,
+        cashBalance: user?.cashBalance || 0,
+        creditBalance: user?.creditBalance || 0
+    });
 
     // Transaction state
     const [showTxModal, setShowTxModal] = useState(false);
-    const [txData, setTxData] = useState({ type: 'expense', amount: '', category: '', description: '' });
+    const [txData, setTxData] = useState({ type: 'expense', amount: '', category: '', description: '', fromWho: '', account: 'cash' });
 
     const fetchTransactions = async () => {
         try {
@@ -37,12 +42,32 @@ export function Savings() {
         fetchTransactions();
     }, []);
 
+    const dashboardStats = useMemo(() => {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const monthlyTx = transactions.filter(t => new Date(t.date) >= startOfMonth);
+
+        const monthlyIncome = monthlyTx.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+        const monthlyExpenses = monthlyTx.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+        const monthlyInvestments = monthlyTx.filter(t => t.type === 'investment').reduce((acc, curr) => acc + curr.amount, 0);
+
+        return {
+            monthlyIncome,
+            monthlyExpenses,
+            monthlyInvestments,
+            netCashflow: monthlyIncome - monthlyExpenses - monthlyInvestments
+        };
+    }, [transactions]);
+
     const handleConfigSave = async (e) => {
         e.preventDefault();
         try {
             const updateRes = await api.put('/savings/config', {
                 totalMoney: Number(configData.totalMoney),
-                monthlyIncome: Number(configData.monthlyIncome)
+                monthlyIncome: Number(configData.monthlyIncome),
+                cashBalance: Number(configData.cashBalance),
+                creditBalance: Number(configData.creditBalance)
             });
             setUser(updateRes.data.data);
             toast.success('Financial configuration saved!');
@@ -62,7 +87,7 @@ export function Savings() {
             setUser(res.data.user);
             toast.success('Transaction logged!');
             setShowTxModal(false);
-            setTxData({ type: 'expense', amount: '', category: '', description: '' });
+            setTxData({ type: 'expense', amount: '', category: '', description: '', fromWho: '', account: 'cash' });
             fetchTransactions();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to log transaction');
@@ -72,153 +97,332 @@ export function Savings() {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="space-y-6 max-w-4xl">
-            <div className="flex justify-between items-center">
+        <div className="space-y-6 max-w-6xl">
+            <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Financial Tracking</h1>
-                    <p className="text-sm text-muted">Manage your expenses and investments.</p>
+                    <h1 className="text-3xl font-bold font-manrope text-white mb-1">Financial Command Center</h1>
+                    <p className="text-muted">Master your wealth across Cash & Credit</p>
                 </div>
                 <Button variant="secondary" onClick={() => setShowConfig(true)}>
-                    <Settings size={16} className="mr-2" /> Settings
+                    <Settings size={16} className="mr-2" /> Treasury Settings
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Card>
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl">
-                            <Wallet size={24} />
-                        </div>
+            {/* Main Wealth Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="relative overflow-hidden bg-indigo-600 border-none shadow-xl shadow-indigo-600/20">
+                    <div className="relative z-10 flex flex-col h-full justify-between py-2">
                         <div>
-                            <p className="text-sm text-muted">Total Money</p>
-                            <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>${user?.totalMoney || 0}</p>
+                            <p className="text-[10px] text-indigo-100/60 font-black uppercase tracking-widest mb-1">Combined Net Worth</p>
+                            <p className="text-4xl font-black text-white">${user?.totalMoney?.toLocaleString() || 0}</p>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                            <span className="text-[10px] text-indigo-200 font-bold uppercase tracking-tighter flex items-center gap-1">
+                                <ShieldCheck size={12} /> Secure Data
+                            </span>
+                            <BarChart3 size={20} className="text-white/20" />
                         </div>
                     </div>
                 </Card>
-                <Card>
+
+                <Card className="border-l-4 border-emerald-500 bg-surface">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-green-500/10 text-green-500 rounded-xl">
-                            <DollarSign size={24} />
+                        <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl">
+                            <Banknote size={28} />
                         </div>
-                        <div>
-                            <p className="text-sm text-muted">Monthly Income</p>
-                            <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>${user?.monthlyIncome || 0}</p>
+                        <div className="flex-1">
+                            <p className="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Cash Balance</p>
+                            <p className="text-2xl font-black text-white">${user?.cashBalance?.toLocaleString() || 0}</p>
+                            <div className="w-full bg-white/5 h-1 rounded-full mt-2">
+                                <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${Math.min(100, (user?.cashBalance / (user?.totalMoney || 1)) * 100)}%` }} />
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="border-l-4 border-blue-500 bg-surface">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl">
+                            <CreditCard size={28} />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Credit / Card Balance</p>
+                            <p className="text-2xl font-black text-white">${user?.creditBalance?.toLocaleString() || 0}</p>
+                            <div className="w-full bg-white/5 h-1 rounded-full mt-2">
+                                <div className="bg-blue-500 h-full rounded-full" style={{ width: `${Math.min(100, (user?.creditBalance / (user?.totalMoney || 1)) * 100)}%` }} />
+                            </div>
                         </div>
                     </div>
                 </Card>
             </div>
 
-            <Card>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Recent Transactions</h2>
-                    <Button onClick={() => setShowTxModal(true)}>
-                        <Plus size={16} className="mr-2" /> Add Log
-                    </Button>
+            {/* Cashflow Dashboard */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
+                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Monthly Cashflow In</p>
+                    <p className="text-lg font-bold text-emerald-400 font-mono">+${(user?.monthlyIncome + dashboardStats.monthlyIncome).toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
+                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Monthly Burn Out</p>
+                    <p className="text-lg font-bold text-red-500 font-mono">-${dashboardStats.monthlyExpenses.toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
+                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Monthly Saved</p>
+                    <p className={`text-lg font-bold font-mono ${dashboardStats.netCashflow >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>
+                        {dashboardStats.netCashflow >= 0 ? '+' : ''}${dashboardStats.netCashflow.toLocaleString()}
+                    </p>
+                </div>
+                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
+                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Investment Streak</p>
+                    <div className="flex items-center gap-2">
+                        <TrendingUp size={14} className="text-blue-400" />
+                        <p className="text-lg font-bold text-white font-mono">${dashboardStats.monthlyInvestments.toLocaleString()}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <Card>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <Receipt size={20} className="text-indigo-400" /> Accounting History
+                            </h2>
+                            <Button onClick={() => setShowTxModal(true)} className="rounded-full shadow-lg shadow-indigo-500/20">
+                                <Plus size={18} className="mr-2" /> Log Transaction
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {transactions.length === 0 ? (
+                                <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl">
+                                    <DollarSign size={48} className="mx-auto text-muted mb-4 opacity-20" />
+                                    <p className="text-muted font-medium">No accounting records found.</p>
+                                </div>
+                            ) : (
+                                transactions.map(tx => (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        key={tx._id}
+                                        className="flex justify-between items-center p-4 rounded-2xl border border-white/5 hover:border-indigo-500/30 transition-all bg-surface hover:bg-surface-2 group"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-3 rounded-2xl ${tx.type === 'expense' ? 'bg-red-500/10 text-red-500' :
+                                                    tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                        'bg-indigo-500/10 text-indigo-400'
+                                                }`}>
+                                                {tx.type === 'expense' ? <TrendingDown size={20} /> : <TrendingUp size={20} />}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-bold text-white group-hover:text-indigo-400 transition-colors uppercase text-sm tracking-tight">{tx.category}</p>
+                                                    <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter ${tx.account === 'credit' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'
+                                                        }`}>
+                                                        {tx.account}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[10px] text-muted font-bold mt-1 uppercase tracking-tighter flex items-center gap-2">
+                                                    {new Date(tx.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                                                    {tx.fromWho && <span className="text-white/30">• from {tx.fromWho}</span>}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-lg font-black font-mono ${tx.type === 'expense' ? 'text-red-500' :
+                                                tx.type === 'income' ? 'text-emerald-400' :
+                                                    'text-indigo-400'
+                                            }`}>
+                                            {tx.type === 'expense' ? '-' : '+'}${tx.amount.toLocaleString()}
+                                        </div>
+                                    </motion.div>
+                                ))
+                            )}
+                        </div>
+                    </Card>
                 </div>
 
-                <div className="space-y-3">
-                    {transactions.length === 0 ? (
-                        <p className="text-sm text-muted text-center py-6">No transactions logged yet.</p>
-                    ) : (
-                        transactions.map(tx => (
-                            <div key={tx._id} className="flex justify-between items-center py-3 px-4 rounded-xl" style={{ background: 'var(--color-surface-2)' }}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-lg ${tx.type === 'expense' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
-                                        {tx.type === 'expense' ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>{tx.category}</p>
-                                        <p className="text-xs text-muted">{new Date(tx.date).toLocaleDateString()}</p>
-                                    </div>
+                <div className="space-y-6">
+                    <Card className="bg-surface relative overflow-hidden">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-sm font-black uppercase text-muted tracking-widest">Allocation</h3>
+                            <BarChart3 size={16} className="text-muted" />
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <div className="flex justify-between text-[10px] font-bold uppercase mb-1">
+                                    <span className="text-emerald-400">Liquid Cash</span>
+                                    <span className="text-white">{Math.round((user?.cashBalance / (user?.totalMoney || 1)) * 100)}%</span>
                                 </div>
-                                <div className={`font-bold ${tx.type === 'expense' ? 'text-red-500' : 'text-green-500'}`}>
-                                    {tx.type === 'expense' ? '-' : '+'}${tx.amount}
+                                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${(user?.cashBalance / (user?.totalMoney || 1)) * 100}%` }} className="h-full bg-emerald-500" />
                                 </div>
                             </div>
-                        ))
-                    )}
+                            <div>
+                                <div className="flex justify-between text-[10px] font-bold uppercase mb-1">
+                                    <span className="text-blue-400">Credit / Bank</span>
+                                    <span className="text-white">{Math.round((user?.creditBalance / (user?.totalMoney || 1)) * 100)}%</span>
+                                </div>
+                                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${(user?.creditBalance / (user?.totalMoney || 1)) * 100}%` }} className="h-full bg-blue-500" />
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <Card>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-muted mb-4">Smart Tips</h3>
+                        <ul className="space-y-3">
+                            <li className="text-xs text-muted flex gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1 shrink-0" />
+                                <span>Keep at least 20% of your net worth in Liquid Cash for emergencies.</span>
+                            </li>
+                            <li className="text-xs text-muted flex gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
+                                <span>Log credit card payments as transfers or expenses to keep balances accurate.</span>
+                            </li>
+                        </ul>
+                    </Card>
                 </div>
-            </Card>
+            </div>
 
             {/* Config Modal */}
-            <AnimatePresence>
-                {showConfig && (
-                    <Modal title="Financial Settings" onClose={() => setShowConfig(false)}>
-                        <form onSubmit={handleConfigSave} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Total Money</label>
-                                <input
-                                    type="number"
-                                    required
-                                    className="pc-input w-full"
-                                    value={configData.totalMoney}
-                                    onChange={e => setConfigData({ ...configData, totalMoney: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Monthly Income</label>
-                                <input
-                                    type="number"
-                                    required
-                                    className="pc-input w-full"
-                                    value={configData.monthlyIncome}
-                                    onChange={e => setConfigData({ ...configData, monthlyIncome: e.target.value })}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4">
-                                <Button type="button" variant="secondary" onClick={() => setShowConfig(false)}>Cancel</Button>
-                                <Button type="submit">Save Changes</Button>
-                            </div>
-                        </form>
-                    </Modal>
-                )}
-            </AnimatePresence>
+            <Modal open={showConfig} title="Master Treasury Setup" onClose={() => setShowConfig(false)}>
+                <form onSubmit={handleConfigSave} className="space-y-4">
+                    <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 mb-4">
+                        <p className="text-[10px] font-black uppercase text-indigo-400 mb-2">Notice</p>
+                        <p className="text-xs text-muted">Setting these values directly overwrites your current balances. Use this for initial setup or corrections.</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-muted uppercase mb-2">Starting Cash</label>
+                            <input
+                                type="number"
+                                required
+                                className="pc-input w-full"
+                                value={configData.cashBalance}
+                                onChange={e => setConfigData({ ...configData, cashBalance: e.target.value, totalMoney: Number(e.target.value) + Number(configData.creditBalance) })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-muted uppercase mb-2">Starting Credit</label>
+                            <input
+                                type="number"
+                                required
+                                className="pc-input w-full"
+                                value={configData.creditBalance}
+                                onChange={e => setConfigData({ ...configData, creditBalance: e.target.value, totalMoney: Number(configData.cashBalance) + Number(e.target.value) })}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-muted uppercase mb-2">Total Treasury (Auto-calculated)</label>
+                        <input
+                            type="number"
+                            readOnly
+                            className="pc-input w-full bg-white/5 opacity-50"
+                            value={configData.totalMoney}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-muted uppercase mb-2">Base Monthly Salary</label>
+                        <input
+                            type="number"
+                            required
+                            className="pc-input w-full"
+                            value={configData.monthlyIncome}
+                            onChange={e => setConfigData({ ...configData, monthlyIncome: e.target.value })}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-4">
+                        <Button type="button" variant="secondary" onClick={() => setShowConfig(false)}>Cancel</Button>
+                        <Button type="submit">Update Treasury</Button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Transaction Modal */}
-            <AnimatePresence>
-                {showTxModal && (
-                    <Modal title="Log Transaction" onClose={() => setShowTxModal(false)}>
-                        <form onSubmit={handleTransactionSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Type</label>
-                                <select
-                                    className="pc-input w-full"
-                                    value={txData.type}
-                                    onChange={e => setTxData({ ...txData, type: e.target.value })}
+            <Modal open={showTxModal} title="Log Financial Activity" onClose={() => setShowTxModal(false)}>
+                <form onSubmit={handleTransactionSubmit} className="space-y-5">
+                    <div>
+                        <label className="block text-xs font-bold text-muted uppercase mb-2">1. Select Account</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { id: 'cash', label: 'Cash Balance', icon: Banknote, color: 'emerald' },
+                                { id: 'credit', label: 'Credit / Card', icon: CreditCard, color: 'blue' }
+                            ].map(acc => (
+                                <button
+                                    key={acc.id}
+                                    type="button"
+                                    onClick={() => setTxData({ ...txData, account: acc.id })}
+                                    className={`flex items-center justify-center gap-2 py-3 rounded-2xl transition-all border ${txData.account === acc.id
+                                            ? `bg-${acc.color}-500 border-${acc.color}-500 text-white shadow-lg shadow-${acc.color}-500/20`
+                                            : 'bg-surface-2 border-white/5 text-muted hover:border-white/20'
+                                        }`}
                                 >
-                                    <option value="expense">Expense</option>
-                                    <option value="investment">Investment</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Amount</label>
-                                <input
-                                    type="number"
-                                    required
-                                    className="pc-input w-full"
-                                    value={txData.amount}
-                                    onChange={e => setTxData({ ...txData, amount: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Category / On What?</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="e.g. Groceries, Stocks"
-                                    className="pc-input w-full"
-                                    value={txData.category}
-                                    onChange={e => setTxData({ ...txData, category: e.target.value })}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4">
-                                <Button type="button" variant="secondary" onClick={() => setShowTxModal(false)}>Cancel</Button>
-                                <Button type="submit">Log Transaction</Button>
-                            </div>
-                        </form>
-                    </Modal>
-                )}
-            </AnimatePresence>
+                                    <acc.icon size={16} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{acc.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-muted uppercase mb-2">2. Transaction Type</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {['income', 'expense', 'investment'].map(t => (
+                                <button
+                                    key={t}
+                                    type="button"
+                                    onClick={() => setTxData({ ...txData, type: t })}
+                                    className={`py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border ${txData.type === t
+                                            ? 'bg-indigo-500 border-indigo-500 text-white'
+                                            : 'bg-surface-2 border-white/5 text-muted hover:border-white/20'
+                                        }`}
+                                >
+                                    {t}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-muted uppercase mb-2">Amount ($)</label>
+                            <input
+                                type="number"
+                                required
+                                placeholder="0.00"
+                                className="pc-input w-full"
+                                value={txData.amount}
+                                onChange={e => setTxData({ ...txData, amount: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-muted uppercase mb-2">{txData.type === 'income' ? 'Source / From' : 'Target / To'}</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Salary, Boss, Amazon"
+                                className="pc-input w-full"
+                                value={txData.fromWho}
+                                onChange={e => setTxData({ ...txData, fromWho: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-muted uppercase mb-2">Search Category</label>
+                        <input
+                            type="text"
+                            required
+                            placeholder="e.g. Food, Salary, Gift, Tech..."
+                            className="pc-input w-full"
+                            value={txData.category}
+                            onChange={e => setTxData({ ...txData, category: e.target.value })}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-6 border-t border-white/5 mt-4">
+                        <Button type="button" variant="secondary" onClick={() => setShowTxModal(false)}>Cancel</Button>
+                        <Button type="submit">Complete Log</Button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 }

@@ -3,10 +3,10 @@ const User = require('../models/User');
 
 const updateSavingsConfig = async (req, res, next) => {
     try {
-        const { totalMoney, monthlyIncome } = req.body;
+        const { totalMoney, monthlyIncome, cashBalance, creditBalance } = req.body;
         const user = await User.findByIdAndUpdate(
             req.user._id,
-            { totalMoney, monthlyIncome },
+            { totalMoney, monthlyIncome, cashBalance, creditBalance },
             { new: true, runValidators: true }
         );
         res.status(200).json({ success: true, data: user });
@@ -26,25 +26,27 @@ const getTransactions = async (req, res, next) => {
 
 const addTransaction = async (req, res, next) => {
     try {
-        const { type, amount, category, description, date } = req.body;
+        const { type, amount, category, description, fromWho, account, date } = req.body;
         const transaction = await Transaction.create({
             user: req.user._id,
             type,
             amount,
             category,
             description,
+            fromWho,
+            account: account || 'cash',
             date: date || Date.now()
         });
 
-        let updatedUser = req.user;
-        // Optionally update user's total money
-        if (type === 'expense') {
+        const balanceField = (account === 'credit') ? 'creditBalance' : 'cashBalance';
+
+        if (type === 'income') {
             updatedUser = await User.findByIdAndUpdate(req.user._id, {
-                $inc: { totalMoney: -amount }
+                $inc: { totalMoney: amount, [balanceField]: amount }
             }, { new: true });
-        } else if (type === 'investment') {
+        } else if (type === 'expense' || type === 'investment') {
             updatedUser = await User.findByIdAndUpdate(req.user._id, {
-                $inc: { totalMoney: -amount } // assumes investment comes out of total money tracking
+                $inc: { totalMoney: -amount, [balanceField]: -amount }
             }, { new: true });
         }
 

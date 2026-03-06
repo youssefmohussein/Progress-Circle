@@ -55,6 +55,14 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        cashBalance: {
+            type: Number,
+            default: 0,
+        },
+        creditBalance: {
+            type: Number,
+            default: 0,
+        },
         monthlyIncome: {
             type: Number,
             default: 0,

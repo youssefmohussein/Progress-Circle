@@ -9,8 +9,17 @@ const transactionSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ['expense', 'investment'],
+            enum: ['expense', 'investment', 'income'],
             required: true,
+        },
+        account: {
+            type: String,
+            enum: ['cash', 'credit'],
+            default: 'cash',
+        },
+        fromWho: {
+            type: String,
+            default: '', // Useful for income source or recipient
         },
         amount: {
             type: Number,
