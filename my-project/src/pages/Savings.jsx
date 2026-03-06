@@ -10,7 +10,7 @@ import { Modal } from '../components/Modal';
 import { toast } from 'sonner';
 
 export function Savings() {
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -40,13 +40,13 @@ export function Savings() {
     const handleConfigSave = async (e) => {
         e.preventDefault();
         try {
-            await api.put('/savings/config', {
+            const updateRes = await api.put('/savings/config', {
                 totalMoney: Number(configData.totalMoney),
                 monthlyIncome: Number(configData.monthlyIncome)
             });
-            toast.success('Financial configuration saved! Reloading to update context...');
+            setUser(updateRes.data.data);
+            toast.success('Financial configuration saved!');
             setShowConfig(false);
-            setTimeout(() => window.location.reload(), 1000);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to save configuration');
         }
@@ -55,16 +55,15 @@ export function Savings() {
     const handleTransactionSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/savings', {
+            const res = await api.post('/savings', {
                 ...txData,
                 amount: Number(txData.amount)
             });
+            setUser(res.data.user);
             toast.success('Transaction logged!');
             setShowTxModal(false);
             setTxData({ type: 'expense', amount: '', category: '', description: '' });
             fetchTransactions();
-            // Optionally reload to update user context's totalMoney
-            setTimeout(() => window.location.reload(), 1000);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to log transaction');
         }
