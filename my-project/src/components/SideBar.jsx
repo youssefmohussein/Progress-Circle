@@ -3,17 +3,17 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Trophy,
-    User, LogOut, Moon, Sun, Menu, X, Shield, Plus, Repeat
+    User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar } from './Avatar';
 
 const navItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/', icon: LayoutDashboard, label: 'Home' },
     { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
     { path: '/habits', icon: Repeat, label: 'Habits' },
-    { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
+    { path: '/leaderboard', icon: Trophy, label: 'Board' },
     { path: '/profile', icon: User, label: 'Profile' },
 ];
 
@@ -46,7 +46,6 @@ function SidebarContent({ onClose }) {
                     </button>
                 )}
             </div>
-
 
             {/* User card */}
             {user && (
@@ -120,15 +119,76 @@ function SidebarContent({ onClose }) {
     );
 }
 
-export function Sidebar() {
-    const [mobileOpen, setMobileOpen] = useState(false);
-    const location = useLocation();
+/* ─── Mobile "More" drawer ────────────────────────────────── */
+function MoreDrawer({ onClose }) {
+    const { dark, toggleDark } = useTheme();
+    const { logout, user } = useAuth();
 
-    // Bottom nav primary items
-    const bottomNavItems = [
-        { path: '/', icon: LayoutDashboard, label: 'Home' },
-        { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
-    ];
+    const drawerStyle = {
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60,
+        background: 'linear-gradient(180deg,#1e1b4b 0%,#0f0e2a 100%)',
+        borderRadius: '20px 20px 0 0',
+        padding: '8px 0 calc(16px + env(safe-area-inset-bottom))',
+    };
+
+    const rowStyle = {
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '14px 20px', color: 'rgba(255,255,255,0.75)',
+        fontSize: 15, fontWeight: 500, cursor: 'pointer',
+        background: 'none', border: 'none', width: '100%',
+        textDecoration: 'none',
+    };
+
+    return (
+        <>
+            {/* Backdrop */}
+            <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={onClose}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 55 }}
+            />
+            <motion.div
+                initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                style={drawerStyle}
+            >
+                {/* Handle */}
+                <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 99, margin: '4px auto 12px' }} />
+
+                {user && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px 14px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                        <Avatar src={user.avatar} name={user.name} size="sm" />
+                        <div>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{user.name}</p>
+                            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{user.points ?? 0} pts</p>
+                        </div>
+                    </div>
+                )}
+
+                {user?.isAdmin && (
+                    <Link to="/admin" onClick={onClose} style={{ ...rowStyle }}>
+                        <Shield size={19} style={{ color: '#a78bfa' }} />
+                        <span>Admin Panel</span>
+                    </Link>
+                )}
+
+                <button onClick={() => { toggleDark(); }} style={rowStyle}>
+                    {dark ? <Sun size={19} style={{ color: '#fbbf24' }} /> : <Moon size={19} style={{ color: '#818cf8' }} />}
+                    <span>{dark ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
+
+                <button onClick={logout} style={{ ...rowStyle, color: 'rgba(252,165,165,0.85)' }}>
+                    <LogOut size={19} />
+                    <span>Logout</span>
+                </button>
+            </motion.div>
+        </>
+    );
+}
+
+export function Sidebar() {
+    const [moreOpen, setMoreOpen] = useState(false);
+    const location = useLocation();
 
     return (
         <>
@@ -137,59 +197,66 @@ export function Sidebar() {
                 <SidebarContent />
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            <div className="lg:hidden flex justify-around items-center" style={{
-                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 45,
-                background: 'var(--color-surface)',
-                borderTop: '1px solid var(--color-border)',
-                padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
-            }}>
-                {bottomNavItems.map(({ path, icon: Icon, label }) => {
+            {/* ── Mobile Bottom Navigation ── */}
+            <nav
+                className="lg:hidden"
+                style={{
+                    position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 45,
+                    background: 'linear-gradient(180deg,#1e1b4b 0%,#0f0e2a 100%)',
+                    borderTop: '1px solid rgba(255,255,255,0.08)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+                    padding: '6px 4px calc(6px + env(safe-area-inset-bottom))',
+                }}
+            >
+                {navItems.map(({ path, icon: Icon, label }) => {
                     const active = location.pathname === path;
                     return (
-                        <Link key={path} to={path} style={{
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                            textDecoration: 'none', color: active ? '#6366f1' : 'var(--color-text-muted)',
-                            transition: 'color 0.2s'
-                        }}>
-                            <Icon size={20} className={active ? 'drop-shadow-sm' : ''} />
-                            <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{label}</span>
+                        <Link
+                            key={path}
+                            to={path}
+                            style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                                textDecoration: 'none', flex: 1, padding: '6px 0',
+                                color: active ? '#a5b4fc' : 'rgba(255,255,255,0.4)',
+                                transition: 'color 0.2s',
+                                minHeight: 44,  /* accessibility tap target */
+                                justifyContent: 'center',
+                                position: 'relative',
+                            }}
+                        >
+                            {active && (
+                                <motion.div
+                                    layoutId="bottom-nav-active"
+                                    style={{
+                                        position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)',
+                                        width: 28, height: 2, background: '#818cf8', borderRadius: '0 0 99px 99px',
+                                    }}
+                                />
+                            )}
+                            <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
+                            <span style={{ fontSize: '9px', fontWeight: active ? 700 : 500, letterSpacing: '0.04em' }}>{label}</span>
                         </Link>
                     );
                 })}
 
-                {/* Mobile Menu Button */}
+                {/* More button */}
                 <button
-                    onClick={() => setMobileOpen(true)}
+                    onClick={() => setMoreOpen(true)}
                     style={{
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                        background: 'none', border: 'none', color: 'var(--color-text-muted)',
-                        cursor: 'pointer'
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                        background: 'none', border: 'none', flex: 1, padding: '6px 0',
+                        color: 'rgba(255,255,255,0.4)', cursor: 'pointer', minHeight: 44,
+                        justifyContent: 'center',
                     }}
                 >
-                    <Menu size={20} />
-                    <span style={{ fontSize: '10px', fontWeight: 500 }}>Menu</span>
+                    <MoreHorizontal size={20} strokeWidth={1.8} />
+                    <span style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.04em' }}>More</span>
                 </button>
-            </div>
+            </nav>
 
-            {/* Mobile drawer (for the rest of the links) */}
+            {/* Mobile More drawer */}
             <AnimatePresence>
-                {mobileOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => setMobileOpen(false)}
-                            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50 }}
-                        />
-                        <motion.div
-                            initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
-                            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                            style={{ position: 'fixed', left: 0, top: 0, height: '100vh', width: 256, zIndex: 60 }}
-                        >
-                            <SidebarContent onClose={() => setMobileOpen(false)} />
-                        </motion.div>
-                    </>
-                )}
+                {moreOpen && <MoreDrawer onClose={() => setMoreOpen(false)} />}
             </AnimatePresence>
         </>
     );

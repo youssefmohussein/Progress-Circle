@@ -17,26 +17,26 @@ export function Profile() {
     const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
 
     return (
-        <div className="space-y-6 max-w-3xl">
+        <div className="space-y-5 max-w-3xl">
             {/* Profile header */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pc-card">
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
                     <Avatar src={user.avatar} name={user.name} size="xl" />
-                    <div>
-                        <h2 className="text-2xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>{user.name}</h2>
+                    <div className="flex-1">
+                        <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
                         <p className="text-sm text-muted">{user.email}</p>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-muted">
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-2 text-sm text-muted">
                             <span className="font-semibold text-indigo-500">{user.points || 0} pts</span>
-                            <span>·</span>
+                            <span className="hidden sm:inline">·</span>
                             <span>{user.streak || 0} day streak 🔥</span>
-                            {joined && <><span>·</span><span>Member since {joined}</span></>}
+                            {joined && <><span className="hidden sm:inline">·</span><span className="text-xs">Since {joined}</span></>}
                         </div>
                     </div>
                 </div>
             </motion.div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="indigo" delay={0} />
                 <StatCard label="Total Nodes" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
             </div>

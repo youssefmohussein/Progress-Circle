@@ -11,17 +11,29 @@ export function Layout({ children }) {
             <Sidebar onQuickAdd={() => setQuickAddOpen(true)} />
             {/* lg:ml-64 = 256px sidebar width */}
             <main style={{ flex: 1, minWidth: 0, position: 'relative' }} className="lg:ml-64">
-                <div style={{ padding: '2rem 2rem 4rem', paddingTop: '5rem', maxWidth: '1100px', margin: '0 auto' }} className="lg:pt-8">
+                {/*
+                  Mobile: px-4 pt-5 pb-24 (pb clears the fixed bottom nav)
+                  Desktop: px-8 pt-8 pb-16
+                */}
+                <div
+                    className="lg:pt-8 lg:px-8 lg:pb-16"
+                    style={{
+                        padding: '1.25rem 1rem 6rem',
+                        maxWidth: '1100px',
+                        margin: '0 auto',
+                    }}
+                >
                     {children}
                 </div>
 
                 {/* Floating Quick Add Button for Mobile */}
                 <button
                     onClick={() => setQuickAddOpen(true)}
-                    className="lg:hidden fixed bottom-20 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-indigo-500/25 transition-all z-40"
-                    style={{ zIndex: 44 }}
+                    className="lg:hidden fixed bottom-20 right-5 w-12 h-12 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-indigo-500/25 transition-all z-40"
+                    style={{ zIndex: 44, boxShadow: '0 4px 20px rgba(99,102,241,0.45)' }}
+                    aria-label="Quick add"
                 >
-                    <Plus size={24} />
+                    <Plus size={22} />
                 </button>
             </main>
 

@@ -12,6 +12,8 @@
   --border: #e2e5f0;
   --text: #0f172a;
   --muted: #64748b;
+  /* Mobile nav height: used to add safe bottom padding on all pages */
+  --bottom-nav-h: 70px;
 }
 
 .dark {
@@ -226,4 +228,42 @@ input[type=range] {
 /* Select */
 select.pc-input {
   appearance: auto;
+}
+
+/* ─── Mobile responsive utilities ─────────────────────────── */
+
+/* Horizontal scroll bar (filter pills, etc.) */
+.mobile-scroll-x {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.mobile-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* On touch devices show action buttons that are normally hover-only */
+@media (hover: none) and (pointer: coarse) {
+  .touch-always-visible {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Compact card on very small phones */
+@media (max-width: 400px) {
+  .pc-card {
+    padding: 1rem;
+  }
+}
+
+/* Responsive page title */
+@media (max-width: 640px) {
+  .page-title {
+    font-size: 1.75rem !important;
+  }
 }

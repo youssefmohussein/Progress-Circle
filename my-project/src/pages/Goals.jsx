@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Target, Pencil, Trash2, Calendar } from 'lucide-react';
+import dayjs from 'dayjs';
 import { useData } from '../context/DataContext';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -58,13 +59,16 @@ export function Goals() {
     const completed = goals.filter((g) => g.status === 'completed');
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-32">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="max-w-5xl mx-auto space-y-6 pb-32">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-4xl font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif' }}>Strategic Goals</h1>
-                    <p className="text-sm text-muted font-medium mt-1 uppercase tracking-[0.2em]">{active.length} in pursuit · {completed.length} achieved</p>
+                    <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Strategic Goals</h1>
+                    <p className="text-xs text-muted font-medium mt-1 uppercase tracking-[0.2em]">{active.length} active · {completed.length} achieved</p>
                 </div>
-                <Button size="lg" icon={Plus} onClick={openCreate}>New Objective</Button>
+                {/* Desktop button */}
+                <div className="hidden sm:block">
+                    <Button size="lg" icon={Plus} onClick={openCreate}>New Objective</Button>
+                </div>
             </div>
 
             {goals.length === 0 ? (
@@ -113,11 +117,12 @@ export function Goals() {
                                 <div className="flex items-center justify-between">
                                     {goal.targetDate ? (
                                         <span className="text-[10px] font-black uppercase tracking-widest text-muted flex items-center gap-2">
-                                            <Calendar size={12} /> {dayjs(goal.targetDate).format('MMMM D, YYYY')}
+                                            <Calendar size={12} /> {dayjs(goal.targetDate).format('MMM D, YYYY')}
                                         </span>
                                     ) : <div />}
 
-                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                                    {/* always visible on touch */}
+                                    <div className="flex gap-1 touch-always-visible opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
                                         <button onClick={() => openEdit(goal)} className="p-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-500 transition-colors">
                                             <Pencil size={18} />
                                         </button>
@@ -131,6 +136,15 @@ export function Goals() {
                     </AnimatePresence>
                 </div>
             )}
+
+            {/* Mobile floating add button */}
+            <button
+                onClick={openCreate}
+                className="sm:hidden fixed bottom-20 left-5 z-40 flex items-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-full shadow-lg text-xs font-black uppercase tracking-widest"
+                style={{ boxShadow: '0 4px 20px rgba(99,102,241,0.5)' }}
+            >
+                <Plus size={16} /> New Goal
+            </button>
 
             <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editGoal ? "Review Objective" : "Define Objective"}>
                 <div className="space-y-6">

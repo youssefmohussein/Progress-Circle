@@ -75,7 +75,32 @@ export function Login() {
             </motion.div>
 
             {/* ── Right panel – form ── */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+
+                {/* Mobile branded header – hidden on desktop */}
+                <motion.div
+                    initial={{ opacity: 0, y: -12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="lg:hidden w-full max-w-sm mb-6"
+                    style={{
+                        background: 'linear-gradient(135deg,#1e1b4b 0%,#0f0e2a 100%)',
+                        borderRadius: '1.25rem', padding: '1.5rem',
+                    }}
+                >
+                    <h1 style={{ fontFamily: 'Manrope,sans-serif', fontWeight: 800, fontSize: '1.4rem', color: '#fff', marginBottom: 4 }}>
+                        Progress<span style={{ color: '#818cf8' }}>Circle</span>
+                    </h1>
+                    <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.9rem' }}>"{quote}"</p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {['Tasks', 'Habits', 'Goals', 'Leaderboard'].map((f) => (
+                            <span key={f} style={{
+                                fontSize: 11, padding: '4px 10px', borderRadius: 9999,
+                                background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)',
+                            }}>{f}</span>
+                        ))}
+                    </div>
+                </motion.div>
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -277,31 +277,31 @@ export function Dashboard() {
             {/* Header */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-4xl font-black pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                    <h1 className="font-black pc-gradient-text page-title" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>
                         {getGreeting()}, {user?.name?.split(' ')[0]}
                     </h1>
-                    <p className="text-sm text-muted font-medium mt-1 uppercase tracking-widest">{quote}</p>
+                    <p className="text-xs text-muted font-medium mt-1 uppercase tracking-widest">{quote}</p>
                 </div>
             </motion.div>
 
             {/* Prediction & Insights Banner */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-                    className={`col-span-1 md:col-span-2 pc-card relative overflow-hidden flex items-center gap-6 p-6 border-l-4 ${prediction.type === 'warning' ? 'border-rose-500 bg-rose-500/5' : 'border-indigo-500 bg-indigo-500/5'}`}>
-                    <div className={`p-4 rounded-2xl ${prediction.type === 'warning' ? 'bg-rose-500/20 text-rose-500' : 'bg-indigo-500/20 text-indigo-500'}`}>
-                        <Sparkles size={28} />
+                    className={`col-span-1 md:col-span-2 pc-card relative overflow-hidden flex items-center gap-4 p-4 border-l-4 ${prediction.type === 'warning' ? 'border-rose-500 bg-rose-500/5' : 'border-indigo-500 bg-indigo-500/5'}`}>
+                    <div className={`p-3 rounded-2xl flex-shrink-0 ${prediction.type === 'warning' ? 'bg-rose-500/20 text-rose-500' : 'bg-indigo-500/20 text-indigo-500'}`}>
+                        <Sparkles size={22} />
                     </div>
                     <div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-pc-muted mb-1">AI Productivity Prediction</h3>
-                        <p className="font-bold text-xl">{prediction.title}</p>
-                        <p className="text-sm text-pc-muted">{prediction.desc}</p>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-pc-muted mb-0.5">AI Productivity Prediction</h3>
+                        <p className="font-bold text-base leading-tight">{prediction.title}</p>
+                        <p className="text-xs text-pc-muted mt-0.5">{prediction.desc}</p>
                     </div>
                 </motion.div>
 
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                    className="pc-card bg-indigo-500/10 border-indigo-500/20 flex flex-col justify-center text-center p-6">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-2">Available Focus Time</p>
-                    <p className="text-3xl font-black text-indigo-500">{Math.floor(freeTimeToday / 60)}h {freeTimeToday % 60}m</p>
+                    className="pc-card bg-indigo-500/10 border-indigo-500/20 flex flex-col justify-center text-center p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Available Focus Time</p>
+                    <p className="text-2xl font-black text-indigo-500">{Math.floor(freeTimeToday / 60)}h {freeTimeToday % 60}m</p>
                 </motion.div>
             </div>
 
@@ -349,8 +349,8 @@ export function Dashboard() {
 
                             const TaskTicket = ({ task, isSubTask }) => (
                                 <div className={`flex items-start gap-3 p-3 rounded-xl border transition-all group ${isSubTask
-                                        ? 'bg-white/3 border-white/5 ml-4'
-                                        : 'bg-white/5 border-white/8 hover:border-indigo-500/30'
+                                    ? 'bg-white/3 border-white/5 ml-4'
+                                    : 'bg-white/5 border-white/8 hover:border-indigo-500/30'
                                     } ${getCountdown(task.deadline).startsWith('Overdue') ? 'border-rose-500/20 bg-rose-500/5' : ''}`}>
                                     <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${task.priority === 'high' ? 'bg-rose-500' : task.priority === 'medium' ? 'bg-orange-400' : 'bg-green-500'
                                         }`} />

@@ -30,20 +30,20 @@ export function Leaderboard() {
     const podium = [top3[1], top3[0], top3[2]].filter(Boolean);
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif' }}>Leaderboard</h1>
-                <p className="text-sm text-muted mt-1">Compete with your peers and rise to the top.</p>
+                <h1 className="font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.5rem, 6vw, 1.875rem)' }}>Leaderboard</h1>
+                <p className="text-xs text-muted mt-1">Compete with your peers and rise to the top.</p>
             </div>
 
             {/* Podium */}
             {top3.length >= 1 && (
-                <div className="flex items-end justify-center gap-4">
+                <div className="flex items-end justify-center gap-2 sm:gap-4">
                     {podium.map((entry, i) => {
                         if (!entry) return null;
                         const isFirst = entry.rank === 1;
                         const m = MEDALS[entry.rank - 1];
-                        const heights = { 1: 'h-36', 2: 'h-28', 3: 'h-24' };
+                        const heights = { 1: 'h-28 sm:h-36', 2: 'h-22 sm:h-28', 3: 'h-18 sm:h-24' };
                         const isMe = entry.user?.id === user?.id;
                         return (
                             <motion.div
@@ -51,16 +51,17 @@ export function Leaderboard() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className={`flex flex-col items-center gap-2 ${isFirst ? 'order-2' : i === 0 ? 'order-1' : 'order-3'}`}
+                                className={`flex flex-col items-center gap-1.5 sm:gap-2 ${isFirst ? 'order-2' : i === 0 ? 'order-1' : 'order-3'}`}
+                                style={{ minWidth: 0, flex: 1, maxWidth: 110 }}
                             >
-                                <span className="text-2xl">{m.emoji}</span>
-                                <Avatar src={entry.user?.avatar} name={entry.user?.name || ''} size={isFirst ? 'xl' : 'lg'} />
-                                <div className="text-center">
-                                    <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
-                                    <p className="text-xs text-indigo-500 font-semibold">{entry.user?.points} pts</p>
+                                <span className="text-lg sm:text-2xl">{m.emoji}</span>
+                                <Avatar src={entry.user?.avatar} name={entry.user?.name || ''} size={isFirst ? 'lg' : 'md'} />
+                                <div className="text-center max-w-full px-1">
+                                    <p className="text-xs font-bold truncate" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
+                                    <p className="text-[10px] text-indigo-500 font-semibold">{entry.user?.points} pts</p>
                                 </div>
-                                <div className={`w-24 rounded-t-xl bg-gradient-to-t ${m.bg} border border-solid ${m.border} ${heights[entry.rank]} flex items-end justify-center pb-2`}>
-                                    <span className={`text-2xl font-black ${m.color}`} style={{ fontFamily: 'Manrope, sans-serif' }}>#{entry.rank}</span>
+                                <div className={`w-full rounded-t-xl bg-gradient-to-t ${m.bg} border border-solid ${m.border} ${heights[entry.rank]} flex items-end justify-center pb-2`}>
+                                    <span className={`text-lg sm:text-2xl font-black ${m.color}`} style={{ fontFamily: 'Manrope, sans-serif' }}>#{entry.rank}</span>
                                 </div>
                             </motion.div>
                         );
@@ -81,7 +82,7 @@ export function Leaderboard() {
                                 initial={{ opacity: 0, x: -8 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.03 }}
-                                className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${isMe ? 'border-2 border-indigo-400/40' : 'hover:opacity-90'
+                                className={`flex items-center gap-3 p-2 sm:p-3 rounded-xl transition-colors ${isMe ? 'border-2 border-indigo-400/40' : 'hover:opacity-90'
                                     }`}
                                 style={{ background: isMe ? 'rgba(99,102,241,0.08)' : 'var(--color-surface-2)' }}
                             >

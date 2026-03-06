@@ -46,13 +46,13 @@ export function Habits() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-32">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="max-w-4xl mx-auto space-y-6 pb-32">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-4xl font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif' }}>Habit Loops</h1>
-                    <p className="text-sm text-muted font-medium mt-1 uppercase tracking-[0.2em]">{habits.length} active neural paths</p>
+                    <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Habit Loops</h1>
+                    <p className="text-xs text-muted font-medium mt-1 uppercase tracking-[0.2em]">{habits.length} active loops</p>
                 </div>
-                <Button icon={Plus} onClick={() => setModalOpen(true)}>Initialize Habit</Button>
+                <Button icon={Plus} onClick={() => setModalOpen(true)}>New Habit</Button>
             </div>
 
             {habits.length === 0 ? (
@@ -71,7 +71,8 @@ export function Habits() {
                                     <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500">
                                         <Repeat size={24} />
                                     </div>
-                                    <button onClick={() => handleDelete(habit.id)} className="p-2 text-muted hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100">
+                                    {/* always visible on touch (no hover on mobile) */}
+                                    <button onClick={() => handleDelete(habit.id)} className="p-2 text-muted hover:text-rose-500 transition-colors touch-always-visible opacity-0 group-hover:opacity-100">
                                         <Trash2 size={18} />
                                     </button>
                                 </div>
@@ -114,7 +115,7 @@ export function Habits() {
 
                                     <button
                                         onClick={() => toggleHabit(habit.id)}
-                                        className={`px-4 py-2 rounded-xl flex items-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all ${habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'pc-btn-primary shadow-lg shadow-indigo-500/20'}`}
+                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all ${habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'pc-btn-primary shadow-lg shadow-indigo-500/20'}`}
                                     >
                                         <CheckCircle2 size={14} />
                                         {habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? 'Finalized' : 'Log Today'}

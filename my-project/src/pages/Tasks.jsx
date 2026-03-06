@@ -31,7 +31,7 @@ const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handle
     return (
         <motion.div
             layout
-            className={`pc-card group border-l-4 ${isSub ? 'ml-8 bg-muted/5' : ''} ${task.status === 'completed' ? 'opacity-60' : ''}`}
+            className={`pc-card group border-l-4 ${isSub ? 'sm:ml-8 ml-3 bg-muted/5' : ''} ${task.status === 'completed' ? 'opacity-60' : ''}`}
             style={{ borderLeftColor: task.isBigTask ? '#6366f1' : 'transparent' }}
         >
             <div className="flex items-start gap-4 p-4">
@@ -99,7 +99,8 @@ const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handle
                             <Plus size={16} />
                         </button>
                     )}
-                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* touch-always-visible makes these always visible on mobile touch devices */}
+                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity touch-always-visible">
                         {task.isBigTask && (
                             <button onClick={() => openCreateModal(false, task.id)} className="p-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-600" title="Add Sub-task">
                                 <Plus size={16} />
@@ -252,18 +253,19 @@ export function Tasks() {
     });
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-32">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="max-w-4xl mx-auto space-y-6 pb-32">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-4xl font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif' }}>Master Plan</h1>
-                    <p className="text-sm text-muted font-medium mt-1 uppercase tracking-[0.2em]">{tasks.length} total nodes · {tasks.filter(t => t.status === 'completed').length} finalized</p>
+                    <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Master Plan</h1>
+                    <p className="text-xs text-muted font-medium mt-1 uppercase tracking-[0.2em]">{tasks.length} total · {tasks.filter(t => t.status === 'completed').length} done</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="secondary" icon={Settings} onClick={() => setCategoryModalOpen(true)}>Manage Categories</Button>
+                    <Button variant="secondary" icon={Settings} onClick={() => setCategoryModalOpen(true)}>Categories</Button>
                 </div>
             </div>
 
-            <div className="flex gap-2 p-1 bg-[#858b99] dark:bg-slate-800/80 rounded-full w-fit flex-wrap items-center px-2">
+            {/* Filter bar: horizontal scroll on mobile */}
+            <div className="mobile-scroll-x p-1 bg-[#858b99] dark:bg-slate-800/80 rounded-full px-2">
                 {FILTERS.map((f) => {
                     const isCat = categories.find(c => c.name === f);
                     const isActive = filter === f;
