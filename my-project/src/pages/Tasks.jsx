@@ -30,16 +30,12 @@ export function Tasks() {
         return true;
     });
 
-    const openAddModal = () => {
-        setEditTask(null);
-        setForm({ title: '', description: '', priority: 'medium', deadline: '' });
-        setModalOpen(true);
-    };
-
     const openEditModal = (task) => {
         setEditTask(task);
-        setForm({ title: task.title, description: task.description || '', priority: task.priority, deadline: task.deadline || '' });
-        setModalOpen(true);
+        if (task) {
+            setForm({ title: task.title, description: task.description || '', priority: task.priority, deadline: task.deadline || '' });
+            setModalOpen(true);
+        }
     };
 
     const handleSave = async () => {
@@ -49,13 +45,10 @@ export function Tasks() {
             if (editTask) {
                 await updateTask(editTask.id, form);
                 toast.success('Task updated');
-            } else {
-                await addTask(form);
-                toast.success('Task created');
             }
             setModalOpen(false);
         } catch {
-            toast.error('Failed to save task');
+            toast.error('Failed to update task');
         } finally {
             setSaving(false);
         }
@@ -84,7 +77,6 @@ export function Tasks() {
                     <h1 className="text-3xl font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif' }}>Tasks</h1>
                     <p className="text-sm text-muted mt-1">{tasks.length} total · {tasks.filter(t => t.status === 'completed').length} completed</p>
                 </div>
-                <Button onClick={openAddModal}><Plus size={16} />New Task</Button>
             </div>
 
             {/* Filter tabs */}
@@ -103,7 +95,7 @@ export function Tasks() {
 
             {/* Task list */}
             {filtered.length === 0 ? (
-                <EmptyState icon={CheckSquare} title="No tasks found" description="Add your first task to start tracking." action={<Button onClick={openAddModal}><Plus size={14} />Add Task</Button>} />
+                <EmptyState icon={CheckSquare} title="No tasks found" description="Click the + button down below to add your first task." />
             ) : (
                 <div className="space-y-3">
                     <AnimatePresence>
@@ -156,8 +148,8 @@ export function Tasks() {
                 </div>
             )}
 
-            {/* Add/Edit Modal */}
-            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editTask ? 'Edit Task' : 'New Task'}>
+            {/* Edit Modal */}
+            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Edit Task">
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Title</label>
@@ -182,7 +174,7 @@ export function Tasks() {
                         </div>
                     </div>
                     <div className="flex gap-3 pt-2">
-                        <Button className="flex-1" loading={saving} onClick={handleSave}>{editTask ? 'Save Changes' : 'Create Task'}</Button>
+                        <Button className="flex-1" loading={saving} onClick={handleSave}>Save Changes</Button>
                         <Button variant="secondary" className="flex-1" onClick={() => setModalOpen(false)}>Cancel</Button>
                     </div>
                 </div>

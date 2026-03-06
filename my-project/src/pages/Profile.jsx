@@ -15,11 +15,13 @@ export function Profile() {
 
     const completedTasks = tasks.filter((t) => t.status === 'completed').length;
     const completedGoals = goals.filter((g) => g.status === 'completed').length;
-    const avgProgress = goals.length > 0
-        ? Math.round(goals.reduce((s, g) => s + (g.progress || 0), 0) / goals.length)
-        : 0;
 
-    const joined = user.joinedAt ? new Date(user.joinedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
+    // Stats from user object
+    const studyHours = user.studyHours || 0;
+    const completedAssignments = user.completedAssignments || 0;
+    const workoutStreak = user.workoutStreak || 0;
+
+    const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
 
     return (
         <div className="space-y-6 max-w-3xl">
@@ -43,9 +45,9 @@ export function Profile() {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="indigo" delay={0} />
-                <StatCard label="Active Habits" value={habits.length} icon={Calendar} color="orange" delay={0.05} />
-                <StatCard label="Goals Achieved" value={completedGoals} icon={Target} color="green" delay={0.1} />
-                <StatCard label="Avg Progress" value={avgProgress} suffix="%" icon={TrendingUp} color="sky" delay={0.15} />
+                <StatCard label="Study Hours" value={studyHours} icon={GraduationCap} color="orange" delay={0.05} />
+                <StatCard label="Assignments" value={completedAssignments} icon={FileText} color="green" delay={0.1} />
+                <StatCard label="Gym Streak" value={workoutStreak} suffix=" days" icon={Dumbbell} color="sky" delay={0.15} />
             </div>
 
             {/* Activity summary */}
@@ -55,10 +57,11 @@ export function Profile() {
                     {[
                         { label: 'Total Tasks', value: tasks.length },
                         { label: 'Tasks Completed', value: completedTasks },
-                        { label: 'Active Habits', value: habits.length },
+                        { label: 'Study Hours', value: `${studyHours}h` },
+                        { label: 'Assignments Done', value: completedAssignments },
+                        { label: 'Gym Streak', value: `${workoutStreak} days` },
                         { label: 'Total Goals', value: goals.length },
                         { label: 'Goals Completed', value: completedGoals },
-                        { label: 'Avg Goal Progress', value: `${avgProgress}%` },
                     ].map((row, i) => (
                         <motion.div
                             key={row.label}

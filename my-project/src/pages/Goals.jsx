@@ -20,12 +20,6 @@ export function Goals() {
 
     if (!goals) return <LoadingSpinner />;
 
-    const openAdd = () => {
-        setEditGoal(null);
-        setForm({ title: '', description: '', targetDate: '', progress: 0, status: 'active' });
-        setModalOpen(true);
-    };
-
     const openEdit = (g) => {
         setEditGoal(g);
         setForm({ title: g.title, description: g.description || '', targetDate: g.targetDate || '', progress: g.progress, status: g.status });
@@ -39,9 +33,6 @@ export function Goals() {
             if (editGoal) {
                 await updateGoal(editGoal.id, form);
                 toast.success('Goal updated');
-            } else {
-                await addGoal(form);
-                toast.success('Goal created!');
             }
             setModalOpen(false);
         } catch { toast.error('Failed to save goal'); }
@@ -63,11 +54,10 @@ export function Goals() {
                     <h1 className="text-3xl font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif' }}>Goals</h1>
                     <p className="text-sm text-muted mt-1">{active.length} active · {completed.length} completed</p>
                 </div>
-                <Button onClick={openAdd}><Plus size={16} />New Goal</Button>
             </div>
 
             {goals.length === 0 ? (
-                <EmptyState icon={Target} title="No goals yet" description="Set long-term goals and track your progress." action={<Button onClick={openAdd}><Plus size={14} />Add Goal</Button>} />
+                <EmptyState icon={Target} title="No goals yet" description="Click the + button down below to add a Goal." />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <AnimatePresence>
@@ -117,7 +107,7 @@ export function Goals() {
                 </div>
             )}
 
-            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editGoal ? 'Edit Goal' : 'New Goal'} maxWidth="max-w-lg">
+            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Edit Goal" maxWidth="max-w-lg">
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Title</label>
@@ -146,7 +136,7 @@ export function Goals() {
                         <input type="range" min="0" max="100" value={form.progress} onChange={(e) => setForm({ ...form, progress: Number(e.target.value) })} className="w-full accent-indigo-500" />
                     </div>
                     <div className="flex gap-3 pt-2">
-                        <Button className="flex-1" loading={saving} onClick={handleSave}>{editGoal ? 'Save Changes' : 'Create Goal'}</Button>
+                        <Button className="flex-1" loading={saving} onClick={handleSave}>Save Changes</Button>
                         <Button variant="secondary" className="flex-1" onClick={() => setModalOpen(false)}>Cancel</Button>
                     </div>
                 </div>

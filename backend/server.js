@@ -13,6 +13,12 @@ const goalRoutes = require('./routes/goalRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const courseRoutes = require('./routes/courseRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
+const examRoutes = require('./routes/examRoutes');
+const workoutRoutes = require('./routes/workoutRoutes');
+const learningRoutes = require('./routes/learningRoutes');
+const scheduleRoutes = require('./routes/scheduleRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -62,6 +68,13 @@ app.use('/api/goals', goalRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+
+app.use('/api/courses', courseRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/exams', examRoutes);
+app.use('/api/workouts', workoutRoutes);
+app.use('/api/learning', learningRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

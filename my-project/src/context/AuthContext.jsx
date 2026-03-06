@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
             }
             try {
                 const res = await authAPI.getMe();
+                console.log('Restore Session User Data:', res.data.data);
                 setUser(res.data.data);
             } catch {
                 localStorage.removeItem('token'); // expired / invalid token
@@ -30,6 +31,7 @@ export function AuthProvider({ children }) {
     const login = async (email, password) => {
         const res = await authAPI.login(email, password);
         const { token, user: userData } = res.data.data;
+        console.log('Login User Data:', userData);
         localStorage.setItem('token', token);
         setUser(userData);
     };

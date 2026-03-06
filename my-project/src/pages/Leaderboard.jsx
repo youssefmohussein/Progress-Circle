@@ -93,8 +93,10 @@ export function Leaderboard() {
                                     <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                                         {entry.user?.name} {isMe && <span className="text-xs text-indigo-400 font-normal">(you)</span>}
                                     </p>
-                                    <p className="text-xs text-muted flex items-center gap-1">
-                                        <Flame size={10} className="text-orange-400" />{entry.user?.streak} day streak
+                                    <p className="text-xs text-muted flex items-center gap-2 mt-1">
+                                        <span className="flex items-center gap-1"><Flame size={10} className="text-orange-400" />{entry.user?.streak}</span>
+                                        <span className="flex items-center gap-1"><GraduationCap size={10} className="text-indigo-400" />{entry.user?.studyHours}h</span>
+                                        <span className="flex items-center gap-1"><FileText size={10} className="text-emerald-400" />{entry.user?.completedAssignments}</span>
                                     </p>
                                 </div>
                                 <div className="text-right">

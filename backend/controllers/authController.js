@@ -38,6 +38,10 @@ const register = async (req, res, next) => {
                     avatar: user.avatar,
                     points: user.points,
                     streak: user.streak,
+                    isAdmin: user.isAdmin,
+                    studyHours: user.studyHours || 0,
+                    completedAssignments: user.completedAssignments || 0,
+                    workoutStreak: user.workoutStreak || 0,
                     joinedAt: user.createdAt,
                 },
             },
@@ -77,6 +81,10 @@ const login = async (req, res, next) => {
                     avatar: user.avatar,
                     points: user.points,
                     streak: user.streak,
+                    isAdmin: user.isAdmin,
+                    studyHours: user.studyHours || 0,
+                    completedAssignments: user.completedAssignments || 0,
+                    workoutStreak: user.workoutStreak || 0,
                     joinedAt: user.createdAt,
                 },
             },
@@ -91,6 +99,7 @@ const login = async (req, res, next) => {
 // @access  Private
 const getMe = async (req, res) => {
     const user = req.user;
+    console.log('Backend getMe user:', { id: user._id, email: user.email, isAdmin: user.isAdmin });
     res.status(200).json({
         success: true,
         data: {
@@ -100,6 +109,10 @@ const getMe = async (req, res) => {
             avatar: user.avatar,
             points: user.points,
             streak: user.streak,
+            isAdmin: user.isAdmin,
+            studyHours: user.studyHours || 0,
+            completedAssignments: user.completedAssignments || 0,
+            workoutStreak: user.workoutStreak || 0,
             joinedAt: user.createdAt,
         },
     });

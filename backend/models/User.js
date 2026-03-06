@@ -39,6 +39,26 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        studyHours: {
+            type: Number,
+            default: 0,
+        },
+        completedAssignments: {
+            type: Number,
+            default: 0,
+        },
+        workoutStreak: {
+            type: Number,
+            default: 0,
+        },
+        preferences: {
+            type: Object,
+            default: {
+                examAlerts: true,
+                assignmentAlerts: true,
+                scheduleAlerts: true,
+            }
+        }
     },
     { timestamps: true }
 );

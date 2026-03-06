@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Target, Trophy,
     User, Calendar, LogOut, Moon, Sun, Menu, X, Shield,
+    BookOpen, FileText, GraduationCap, Dumbbell, Brain, CalendarDays, Plus
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -11,8 +12,14 @@ import { Avatar } from './Avatar';
 
 const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/schedule', icon: CalendarDays, label: 'Schedule' },
+    { path: '/courses', icon: BookOpen, label: 'Courses' },
+    { path: '/assignments', icon: FileText, label: 'Assignments' },
+    { path: '/exams', icon: GraduationCap, label: 'Exams' },
     { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
     { path: '/habits', icon: Calendar, label: 'Habits' },
+    { path: '/fitness', icon: Dumbbell, label: 'Fitness' },
+    { path: '/learning', icon: Brain, label: 'Learning' },
     { path: '/goals', icon: Target, label: 'Goals' },
     { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
     { path: '/profile', icon: User, label: 'Profile' },
@@ -26,7 +33,7 @@ const sidebarBase = {
     color: '#fff',
 };
 
-function SidebarContent({ onClose }) {
+function SidebarContent({ onClose, onQuickAdd }) {
     const location = useLocation();
     const { logout, user } = useAuth();
     const { dark, toggleDark } = useTheme();
@@ -46,6 +53,19 @@ function SidebarContent({ onClose }) {
                         <X size={20} />
                     </button>
                 )}
+            </div>
+
+            {/* Quick Add Button */}
+            <div className="px-3 pt-4">
+                <button
+                    onClick={() => {
+                        if (onClose) onClose();
+                        if (onQuickAdd) onQuickAdd();
+                    }}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium transition-colors shadow-lg shadow-indigo-500/20"
+                >
+                    <Plus size={18} /> Quick Add
+                </button>
             </div>
 
             {/* User card */}
@@ -120,44 +140,75 @@ function SidebarContent({ onClose }) {
     );
 }
 
-export function Sidebar() {
+export function Sidebar({ onQuickAdd }) {
     const [mobileOpen, setMobileOpen] = useState(false);
+    const location = useLocation();
+
+    // Bottom nav primary items
+    const bottomNavItems = [
+        { path: '/', icon: LayoutDashboard, label: 'Home' },
+        { path: '/schedule', icon: CalendarDays, label: 'Schedule' },
+        { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
+        { path: '/courses', icon: BookOpen, label: 'Courses' },
+    ];
+
     return (
         <>
-            {/* Desktop */}
+            {/* Desktop Sidebar */}
             <div className="hidden lg:flex" style={{ position: 'fixed', left: 0, top: 0, height: '100vh', width: 256, flexDirection: 'column', zIndex: 40 }}>
-                <SidebarContent />
+                <SidebarContent onQuickAdd={onQuickAdd} />
             </div>
 
-            {/* Mobile hamburger */}
-            <button
-                className="lg:hidden"
-                onClick={() => setMobileOpen(true)}
-                style={{
-                    position: 'fixed', top: 14, left: 14, zIndex: 50,
-                    background: 'linear-gradient(135deg,#6366f1,#4f46e5)',
-                    border: 'none', borderRadius: '0.75rem', padding: '8px 10px',
-                    color: '#fff', cursor: 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.4)',
-                }}
-            >
-                <Menu size={20} />
-            </button>
+            {/* Mobile Bottom Navigation */}
+            <div className="lg:hidden flex justify-around items-center" style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 45,
+                background: 'var(--color-surface)',
+                borderTop: '1px solid var(--color-border)',
+                padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+            }}>
+                {bottomNavItems.map(({ path, icon: Icon, label }) => {
+                    const active = location.pathname === path;
+                    return (
+                        <Link key={path} to={path} style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                            textDecoration: 'none', color: active ? '#6366f1' : 'var(--color-text-muted)',
+                            transition: 'color 0.2s'
+                        }}>
+                            <Icon size={20} className={active ? 'drop-shadow-sm' : ''} />
+                            <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{label}</span>
+                        </Link>
+                    );
+                })}
 
-            {/* Mobile drawer */}
+                {/* Mobile Menu Button */}
+                <button
+                    onClick={() => setMobileOpen(true)}
+                    style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                        background: 'none', border: 'none', color: 'var(--color-text-muted)',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <Menu size={20} />
+                    <span style={{ fontSize: '10px', fontWeight: 500 }}>Menu</span>
+                </button>
+            </div>
+
+            {/* Mobile drawer (for the rest of the links) */}
             <AnimatePresence>
                 {mobileOpen && (
                     <>
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setMobileOpen(false)}
-                            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }}
+                            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50 }}
                         />
                         <motion.div
                             initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
                             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                            style={{ position: 'fixed', left: 0, top: 0, height: '100vh', width: 256, zIndex: 50 }}
+                            style={{ position: 'fixed', left: 0, top: 0, height: '100vh', width: 256, zIndex: 60 }}
                         >
-                            <SidebarContent onClose={() => setMobileOpen(false)} />
+                            <SidebarContent onClose={() => setMobileOpen(false)} onQuickAdd={onQuickAdd} />
                         </motion.div>
                     </>
                 )}

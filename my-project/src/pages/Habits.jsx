@@ -27,18 +27,6 @@ export function Habits() {
 
     if (!habits) return <LoadingSpinner />;
 
-    const handleAdd = async () => {
-        if (!form.name.trim()) return toast.error('Habit name is required');
-        setSaving(true);
-        try {
-            await addHabit(form);
-            toast.success('Habit added!');
-            setForm({ name: '', description: '' });
-            setModalOpen(false);
-        } catch { toast.error('Failed to add habit'); }
-        finally { setSaving(false); }
-    };
-
     const handleToggle = async (id) => {
         try {
             await toggleHabitToday(id);
@@ -61,7 +49,6 @@ export function Habits() {
                     <h1 className="text-3xl font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif' }}>Habits</h1>
                     <p className="text-sm text-muted mt-1">{completedToday}/{habits.length} completed today</p>
                 </div>
-                <Button onClick={() => setModalOpen(true)}><Plus size={16} />New Habit</Button>
             </div>
 
             {/* Stats row */}
@@ -79,7 +66,7 @@ export function Habits() {
             </div>
 
             {habits.length === 0 ? (
-                <EmptyState icon={Flame} title="No habits yet" description="Build consistency by tracking daily habits." action={<Button onClick={() => setModalOpen(true)}><Plus size={14} />Add Habit</Button>} />
+                <EmptyState icon={Flame} title="No habits yet" description="Click the + button down below to add a Habit." />
             ) : (
                 <div className="space-y-4">
                     <AnimatePresence>
@@ -147,22 +134,7 @@ export function Habits() {
                 </div>
             )}
 
-            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New Habit">
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Habit Name</label>
-                        <input className="pc-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g., Daily Exercise" />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-semibold text-muted uppercase mb-1.5">Description</label>
-                        <input className="pc-input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional goal..." />
-                    </div>
-                    <div className="flex gap-3 pt-2">
-                        <Button className="flex-1" loading={saving} onClick={handleAdd}>Add Habit</Button>
-                        <Button variant="secondary" className="flex-1" onClick={() => setModalOpen(false)}>Cancel</Button>
-                    </div>
-                </div>
-            </Modal>
+            {/* Modal functionality removed */}
         </div>
     );
 }
