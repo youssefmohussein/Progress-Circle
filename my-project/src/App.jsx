@@ -9,7 +9,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
 import { Leaderboard } from './pages/Leaderboard';
 import { Habits } from './pages/Habits';
-
+import { Info } from './pages/Info';
 import { Profile } from './pages/Profile';
 import { AdminDashboard } from './pages/Admin/AdminDashboard';
 
@@ -34,6 +34,7 @@ function AppRoutes() {
       <Route path="/tasks" element={<PrivateRoute><Layout><Tasks /></Layout></PrivateRoute>} />
       <Route path="/habits" element={<PrivateRoute><Layout><Habits /></Layout></PrivateRoute>} />
       <Route path="/leaderboard" element={<PrivateRoute><Layout><Leaderboard /></Layout></PrivateRoute>} />
+      <Route path="/info" element={<PrivateRoute><Layout><Info /></Layout></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />

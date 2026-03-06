@@ -25,15 +25,7 @@ export function Layout({ children }) {
                     {children}
                 </div>
 
-                {/* Floating Quick Add Button for Mobile */}
-                <button
-                    onClick={() => setQuickAddOpen(true)}
-                    className="lg:hidden fixed bottom-20 right-5 w-12 h-12 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-indigo-500/25 transition-all z-40"
-                    style={{ zIndex: 44, boxShadow: '0 4px 20px rgba(99,102,241,0.45)' }}
-                    aria-label="Quick add"
-                >
-                    <Plus size={22} />
-                </button>
+                {/* Floating Quick Add Button for Mobile has been removed per user request */}
             </main>
 
             <QuickAddModal open={quickAddOpen} onClose={() => setQuickAddOpen(false)} />

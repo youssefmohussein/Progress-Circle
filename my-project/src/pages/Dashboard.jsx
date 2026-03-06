@@ -131,8 +131,8 @@ const FocusClock = () => {
                         </div>
 
                         {!activeSession && (
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="flex-1">
                                     <label className="text-[10px] text-pc-muted font-black uppercase tracking-widest mb-1 block">Type</label>
                                     <select className="pc-input text-xs h-9 w-full" value={type} onChange={e => setType(e.target.value)}>
                                         <option value="focus">🎯 Focus</option>
@@ -140,7 +140,7 @@ const FocusClock = () => {
                                         <option value="sleep">🌙 Sleep</option>
                                     </select>
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <label className="text-[10px] text-pc-muted font-black uppercase tracking-widest mb-1 block">Sector</label>
                                     <SectorSelect sectors={sectors} value={classification} onChange={setClassification} />
                                 </div>
@@ -278,7 +278,7 @@ export function Dashboard() {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex justify-between items-end">
                 <div>
                     <h1 className="font-black pc-gradient-text page-title" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>
-                        {getGreeting()}, {user?.name?.split(' ')[0]}
+                        {getGreeting()}, {user?.name || 'User'}
                     </h1>
                     <p className="text-xs text-muted font-medium mt-1 uppercase tracking-widest">{quote}</p>
                 </div>

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Trophy,
-    User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal
+    User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -97,6 +97,14 @@ function SidebarContent({ onClose }) {
 
             {/* Bottom actions */}
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Link to="/info" onClick={onClose} style={{
+                    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                    padding: '9px 14px', borderRadius: '0.75rem', background: 'none',
+                    border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: 14, textDecoration: 'none',
+                    transition: 'all 0.18s',
+                }}>
+                    <HelpCircle size={17} /> How It Works
+                </Link>
                 <button onClick={toggleDark} style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%',
                     padding: '9px 14px', borderRadius: '0.75rem', background: 'none',
@@ -171,6 +179,11 @@ function MoreDrawer({ onClose }) {
                         <span>Admin Panel</span>
                     </Link>
                 )}
+
+                <Link to="/info" onClick={onClose} style={rowStyle}>
+                    <HelpCircle size={19} />
+                    <span>How It Works</span>
+                </Link>
 
                 <button onClick={() => { toggleDark(); }} style={rowStyle}>
                     {dark ? <Sun size={19} style={{ color: '#fbbf24' }} /> : <Moon size={19} style={{ color: '#818cf8' }} />}
