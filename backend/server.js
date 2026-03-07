@@ -17,6 +17,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const savingsRoutes = require('./routes/savingsRoutes');
 const fitnessRoutes = require('./routes/fitnessRoutes');
+const gamificationRoutes = require('./routes/gamificationRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -73,6 +74,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/savings', savingsRoutes);
 app.use('/api/fitness', fitnessRoutes);
+app.use('/api/gamification', gamificationRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

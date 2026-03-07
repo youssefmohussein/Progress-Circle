@@ -1,5 +1,8 @@
 const FitnessCycle = require('../models/Workout');
 const BodyMetric = require('../models/BodyMetric');
+const User = require('../models/User');
+
+const WORKOUT_POINTS = 20;
 
 const setupCycle = async (req, res, next) => {
     try {
@@ -58,6 +61,10 @@ const logDailyFitness = async (req, res, next) => {
             cycle.logs[existingLogIndex] = logData;
         } else {
             cycle.logs.push(logData);
+            // Award points for a new workout log
+            if (workoutCompleted) {
+                await User.findByIdAndUpdate(req.user._id, { $inc: { points: WORKOUT_POINTS } });
+            }
         }
 
         await cycle.save();

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Trophy,
     User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal, HelpCircle,
-    Wallet, Activity
+    Wallet, Activity, Sprout, ShoppingBag, Star
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -39,6 +39,13 @@ function getNavItems(user) {
 
     return base;
 }
+
+// Gamification quick links (always visible in desktop sidebar)
+const gamificationLinks = [
+    { path: '/farm', icon: Sprout, label: '🌿 My Farm' },
+    { path: '/avatar-shop', icon: ShoppingBag, label: '🛍 Avatar Shop' },
+    { path: '/milestones', icon: Star, label: '🏆 Milestones' },
+];
 
 const sidebarBase = {
     background: 'linear-gradient(180deg,#1e1b4b 0%,#0f0e2a 100%)',
@@ -116,6 +123,33 @@ function SidebarContent({ onClose }) {
                         <Shield size={17} style={{ color: '#a78bfa' }} /> Admin
                     </Link>
                 )}
+
+                {/* Gamification section */}
+                <div style={{ margin: '8px 0 4px', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 14px' }}>
+                    Gamification
+                </div>
+                {gamificationLinks.map(({ path, icon: Icon, label }) => {
+                    const active = location.pathname === path;
+                    return (
+                        <Link
+                            key={path}
+                            to={path}
+                            onClick={onClose}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                padding: '9px 14px', borderRadius: '0.75rem',
+                                textDecoration: 'none', fontSize: 14, fontWeight: 500,
+                                transition: 'all 0.18s',
+                                background: active ? 'rgba(99,102,241,0.18)' : 'transparent',
+                                color: active ? '#a5b4fc' : 'rgba(255,255,255,0.6)',
+                                border: active ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
+                            }}
+                        >
+                            <Icon size={17} style={{ color: active ? '#818cf8' : undefined }} />
+                            {label}
+                        </Link>
+                    );
+                })}
             </nav>
 
             {/* Bottom actions */}
@@ -207,6 +241,15 @@ function MoreDrawer({ onClose }) {
                     <HelpCircle size={19} />
                     <span>How It Works</span>
                 </Link>
+
+                {/* Gamification links in More drawer */}
+                <div style={{ padding: '8px 20px 4px', fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Gamification</div>
+                {gamificationLinks.map(({ path, label, icon: Icon }) => (
+                    <Link key={path} to={path} onClick={onClose} style={rowStyle}>
+                        <Icon size={19} style={{ color: '#818cf8' }} />
+                        <span>{label}</span>
+                    </Link>
+                ))}
 
                 <button onClick={() => { toggleDark(); }} style={rowStyle}>
                     {dark ? <Sun size={19} style={{ color: '#fbbf24' }} /> : <Moon size={19} style={{ color: '#818cf8' }} />}

@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
-import { Trophy, Calendar, TrendingUp, User } from 'lucide-react';
+import { Trophy, Calendar, TrendingUp, Sprout, ShoppingBag, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import { useGamification } from '../context/GamificationContext';
 import { Card } from '../components/Card';
-import { Avatar } from '../components/Avatar';
+import { AvatarDisplay } from '../components/AvatarDisplay';
 import { StatCard } from '../components/StatCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useState } from 'react';
@@ -13,6 +15,7 @@ import { toast } from 'sonner';
 export function Profile() {
     const { user, setUser } = useAuth();
     const { tasks } = useData();
+    const { gamData } = useGamification();
     const [updating, setUpdating] = useState(false);
 
     if (!user || !tasks) return <LoadingSpinner />;
@@ -46,7 +49,9 @@ export function Profile() {
             {/* Profile header */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pc-card">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
-                    <Avatar src={user.avatar} name={user.name} size="xl" />
+                    <div className="relative">
+                        <AvatarDisplay avatarConfig={gamData?.avatarConfig} size="xl" />
+                    </div>
                     <div className="flex-1">
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
                         <p className="text-sm text-muted">{user.email}</p>
@@ -54,6 +59,7 @@ export function Profile() {
                             <span className="font-semibold text-indigo-500">{user.points || 0} pts</span>
                             <span className="hidden sm:inline">·</span>
                             <span>{user.streak || 0} day streak 🔥</span>
+                            {gamData && <><span className="hidden sm:inline">·</span><span>🌳 {gamData.trees?.length || 0} trees</span></>}
                             {joined && <><span className="hidden sm:inline">·</span><span className="text-xs">Since {joined}</span></>}
                         </div>
                     </div>
@@ -64,6 +70,29 @@ export function Profile() {
             <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="indigo" delay={0} />
                 <StatCard label="Total Nodes" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
+            </div>
+
+            {/* Gamification Quick Access */}
+            <div className="grid grid-cols-3 gap-3">
+                {[
+                    { to: '/farm', icon: Sprout, label: 'My Farm', value: gamData ? `${gamData.trees?.length || 0} trees` : '—', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+                    { to: '/avatar-shop', icon: ShoppingBag, label: 'Avatar Shop', value: `${user.points || 0} pts`, color: '#6366f1', bg: 'rgba(99,102,241,0.1)' },
+                    { to: '/milestones', icon: Star, label: 'Milestones', value: gamData ? `${gamData.milestones?.filter(m => m.unlocked).length || 0}/${gamData.milestones?.length || 0}` : '—', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+                ].map(card => (
+                    <Link key={card.to} to={card.to} style={{ textDecoration: 'none' }}>
+                        <motion.div
+                            whileHover={{ y: -2, scale: 1.02 }}
+                            className="flex flex-col items-center gap-2 p-3 rounded-2xl text-center transition-all"
+                            style={{ background: card.bg }}
+                        >
+                            <div className="p-2 rounded-xl" style={{ background: `${card.color}22` }}>
+                                <card.icon size={18} style={{ color: card.color }} />
+                            </div>
+                            <p className="text-[11px] font-bold" style={{ color: 'var(--color-text)' }}>{card.label}</p>
+                            <p className="text-[10px] text-muted">{card.value}</p>
+                        </motion.div>
+                    </Link>
+                ))}
             </div>
 
             {/* Activity summary */}

@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { Trophy, Medal, Award, Flame, TrendingUp, CheckSquare } from 'lucide-react';
+import { Trophy, Medal, Award, Flame, CheckSquare } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/Card';
-import { Avatar } from '../components/Avatar';
+import { AvatarDisplay } from '../components/AvatarDisplay';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { EmptyState } from '../components/EmptyState';
 
@@ -55,10 +55,13 @@ export function Leaderboard() {
                                 style={{ minWidth: 0, flex: 1, maxWidth: 110 }}
                             >
                                 <span className="text-lg sm:text-2xl">{m.emoji}</span>
-                                <Avatar src={entry.user?.avatar} name={entry.user?.name || ''} size={isFirst ? 'lg' : 'md'} />
+                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} size={isFirst ? 'lg' : 'md'} />
                                 <div className="text-center max-w-full px-1">
                                     <p className="text-xs font-bold truncate" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
                                     <p className="text-[10px] text-indigo-500 font-semibold">{entry.user?.points} pts</p>
+                                    {entry.user?.treesCount > 0 && (
+                                        <p className="text-[10px] text-emerald-400">🌳 {entry.user.treesCount}</p>
+                                    )}
                                 </div>
                                 <div className={`w-full rounded-t-xl bg-gradient-to-t ${m.bg} border border-solid ${m.border} ${heights[entry.rank]} flex items-end justify-center pb-2`}>
                                     <span className={`text-lg sm:text-2xl font-black ${m.color}`} style={{ fontFamily: 'Manrope, sans-serif' }}>#{entry.rank}</span>
@@ -89,7 +92,7 @@ export function Leaderboard() {
                                 <div className="w-8 flex-shrink-0 flex justify-center">
                                     {m ? <span className="text-xl">{m.emoji}</span> : <span className="text-sm font-bold text-muted">#{entry.rank}</span>}
                                 </div>
-                                <Avatar src={entry.user?.avatar} name={entry.user?.name || ''} size="sm" />
+                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} size="sm" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                                         {entry.user?.name} {isMe && <span className="text-xs text-indigo-400 font-normal">(you)</span>}
@@ -97,6 +100,7 @@ export function Leaderboard() {
                                     <p className="text-xs text-muted flex items-center gap-2 mt-1">
                                         <span className="flex items-center gap-1"><Flame size={10} className="text-orange-400" />{entry.user?.streak} days</span>
                                         <span className="flex items-center gap-1"><CheckSquare size={10} className="text-indigo-400" />{entry.user?.points} total</span>
+                                        {entry.user?.treesCount > 0 && <span className="text-emerald-400">🌳 {entry.user.treesCount}</span>}
                                     </p>
                                 </div>
                                 <div className="text-right">

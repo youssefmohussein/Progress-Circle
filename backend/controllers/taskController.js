@@ -90,6 +90,11 @@ const updateTask = async (req, res, next) => {
                 update.$set.streak = 1;
             } else if (lastDate === yesterday) {
                 update.$inc.streak = 1;
+                // Award bonus every 7-day streak milestone
+                const newStreak = (user.streak || 0) + 1;
+                if (newStreak % 7 === 0) {
+                    update.$inc.points = (update.$inc.points || 0) + 100;
+                }
             } else if (lastDate < yesterday) {
                 update.$set.streak = 1;
             }

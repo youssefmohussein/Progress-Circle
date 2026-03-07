@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { GamificationProvider } from './context/GamificationContext';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
@@ -15,6 +16,9 @@ import { AdminDashboard } from './pages/Admin/AdminDashboard';
 import { Savings } from './pages/Savings';
 import { Fitness } from './pages/Fitness';
 import { FocusMode } from './pages/FocusMode';
+import { AvatarShop } from './pages/AvatarShop';
+import { FocusFarm } from './pages/FocusFarm';
+import { Unlockables } from './pages/Unlockables';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -43,6 +47,11 @@ function AppRoutes() {
       <Route path="/fitness" element={<PrivateRoute><Layout><Fitness /></Layout></PrivateRoute>} />
       <Route path="/focus" element={<PrivateRoute><Layout><FocusMode /></Layout></PrivateRoute>} />
 
+      {/* Gamification */}
+      <Route path="/avatar-shop" element={<PrivateRoute><Layout><AvatarShop /></Layout></PrivateRoute>} />
+      <Route path="/farm" element={<PrivateRoute><Layout><FocusFarm /></Layout></PrivateRoute>} />
+      <Route path="/milestones" element={<PrivateRoute><Layout><Unlockables /></Layout></PrivateRoute>} />
+
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
 
       {/* Catch-all */}
@@ -57,18 +66,20 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <DataProvider>
-            <AppRoutes />
-            <Toaster
-              position="top-right"
-              richColors
-              expand={false}
-              toastOptions={{
-                style: {
-                  fontFamily: 'Inter, sans-serif',
-                  fontSize: '14px',
-                },
-              }}
-            />
+            <GamificationProvider>
+              <AppRoutes />
+              <Toaster
+                position="top-right"
+                richColors
+                expand={false}
+                toastOptions={{
+                  style: {
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '14px',
+                  },
+                }}
+              />
+            </GamificationProvider>
           </DataProvider>
         </AuthProvider>
       </ThemeProvider>

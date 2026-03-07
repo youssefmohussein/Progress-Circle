@@ -28,6 +28,28 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        avatarConfig: {
+            hair: { type: Number, default: 0 },
+            shirt: { type: Number, default: 0 },
+            pants: { type: Number, default: 0 },
+            shoes: { type: Number, default: 0 },
+            eyes: { type: Number, default: 0 },
+            accessory: { type: Number, default: 0 },
+            bg: { type: Number, default: 0 },
+        },
+        inventory: {
+            type: [String],
+            default: [],
+        },
+        trees: {
+            type: [
+                {
+                    type: { type: String },
+                    date: { type: Date },
+                },
+            ],
+            default: [],
+        },
         points: {
             type: Number,
             default: 0,
@@ -102,7 +124,8 @@ userSchema.plugin(fieldEncryption, {
         'totalMoney',
         'cashBalance',
         'creditBalance',
-        'monthlyIncome'
+        'monthlyIncome',
+        'inventory',
     ],
     secret: process.env.DATABASE_ENCRYPTION_KEY,
     saltGenerator: (secret) => secret.slice(0, 16),
