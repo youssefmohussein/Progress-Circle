@@ -50,4 +50,22 @@ transactionSchema.plugin(fieldEncryption, {
     saltGenerator: (secret) => secret.slice(0, 16),
 });
 
+// Decrypt fields after retrieval
+transactionSchema.post('init', (doc) => {
+    try {
+        doc.decryptFieldsSync();
+    } catch (err) {
+        // Already decrypted or failed
+    }
+});
+
+// Decrypt fields after save
+transactionSchema.post('save', (doc) => {
+    try {
+        doc.decryptFieldsSync();
+    } catch (err) {
+        // Already decrypted or failed
+    }
+});
+
 module.exports = mongoose.model('Transaction', transactionSchema);

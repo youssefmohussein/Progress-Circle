@@ -105,7 +105,25 @@ userSchema.plugin(fieldEncryption, {
         'monthlyIncome'
     ],
     secret: process.env.DATABASE_ENCRYPTION_KEY,
-    saltGenerator: (secret) => secret.slice(0, 16), // Use first 16 bytes of secret as salt for consistency if needed, or omit for random
+    saltGenerator: (secret) => secret.slice(0, 16),
+});
+
+// Decrypt fields after retrieval
+userSchema.post('init', (doc) => {
+    try {
+        doc.decryptFieldsSync();
+    } catch (err) {
+        // Already decrypted or failed
+    }
+});
+
+// Decrypt fields after save
+userSchema.post('save', (doc) => {
+    try {
+        doc.decryptFieldsSync();
+    } catch (err) {
+        // Already decrypted or failed
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);
