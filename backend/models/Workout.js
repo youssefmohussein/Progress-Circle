@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { fieldEncryption } = require('mongoose-field-encryption');
 
 const dailyFitnessLogSchema = new mongoose.Schema({
     date: {
@@ -55,5 +56,12 @@ const fitnessCycleSchema = new mongoose.Schema({
     },
     logs: [dailyFitnessLogSchema]
 }, { timestamps: true });
+
+// Apply encryption
+fitnessCycleSchema.plugin(fieldEncryption, {
+    fields: ['cycleType', 'daysConfig', 'logs'], // Encrypt the whole arrays for log/config
+    secret: process.env.DATABASE_ENCRYPTION_KEY,
+    saltGenerator: (secret) => secret.slice(0, 16),
+});
 
 module.exports = mongoose.model('FitnessCycle', fitnessCycleSchema);

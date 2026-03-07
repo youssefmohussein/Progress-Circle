@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { fieldEncryption } = require('mongoose-field-encryption');
 
 const habitSchema = new mongoose.Schema(
     {
@@ -41,5 +42,12 @@ const habitSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+// Apply encryption
+habitSchema.plugin(fieldEncryption, {
+    fields: ['name', 'description'],
+    secret: process.env.DATABASE_ENCRYPTION_KEY,
+    saltGenerator: (secret) => secret.slice(0, 16),
+});
 
 module.exports = mongoose.model('Habit', habitSchema);

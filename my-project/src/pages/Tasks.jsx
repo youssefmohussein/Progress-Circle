@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
+import { Confetti } from '../components/Confetti';
 import { Plus, CheckSquare, Pencil, Trash2, Clock, Check, Bell, Tag, Settings, Timer, ChevronDown, ChevronRight, FileText, Layout } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { Card } from '../components/Card';
@@ -42,7 +43,12 @@ const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handle
                 ) : (
                     <button
                         onClick={() => handleComplete(task)}
-                        className={`flex-shrink-0 mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${task.status === 'completed' ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400'}`}
+                        className={`flex-shrink-0 mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${task.status === 'completed'
+                                ? 'bg-green-500 border-green-500 shadow-lg shadow-green-500/20'
+                                : dayjs(task.deadline).diff(dayjs(), 'hour') < 12
+                                    ? 'border-rose-500 hover:bg-rose-500/10'
+                                    : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400'
+                            }`}
                     >
                         {task.status === 'completed' && <Check size={14} className="text-white" />}
                     </button>
@@ -156,6 +162,7 @@ export function Tasks() {
     const [editTask, setEditTask] = useState(null);
     const [expandedTasks, setExpandedTasks] = useState(new Set());
     const [saving, setSaving] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
     const [form, setForm] = useState({
         title: '', description: '', priority: 'medium', deadline: '',
         categoryId: '', estimatedTime: 0, alertsEnabled: false, timeEnabled: false,
@@ -175,7 +182,10 @@ export function Tasks() {
         const newStatus = task.status === 'completed' ? 'pending' : 'completed';
         try {
             await updateTask(task.id, { status: newStatus });
-            if (newStatus === 'completed') toast.success('Task completed! 🎉');
+            if (newStatus === 'completed') {
+                setShowConfetti(true);
+                toast.success('Task completed! 🎉');
+            }
         } catch { toast.error('Failed to update task'); }
     };
 
@@ -420,6 +430,7 @@ export function Tasks() {
                 </div>
             </Modal>
 
+            <Confetti active={showConfetti} onComplete={() => setShowConfetti(false)} />
             <CategoryManager open={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} />
         </div>
     );

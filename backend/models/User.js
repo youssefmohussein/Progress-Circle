@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { fieldEncryption } = require('mongoose-field-encryption');
 
 const userSchema = new mongoose.Schema(
     {
@@ -51,6 +52,14 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        nutritionEnabled: {
+            type: Boolean,
+            default: false,
+        },
+        habitsEnabled: {
+            type: Boolean,
+            default: true,
+        },
         totalMoney: {
             type: Number,
             default: 0,
@@ -82,5 +91,21 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Apply encryption
+userSchema.plugin(fieldEncryption, {
+    fields: [
+        'name',
+        'avatar',
+        'points',
+        'streak',
+        'totalMoney',
+        'cashBalance',
+        'creditBalance',
+        'monthlyIncome'
+    ],
+    secret: process.env.DATABASE_ENCRYPTION_KEY,
+    saltGenerator: (secret) => secret.slice(0, 16), // Use first 16 bytes of secret as salt for consistency if needed, or omit for random
+});
 
 module.exports = mongoose.model('User', userSchema);

@@ -17,6 +17,8 @@ const getProfile = async (req, res) => {
             joinedAt: user.createdAt,
             savingsEnabled: user.savingsEnabled,
             fitnessEnabled: user.fitnessEnabled,
+            nutritionEnabled: user.nutritionEnabled,
+            habitsEnabled: user.habitsEnabled,
         },
     });
 };
@@ -33,6 +35,8 @@ const updateProfile = async (req, res, next) => {
         if (avatar !== undefined) updateData.avatar = avatar;
         if (savingsEnabled !== undefined) updateData.savingsEnabled = savingsEnabled;
         if (fitnessEnabled !== undefined) updateData.fitnessEnabled = fitnessEnabled;
+        if (req.body.nutritionEnabled !== undefined) updateData.nutritionEnabled = req.body.nutritionEnabled;
+        if (req.body.habitsEnabled !== undefined) updateData.habitsEnabled = req.body.habitsEnabled;
 
         const user = await User.findByIdAndUpdate(
             req.user._id,
@@ -52,6 +56,8 @@ const updateProfile = async (req, res, next) => {
                 joinedAt: user.createdAt,
                 savingsEnabled: user.savingsEnabled,
                 fitnessEnabled: user.fitnessEnabled,
+                nutritionEnabled: user.nutritionEnabled,
+                habitsEnabled: user.habitsEnabled,
             },
         });
     } catch (error) {

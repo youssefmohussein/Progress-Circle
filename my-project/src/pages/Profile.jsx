@@ -90,37 +90,38 @@ export function Profile() {
                 </div>
             </Card>
 
-            {/* Optional Modules */}
-            <Card>
-                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Optional Modules</h3>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center py-2.5 px-4 rounded-xl" style={{ background: 'var(--color-surface-2)' }}>
-                        <div>
-                            <p className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>Financial Tracking</p>
-                            <p className="text-xs text-muted">Track savings, income, expenses and investments.</p>
-                        </div>
-                        <button
-                            disabled={updating}
-                            onClick={() => toggleModule('savingsEnabled')}
-                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user.savingsEnabled ? 'bg-green-500' : 'bg-gray-600'}`}
-                        >
-                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${user.savingsEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-                        </button>
-                    </div>
+            {/* System Modules - "The Brain" of your app */}
+            <Card className="relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
+                    <TrendingUp size={80} />
+                </div>
+                <h3 className="text-lg font-black mb-1" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>System Modules</h3>
+                <p className="text-xs text-pc-muted mb-6">Activate specialized nodes to expand your productivity horizon.</p>
 
-                    <div className="flex justify-between items-center py-2.5 px-4 rounded-xl" style={{ background: 'var(--color-surface-2)' }}>
-                        <div>
-                            <p className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>Fitness Tracking</p>
-                            <p className="text-xs text-muted">Log daily workout splits, food and rest days.</p>
+                <div className="space-y-3">
+                    {[
+                        { key: 'habitsEnabled', label: 'Habit Engine', desc: 'Core routine tracking and consistency loops.', icon: 'Repeat', core: true },
+                        { key: 'savingsEnabled', label: 'Financial Tracking', desc: 'Track savings, income, and critical expenses.', icon: 'Wallet' },
+                        { key: 'fitnessEnabled', label: 'Physical Wellness', desc: 'Workout splits and physical body metrics.', icon: 'Activity' },
+                        { key: 'nutritionEnabled', label: 'Nutrition & Fuel', desc: 'Monitor daily intake and meal planning.', icon: 'Salad', comingSoon: true },
+                    ].map((mod) => (
+                        <div key={mod.key} className="flex justify-between items-center py-3 px-4 rounded-2xl bg-white/5 border border-white/5 hover:border-indigo-500/20 transition-all">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <p className="font-bold text-sm">{mod.label}</p>
+                                    {mod.comingSoon && <span className="text-[8px] font-black bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded uppercase">Experimental</span>}
+                                </div>
+                                <p className="text-[11px] text-pc-muted">{mod.desc}</p>
+                            </div>
+                            <button
+                                disabled={updating || mod.comingSoon}
+                                onClick={() => toggleModule(mod.key)}
+                                className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user[mod.key] ? 'bg-indigo-500' : 'bg-white/10'}`}
+                            >
+                                <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${user[mod.key] ? 'translate-x-5' : 'translate-x-0'}`} />
+                            </button>
                         </div>
-                        <button
-                            disabled={updating}
-                            onClick={() => toggleModule('fitnessEnabled')}
-                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user.fitnessEnabled ? 'bg-green-500' : 'bg-gray-600'}`}
-                        >
-                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${user.fitnessEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-                        </button>
-                    </div>
+                    ))}
                 </div>
             </Card>
         </div>

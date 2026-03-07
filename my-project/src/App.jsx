@@ -14,6 +14,7 @@ import { Profile } from './pages/Profile';
 import { AdminDashboard } from './pages/Admin/AdminDashboard';
 import { Savings } from './pages/Savings';
 import { Fitness } from './pages/Fitness';
+import { FocusMode } from './pages/FocusMode';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -40,6 +41,7 @@ function AppRoutes() {
       <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
       <Route path="/savings" element={<PrivateRoute><Layout><Savings /></Layout></PrivateRoute>} />
       <Route path="/fitness" element={<PrivateRoute><Layout><Fitness /></Layout></PrivateRoute>} />
+      <Route path="/focus" element={<PrivateRoute><Layout><FocusMode /></Layout></PrivateRoute>} />
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
 

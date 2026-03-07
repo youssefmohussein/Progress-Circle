@@ -17,7 +17,6 @@ export function AuthProvider({ children }) {
             }
             try {
                 const res = await authAPI.getMe();
-                console.log('Restore Session User Data:', res.data.data);
                 setUser(res.data.data);
             } catch {
                 localStorage.removeItem('token'); // expired / invalid token
@@ -31,7 +30,6 @@ export function AuthProvider({ children }) {
     const login = async (email, password) => {
         const res = await authAPI.login(email, password);
         const { token, user: userData } = res.data.data;
-        console.log('Login User Data:', userData);
         localStorage.setItem('token', token);
         setUser(userData);
     };
@@ -48,6 +46,12 @@ export function AuthProvider({ children }) {
         setUser(null);
     };
 
+    const updateUser = async (data) => {
+        const res = await authAPI.updateMe(data);
+        setUser(res.data.data);
+        return res.data.data;
+    };
+
     // Show nothing while we're restoring the session
     if (loading) {
         return (
@@ -58,7 +62,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, setUser, login, register, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, setUser, login, register, logout, updateUser, isAuthenticated: !!user }}>
             {children}
         </AuthContext.Provider>
     );

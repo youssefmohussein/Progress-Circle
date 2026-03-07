@@ -10,24 +10,34 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar } from './Avatar';
 
-const baseNavItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Home' },
-    { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
-    { path: '/habits', icon: Repeat, label: 'Habits' },
-    { path: '/leaderboard', icon: Trophy, label: 'Board' },
-    { path: '/profile', icon: User, label: 'Profile' },
+
+const moreNavItems = [
+    { path: '/savings', icon: Wallet, label: 'Savings', key: 'savingsEnabled' },
+    { path: '/fitness', icon: Activity, label: 'Fitness', key: 'fitnessEnabled' },
 ];
 
 function getNavItems(user) {
-    let items = [...baseNavItems];
+    let base = [
+        { path: '/', icon: LayoutDashboard, label: 'Home' },
+        { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
+    ];
+
+    if (user?.habitsEnabled !== false) {
+        base.push({ path: '/habits', icon: Repeat, label: 'Habits' });
+    }
+
     if (user?.savingsEnabled) {
-        // Insert before Profile
-        items.splice(items.length - 1, 0, { path: '/savings', icon: Wallet, label: 'Savings' });
+        base.push({ path: '/savings', icon: Wallet, label: 'Savings' });
     }
+
     if (user?.fitnessEnabled) {
-        items.splice(items.length - 1, 0, { path: '/fitness', icon: Activity, label: 'Fitness' });
+        base.push({ path: '/fitness', icon: Activity, label: 'Fitness' });
     }
-    return items;
+
+    base.push({ path: '/leaderboard', icon: Trophy, label: 'Board' });
+    base.push({ path: '/profile', icon: User, label: 'Profile' });
+
+    return base;
 }
 
 const sidebarBase = {

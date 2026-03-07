@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { fieldEncryption } = require('mongoose-field-encryption');
 
 const taskSchema = new mongoose.Schema(
     {
@@ -79,5 +80,12 @@ const taskSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+// Apply encryption
+taskSchema.plugin(fieldEncryption, {
+    fields: ['title', 'description', 'notes'],
+    secret: process.env.DATABASE_ENCRYPTION_KEY,
+    saltGenerator: (secret) => secret.slice(0, 16),
+});
 
 module.exports = mongoose.model('Task', taskSchema);

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { fieldEncryption } = require('mongoose-field-encryption');
 
 const bodyMetricSchema = new mongoose.Schema(
     {
@@ -35,5 +36,12 @@ const bodyMetricSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+// Apply encryption
+bodyMetricSchema.plugin(fieldEncryption, {
+    fields: ['weight', 'bmr', 'muscleMass', 'bodyFat', 'stomach', 'arm', 'leg'],
+    secret: process.env.DATABASE_ENCRYPTION_KEY,
+    saltGenerator: (secret) => secret.slice(0, 16),
+});
 
 module.exports = mongoose.model('BodyMetric', bodyMetricSchema);
