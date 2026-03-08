@@ -7,6 +7,7 @@ import { goalsAPI } from '../api/goalsAPI';
 import { leaderboardAPI } from '../api/leaderboardAPI';
 import { categoriesAPI } from '../api/categoriesAPI';
 import { sessionsAPI } from '../api/sessionsAPI';
+import { calendarAPI } from '../api/calendarAPI';
 import { useAuth } from './AuthContext';
 
 const DataContext = createContext(undefined);
@@ -20,6 +21,8 @@ export function DataProvider({ children }) {
     const [categories, setCategories] = useState([]);
     const [sessions, setSessions] = useState([]);
     const [activeSession, setActiveSession] = useState(null);
+    const [calendarEvents, setCalendarEvents] = useState([]);
+    const [calendarCache, setCalendarCache] = useState({});
 
     const shownAlerts = useRef(new Set());
 
@@ -28,7 +31,7 @@ export function DataProvider({ children }) {
         if (!isAuthenticated) return;
         try {
             const [
-                tasksRes, habitsRes, leaderboardRes, categoriesRes, activeSessionRes, sessionsRes
+                tasksRes, habitsRes, leaderboardRes, categoriesRes, activeSessionRes, sessionsRes, calendarRes
             ] = await Promise.all([
                 tasksAPI.getAll(),
                 habitsAPI.getAll(),
@@ -36,6 +39,7 @@ export function DataProvider({ children }) {
                 categoriesAPI.getAll(),
                 sessionsAPI.getActive(),
                 sessionsAPI.getAll(),
+                calendarAPI.getEvents(dayjs().startOf('month').toISOString(), dayjs().endOf('month').toISOString()),
             ]);
             setTasks(tasksRes.data.data.map(normalizeId));
             setHabits(habitsRes.data.data.map(normalizeId));
@@ -43,6 +47,7 @@ export function DataProvider({ children }) {
             setCategories(categoriesRes.data.data.map(normalizeId));
             setActiveSession(activeSessionRes.data.data.data ? normalizeId(activeSessionRes.data.data.data) : null);
             setSessions(sessionsRes.data.data.data.map(normalizeId));
+            setCalendarEvents(calendarRes.data.data);
         } catch (error) {
             console.error('Failed to fetch data:', error.message);
         }
@@ -124,14 +129,41 @@ export function DataProvider({ children }) {
         await fetchAll();
     };
 
+    const fetchCalendarEvents = async (start, end) => {
+        const cacheKey = `${start}_${end}`;
+        if (calendarCache[cacheKey]) {
+            setCalendarEvents(calendarCache[cacheKey]);
+            return;
+        }
+
+        try {
+            const res = await calendarAPI.getEvents(start, end);
+            const events = res.data.data;
+            setCalendarEvents(events);
+            setCalendarCache((prev) => ({ ...prev, [cacheKey]: events }));
+        } catch (error) {
+            console.error('Failed to fetch calendar events:', error);
+        }
+    };
+
+    const addCalendarBlock = async (data) => {
+        await calendarAPI.createBlock(data);
+        setCalendarCache({}); // Invalidate cache
+        const start = dayjs(data.startTime).startOf('month').toISOString();
+        const end = dayjs(data.startTime).endOf('month').toISOString();
+        await fetchCalendarEvents(start, end);
+        await refreshUser();
+    };
+
     return (
         <DataContext.Provider
             value={{
-                tasks, habits, categories, leaderboard, sessions,
+                tasks, habits, categories, leaderboard, sessions, calendarEvents,
                 addTask, updateTask, deleteTask,
                 addHabit, toggleHabit, deleteHabit,
                 addCategory, updateCategory, deleteCategory,
                 activeSession, startSession, endSession, logManual,
+                addCalendarBlock, fetchCalendarEvents,
                 refreshData: fetchAll,
             }}
         >
