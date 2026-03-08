@@ -34,6 +34,7 @@ export function Leaderboard() {
             <div>
                 <h1 className="font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.5rem, 6vw, 1.875rem)' }}>Leaderboard</h1>
                 <p className="text-xs text-muted mt-1">Compete with your peers and rise to the top.</p>
+                <button onClick={() => console.log('DEBUG LEADERBOARD:', leaderboard)} className="text-[10px] mt-2 bg-gray-800 p-1 rounded">Debug Dump</button>
             </div>
 
             {/* Podium */}

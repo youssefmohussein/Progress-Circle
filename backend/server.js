@@ -78,6 +78,13 @@ app.use('/api/fitness', fitnessRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/calendar', calendarRoutes);
 
+// ─── Temp Test Route ───────────────────────────────────────────────────────────
+app.get('/api/test-avatar', async (req, res) => {
+    const User = require('./models/User');
+    const users = await User.find({}, 'name avatarConfig');
+    res.json(users);
+});
+
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
     res.status(404).json({ success: false, message: 'Route not found' });
