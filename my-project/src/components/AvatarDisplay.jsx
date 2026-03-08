@@ -61,6 +61,18 @@ const SHOES_COLORS = [
 
 const HAIR_COLOR = '#3b2a1a'; // dark brown for all styles
 
+const EYE_COLORS = [
+    '#5c3317', // Dark Brown (0)
+    '#8b6914', // Hazel (1)
+    '#3b82f6', // Blue (2)
+    '#22c55e', // Green (3)
+    '#94a3b8', // Gray (4)
+    '#f59e0b', // Amber (5)
+    '#8b5cf6', // Violet (6)
+    '#ef4444', // Red (7)
+    '#eab308', // Gold (8)
+];
+
 // ─── Layer Renderers ──────────────────────────────────────────────────────────
 
 function BgLayer({ index, gradId }) {
@@ -323,28 +335,29 @@ function FaceLayer({ isAngry }) {
     );
 }
 
-function EyesLayer({ index }) {
+function EyesLayer({ index, color }) {
+    const c = color || '#3b2a1a';
     const variants = [
         // 0 default
         <>
             <ellipse cx="41" cy="47" rx="5" ry="5.5" fill="white" />
             <ellipse cx="59" cy="47" rx="5" ry="5.5" fill="white" />
-            <ellipse cx="42" cy="47.5" rx="3" ry="3.5" fill="#3b2a1a" />
-            <ellipse cx="60" cy="47.5" rx="3" ry="3.5" fill="#3b2a1a" />
+            <ellipse cx="42" cy="47.5" rx="3" ry="3.5" fill={c} />
+            <ellipse cx="60" cy="47.5" rx="3" ry="3.5" fill={c} />
             <circle cx="43.5" cy="46" r="1" fill="white" />
             <circle cx="61.5" cy="46" r="1" fill="white" />
         </>,
         // 1 happy
         <>
-            <path d="M36 49 Q41 43 46 49" fill="none" stroke="#3b2a1a" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M54 49 Q59 43 64 49" fill="none" stroke="#3b2a1a" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M36 49 Q41 43 46 49" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M54 49 Q59 43 64 49" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" />
         </>,
         // 2 cool
         <>
             <ellipse cx="41" cy="47" rx="5" ry="5.5" fill="white" />
             <ellipse cx="59" cy="47" rx="5" ry="5.5" fill="white" />
-            <ellipse cx="42" cy="48" rx="3" ry="3.5" fill="#3b2a1a" />
-            <ellipse cx="60" cy="48" rx="3" ry="3.5" fill="#3b2a1a" />
+            <ellipse cx="42" cy="48" rx="3" ry="3.5" fill={c} />
+            <ellipse cx="60" cy="48" rx="3" ry="3.5" fill={c} />
             <rect x="36" y="42" width="10" height="5" rx="1" fill="#f5c5a3" />
             <rect x="54" y="42" width="10" height="5" rx="1" fill="#f5c5a3" />
         </>,
@@ -352,24 +365,24 @@ function EyesLayer({ index }) {
         <>
             <ellipse cx="41" cy="49" rx="5" ry="4" fill="white" />
             <ellipse cx="59" cy="49" rx="5" ry="4" fill="white" />
-            <ellipse cx="41" cy="50" rx="3" ry="2.5" fill="#3b2a1a" />
-            <ellipse cx="59" cy="50" rx="3" ry="2.5" fill="#3b2a1a" />
+            <ellipse cx="41" cy="50" rx="3" ry="2.5" fill={c} />
+            <ellipse cx="59" cy="50" rx="3" ry="2.5" fill={c} />
             <path d="M36 46 Q41 50 46 46" fill="#f5c5a3" />
             <path d="M54 46 Q59 50 64 46" fill="#f5c5a3" />
         </>,
         // 4 winking
         <>
             <ellipse cx="41" cy="47" rx="5" ry="5.5" fill="white" />
-            <ellipse cx="42" cy="47.5" rx="3" ry="3.5" fill="#3b2a1a" />
+            <ellipse cx="42" cy="47.5" rx="3" ry="3.5" fill={c} />
             <circle cx="43.5" cy="46" r="1" fill="white" />
-            <path d="M54 47 Q59 44 64 47 Q59 50 54 47" fill="#3b2a1a" />
+            <path d="M54 47 Q59 44 64 47 Q59 50 54 47" fill={c} />
         </>,
         // 5 surprised
         <>
             <ellipse cx="41" cy="47" rx="6" ry="6.5" fill="white" />
             <ellipse cx="59" cy="47" rx="6" ry="6.5" fill="white" />
-            <circle cx="41" cy="47" r="2.5" fill="#3b2a1a" />
-            <circle cx="59" cy="47" r="2.5" fill="#3b2a1a" />
+            <circle cx="41" cy="47" r="2.5" fill={c} />
+            <circle cx="59" cy="47" r="2.5" fill={c} />
         </>,
         // 6 starry
         <>
@@ -380,8 +393,8 @@ function EyesLayer({ index }) {
         </>,
         // 7 cute
         <>
-            <ellipse cx="41" cy="47" rx="6" ry="7" fill="#3b2a1a" />
-            <ellipse cx="59" cy="47" rx="6" ry="7" fill="#3b2a1a" />
+            <ellipse cx="41" cy="47" rx="6" ry="7" fill={c} />
+            <ellipse cx="59" cy="47" rx="6" ry="7" fill={c} />
             <circle cx="42" cy="44" r="2.5" fill="white" />
             <circle cx="60" cy="44" r="2.5" fill="white" />
             <circle cx="39" cy="49" r="1.5" fill="white" />
@@ -391,10 +404,10 @@ function EyesLayer({ index }) {
         <>
             <ellipse cx="41" cy="47" rx="5" ry="5" fill="white" />
             <ellipse cx="59" cy="47" rx="5" ry="5" fill="white" />
-            <circle cx="42" cy="47.5" r="2.5" fill="#3b2a1a" />
-            <circle cx="60" cy="47.5" r="2.5" fill="#3b2a1a" />
-            <line x1="33" y1="41" x2="47" y2="45" stroke="#3b2a1a" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="67" y1="41" x2="53" y2="45" stroke="#3b2a1a" strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="42" cy="47.5" r="2.5" fill={c} />
+            <circle cx="60" cy="47.5" r="2.5" fill={c} />
+            <line x1="33" y1="41" x2="47" y2="45" stroke={c} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="67" y1="41" x2="53" y2="45" stroke={c} strokeWidth="2.5" strokeLinecap="round" />
         </>,
     ];
     return <>{variants[index] ?? variants[0]}</>;
@@ -556,7 +569,7 @@ function AccessoryLayer({ index }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function AvatarDisplay({ avatarConfig = {}, size = 'md', className = '', showBg = true }) {
-    const { hair = 0, shirt = 0, pants = 0, shoes = 0, eyes = 0, accessory = 0, bg = 0 } = avatarConfig;
+    const { hair = 0, shirt = 0, pants = 0, shoes = 0, eyes = 0, eyeColor = 0, accessory = 0, bg = 0 } = avatarConfig;
 
     const reactId = useId();
     const gradId = `bgGrad-${reactId.replace(/:/g, '')}`;
@@ -588,7 +601,7 @@ export function AvatarDisplay({ avatarConfig = {}, size = 'md', className = '', 
                 <ShirtLayer index={shirt} />
                 <FaceLayer isAngry={eyes === 8} />
                 <HairLayer index={hair} />
-                <EyesLayer index={eyes} />
+                <EyesLayer index={eyes} color={EYE_COLORS[eyeColor]} />
                 <AccessoryLayer index={accessory} />
             </g>
         </svg>

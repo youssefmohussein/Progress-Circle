@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema(
             pants: { type: Number, default: 0 },
             shoes: { type: Number, default: 0 },
             eyes: { type: Number, default: 0 },
+            eyeColor: { type: Number, default: 0 },
             accessory: { type: Number, default: 0 },
             bg: { type: Number, default: 0 },
         },

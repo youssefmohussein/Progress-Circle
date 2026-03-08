@@ -246,7 +246,7 @@ exports.getGamificationData = async (req, res, next) => {
 // @access Private
 exports.saveAvatarConfig = async (req, res, next) => {
     try {
-        const { hair, shirt, pants, shoes, eyes, accessory, bg } = req.body;
+        const { hair, shirt, pants, shoes, eyes, eyeColor, accessory, bg } = req.body;
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -259,6 +259,7 @@ exports.saveAvatarConfig = async (req, res, next) => {
             { cat: 'pants', val: pants },
             { cat: 'shoes', val: shoes },
             { cat: 'eyes', val: eyes },
+            { cat: 'eyeColor', val: eyeColor },
             { cat: 'accessory', val: accessory },
             { cat: 'bg', val: bg },
         ];
@@ -276,6 +277,7 @@ exports.saveAvatarConfig = async (req, res, next) => {
             pants: pants ?? user.avatarConfig?.pants ?? 0,
             shoes: shoes ?? user.avatarConfig?.shoes ?? 0,
             eyes: eyes ?? user.avatarConfig?.eyes ?? 0,
+            eyeColor: eyeColor ?? user.avatarConfig?.eyeColor ?? 0,
             accessory: accessory ?? user.avatarConfig?.accessory ?? 0,
             bg: bg ?? user.avatarConfig?.bg ?? 0,
         };
