@@ -15,7 +15,7 @@ const SectorSelect = ({ sectors, value, onChange }) => {
             onKeyDown={e => { if (e.key === 'Enter') { if (newVal) onChange(newVal); setIsAdding(false); setNewVal(''); } }} />
     );
     return (
-        <select className="pc-input text-xs h-9 w-full" value={value} onChange={e => {
+        <select className="pc-input text-xs h-10 w-full cursor-pointer hover:border-indigo-500/50 transition-colors" value={value} onChange={e => {
             if (e.target.value === 'ADD_NEW') setIsAdding(true);
             else onChange(e.target.value);
         }}>
@@ -121,8 +121,8 @@ export const FocusClock = () => {
                         {!activeSession && (
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <div className="flex-1">
-                                    <label className="text-[10px] text-pc-muted font-black uppercase tracking-widest mb-1 block">Type</label>
-                                    <select className="pc-input text-xs h-9 w-full" value={type} onChange={e => setType(e.target.value)}>
+                                    <label className="text-[10px] text-pc-muted font-black uppercase tracking-widest mb-1.5 block">Type</label>
+                                    <select className="pc-input text-xs h-10 w-full cursor-pointer hover:border-indigo-500/50 transition-colors" value={type} onChange={e => setType(e.target.value)}>
                                         <option value="focus">🎯 Focus</option>
                                         <option value="break">☕ Break</option>
                                         <option value="sleep">🌙 Sleep</option>

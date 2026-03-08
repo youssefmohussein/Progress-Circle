@@ -10,11 +10,11 @@ export function FocusMode() {
     const todayTasks = tasks.filter(t => t.status !== 'completed' && (!t.deadline || dayjs(t.deadline).isSame(dayjs(), 'day')));
 
     return (
-        <div className="fixed inset-0 bg-[#050510] z-[100] overflow-y-auto px-6 py-12">
-            <div className="max-w-4xl mx-auto space-y-12">
+        <div className="fixed inset-0 bg-[#050510] z-[100] overflow-y-auto px-6 pt-12 pb-12 sm:py-12 scrollbar-hide">
+            <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12 relative z-10">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 text-pc-muted hover:text-white transition-colors text-xs font-black uppercase tracking-widest">
+                <div className="flex items-center justify-between mb-8 sm:mb-8">
+                    <Link to="/" className="relative z-[110] flex items-center gap-2 text-pc-muted hover:text-white transition-colors text-[10px] sm:text-xs font-black uppercase tracking-widest">
                         <ArrowLeft size={16} /> Back to Reality
                     </Link>
                     <div className="text-right">
@@ -22,10 +22,10 @@ export function FocusMode() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 sm:gap-16 items-center pt-8 sm:pt-8">
                     {/* Left: Clock */}
-                    <div className="flex flex-col items-center">
-                        <div className="scale-110 sm:scale-125 origin-center">
+                    <div className="flex flex-col items-center py-8 sm:py-0">
+                        <div className="scale-[1.3] sm:scale-110 origin-center transition-transform duration-500">
                             <FocusClock />
                         </div>
                     </div>

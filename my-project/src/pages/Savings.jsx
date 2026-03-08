@@ -110,48 +110,102 @@ export function Savings() {
 
             {/* Main Wealth Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="relative overflow-hidden bg-indigo-600 border-none shadow-xl shadow-indigo-600/20">
-                    <div className="relative z-10 flex flex-col h-full justify-between py-2">
-                        <div>
-                            <p className="text-[10px] text-indigo-100/60 font-black uppercase tracking-widest mb-1">Combined Net Worth</p>
-                            <p className="text-4xl font-black text-white">${user?.totalMoney?.toLocaleString() || 0}</p>
+                <Card className="relative overflow-hidden bg-surface-2 border border-white/5 group min-h-[160px] flex flex-col p-8 transition-all duration-500 hover:border-indigo-500/30">
+                    {/* Centered Decorative Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-indigo-500/5 blur-[50px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    
+                    <div className="relative z-10 flex flex-col items-center flex-1">
+                        <div className="p-3.5 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/20 mb-4 group-hover:scale-110 group-hover:bg-indigo-500/20 transition-all duration-500">
+                            <BarChart3 size={24} />
                         </div>
-                        <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                            <span className="text-[10px] text-indigo-200 font-bold uppercase tracking-tighter flex items-center gap-1">
-                                <ShieldCheck size={12} /> Secure Data
-                            </span>
-                            <BarChart3 size={20} className="text-white/20" />
+                        
+                        <div className="text-center space-y-1">
+                            <div className="flex items-center gap-1.5 justify-center">
+                                <span className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                                <p className="text-[10px] text-indigo-400/80 font-black uppercase tracking-[0.2em]">Combined Net Worth</p>
+                            </div>
+                            <p className="text-4xl font-black text-white tracking-tighter drop-shadow-2xl">
+                                <span className="text-indigo-500 mr-0.5">$</span>
+                                {user?.totalMoney?.toLocaleString() || 0}
+                            </p>
+                            <p className="text-[10px] text-muted/60 font-bold uppercase tracking-widest pt-1">Total Valuation</p>
                         </div>
+                    </div>
+
+                    {/* Flush Bottom Foundation Line */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5 overflow-hidden">
+                        <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, ((user?.totalMoney || 0) / 50000) * 100)}%` }}
+                            transition={{ duration: 2, ease: "circOut" }}
+                            className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]" 
+                        />
                     </div>
                 </Card>
 
-                <Card className="border-l-4 border-emerald-500 bg-surface">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl">
-                            <Banknote size={28} />
+                <Card className="relative overflow-hidden bg-surface-2 border border-white/5 group min-h-[160px] flex flex-col p-8 transition-all duration-500 hover:border-emerald-500/30">
+                    {/* Centered Decorative Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-emerald-500/5 blur-[50px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    
+                    <div className="relative z-10 flex flex-col items-center flex-1">
+                        <div className="p-3.5 bg-emerald-500/10 text-emerald-400 rounded-2xl border border-emerald-500/20 mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-500">
+                            <Banknote size={24} />
                         </div>
-                        <div className="flex-1">
-                            <p className="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Cash Balance</p>
-                            <p className="text-2xl font-black text-white">${user?.cashBalance?.toLocaleString() || 0}</p>
-                            <div className="w-full bg-white/5 h-1 rounded-full mt-2">
-                                <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${Math.min(100, (user?.cashBalance / (user?.totalMoney || 1)) * 100)}%` }} />
+                        
+                        <div className="text-center space-y-1">
+                            <div className="flex items-center gap-1.5 justify-center">
+                                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                <p className="text-[10px] text-emerald-400/80 font-black uppercase tracking-[0.2em]">Liquid Cash</p>
                             </div>
+                            <p className="text-4xl font-black text-white tracking-tighter drop-shadow-2xl">
+                                <span className="text-emerald-500 mr-0.5">$</span>
+                                {user?.cashBalance?.toLocaleString() || 0}
+                            </p>
+                            <p className="text-[10px] text-muted/60 font-bold uppercase tracking-widest pt-1">Current Assets</p>
                         </div>
+                    </div>
+
+                    {/* Flush Bottom Foundation Line */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5 overflow-hidden">
+                        <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, ((user?.cashBalance || 0) / (user?.totalMoney || 1)) * 100)}%` }}
+                            transition={{ duration: 2, ease: "circOut" }}
+                            className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
+                        />
                     </div>
                 </Card>
 
-                <Card className="border-l-4 border-blue-500 bg-surface">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl">
-                            <CreditCard size={28} />
+                <Card className="relative overflow-hidden bg-surface-2 border border-white/5 group min-h-[160px] flex flex-col p-8 transition-all duration-500 hover:border-blue-500/30">
+                    {/* Centered Decorative Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-blue-500/5 blur-[50px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    
+                    <div className="relative z-10 flex flex-col items-center flex-1">
+                        <div className="p-3.5 bg-blue-500/10 text-blue-400 rounded-2xl border border-blue-500/20 mb-4 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all duration-500">
+                            <CreditCard size={24} />
                         </div>
-                        <div className="flex-1">
-                            <p className="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Credit / Card Balance</p>
-                            <p className="text-2xl font-black text-white">${user?.creditBalance?.toLocaleString() || 0}</p>
-                            <div className="w-full bg-white/5 h-1 rounded-full mt-2">
-                                <div className="bg-blue-500 h-full rounded-full" style={{ width: `${Math.min(100, (user?.creditBalance / (user?.totalMoney || 1)) * 100)}%` }} />
+                        
+                        <div className="text-center space-y-1">
+                            <div className="flex items-center gap-1.5 justify-center">
+                                <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
+                                <p className="text-[10px] text-blue-400/80 font-black uppercase tracking-[0.2em]">Treasury / Bank</p>
                             </div>
+                            <p className="text-4xl font-black text-white tracking-tighter drop-shadow-2xl">
+                                <span className="text-blue-500 mr-0.5">$</span>
+                                {user?.creditBalance?.toLocaleString() || 0}
+                            </p>
+                            <p className="text-[10px] text-muted/60 font-bold uppercase tracking-widest pt-1">Accounting Value</p>
                         </div>
+                    </div>
+
+                    {/* Flush Bottom Foundation Line */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5 overflow-hidden">
+                        <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, ((user?.creditBalance || 0) / (user?.totalMoney || 1)) * 100)}%` }}
+                            transition={{ duration: 2, ease: "circOut" }}
+                            className="h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
+                        />
                     </div>
                 </Card>
             </div>
