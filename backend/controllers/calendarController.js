@@ -19,18 +19,18 @@ const getCalendarEvents = async (req, res, next) => {
             Task.find({
                 userId,
                 deadline: { $gte: startDate, $lte: endDate }
-            }).select('title deadline status priority color'),
+            }),
 
             Habit.find({
                 userId,
                 // We fetch habits that have completions, but we'll still need to filter dates in JS 
                 // unless we use aggregation. Aggregation is better for performance.
-            }).select('name completedDates color'),
+            }),
 
             Session.find({
                 userId,
                 startTime: { $gte: startDate, $lte: endDate }
-            }).select('classification startTime endTime type'),
+            }),
 
             ScheduleBlock.find({
                 userId,

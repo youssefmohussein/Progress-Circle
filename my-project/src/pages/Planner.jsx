@@ -26,7 +26,8 @@ export function Planner() {
     const { calendarEvents = [], addCalendarBlock, fetchCalendarEvents } = useData();
     const [currentDate, setCurrentDate] = useState(dayjs());
     const [selectedDate, setSelectedDate] = useState(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+    const [isAddingBlock, setIsAddingBlock] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const [newBlock, setNewBlock] = useState({
@@ -99,7 +100,7 @@ export function Planner() {
                 endTime: dayjs(endStr).toISOString()
             });
             toast.success('Focus block scheduled! 🚀');
-            setIsAddModalOpen(false);
+            setIsAddingBlock(false);
             setNewBlock({ title: '', type: 'focus', startTime: '', endTime: '', notes: '' });
         } catch (error) {
             toast.error('Failed to schedule block');
@@ -156,7 +157,11 @@ export function Planner() {
                         return (
                             <div
                                 key={idx}
-                                onClick={() => setSelectedDate(day.date)}
+                                onClick={() => {
+                                    setSelectedDate(day.date);
+                                    setIsDayModalOpen(true);
+                                    setIsAddingBlock(false);
+                                }}
                                 className={`relative p-2 border-r border-b border-gray-100 dark:border-slate-800 cursor-pointer transition-all hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5
                                     ${!day.currentMonth ? 'bg-gray-50/50 dark:bg-slate-900/20 opacity-30' : ''}
                                     ${isSelected ? 'bg-indigo-50/50 dark:bg-indigo-500/10 ring-2 ring-inset ring-indigo-500/30' : ''}
@@ -196,143 +201,101 @@ export function Planner() {
                 </div>
             </Card>
 
-            {/* Selected Date Detail Drawer/Panel */}
-            <AnimatePresence>
+            {/* Day Details Modal */}
+            <Modal
+                open={isDayModalOpen}
+                onClose={() => {
+                    setIsDayModalOpen(false);
+                    setTimeout(() => setSelectedDate(null), 300); // Clear after animation
+                }}
+                title={selectedDate?.format('dddd, MMMM D')}
+            >
                 {selectedDate && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-                    >
-                        <Card className="lg:col-span-2 p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
-                            <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h2 className="text-xl font-black flex items-center gap-2">
-                                        <Target className="text-indigo-500" size={24} />
-                                        Timeline for {selectedDate.format('D MMMM')}
-                                    </h2>
-                                    <p className="text-muted text-xs font-bold uppercase tracking-widest mt-1">
-                                        Detailed activity breakdown
-                                    </p>
-                                </div>
-                                <button onClick={() => setSelectedDate(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
-                                    <X size={20} />
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                {getDayEvents(selectedDate).length === 0 ? (
-                                    <div className="text-center py-12 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-3xl">
-                                        <p className="text-muted font-bold uppercase tracking-widest text-xs">No entries for this date</p>
-                                        <Button variant="secondary" className="mt-4" onClick={() => setIsAddModalOpen(true)}>Initialize Plan</Button>
-                                    </div>
-                                ) : (
-                                    getDayEvents(selectedDate).map((event, idx) => (
-                                        <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50/50 dark:bg-slate-800/20 rounded-2xl border border-gray-100 dark:border-slate-800 group hover:border-indigo-500/30 transition-all">
-                                            <div className={`p-3 rounded-xl scale-90 group-hover:scale-100 transition-transform ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text}`}>
-                                                {event.type === 'task' && <Layout size={20} />}
-                                                {event.type === 'habit' && <Activity size={20} />}
-                                                {event.type === 'session' && <Clock size={20} />}
-                                                {event.type === 'plan' && <Target size={20} />}
-                                            </div>
-                                            <div className="flex-1">
-                                                <h4 className="font-black text-sm">{event.title}</h4>
-                                                <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-[10px] font-black uppercase text-muted tracking-widest">
-                                                        {dayjs(event.start).format('HH:mm')}
-                                                        {event.end && ` - ${dayjs(event.end).format('HH:mm')}`}
-                                                    </span>
-                                                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text}`}>
-                                                        {event.type}
-                                                    </span>
+                    <div className="space-y-6">
+                        {!isAddingBlock ? (
+                            <>
+                                <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                                    {getDayEvents(selectedDate).length === 0 ? (
+                                        <div className="text-center py-12 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-3xl">
+                                            <p className="text-muted font-bold uppercase tracking-widest text-xs">No entries for this date</p>
+                                        </div>
+                                    ) : (
+                                        getDayEvents(selectedDate).map((event, idx) => (
+                                            <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50/50 dark:bg-slate-800/20 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                <div className={`p-3 rounded-xl ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text}`}>
+                                                    {event.type === 'task' && <Layout size={20} />}
+                                                    {event.type === 'habit' && <Activity size={20} />}
+                                                    {event.type === 'session' && <Clock size={20} />}
+                                                    {event.type === 'plan' && <Target size={20} />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-black text-sm">{event.title}</h4>
+                                                    <div className="flex items-center gap-3 mt-1">
+                                                        <span className="text-[10px] font-black uppercase text-muted tracking-widest">
+                                                            {dayjs(event.start).format('HH:mm')}
+                                                            {event.end && event.type !== 'task' && event.type !== 'habit' && ` - ${dayjs(event.end).format('HH:mm')}`}
+                                                        </span>
+                                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text}`}>
+                                                            {event.type}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </Card>
-
-                        <div className="space-y-6">
-                            <Card className="p-6 bg-indigo-600 text-white shadow-xl shadow-indigo-500/20 overflow-hidden relative">
-                                <Activity className="absolute -right-4 -bottom-4 opacity-10 rotate-12" size={140} />
-                                <h3 className="text-lg font-black mb-2">Power Planning</h3>
-                                <p className="text-indigo-100 text-xs font-medium mb-6 leading-relaxed">
-                                    Strategic focus blocks allow you to compartmentalize your day for maximum efficiency.
-                                </p>
-                                <Button
-                                    className="w-full bg-white text-indigo-600 hover:bg-slate-50 border-none h-12 text-sm font-black"
-                                    onClick={() => setIsAddModalOpen(true)}
-                                >
-                                    <Plus size={18} /> Schedule focus block
-                                </Button>
-                            </Card>
-
-                            <Card className="p-6 border-indigo-500/20 bg-indigo-500/5">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-indigo-500 mb-4">Daily Legend</h3>
-                                <div className="space-y-3">
-                                    {Object.entries(EVENT_COLORS).map(([type, styles]) => (
-                                        <div key={type} className="flex items-center gap-3">
-                                            <div className={`w-3 h-3 rounded-full ${styles.text.replace('text', 'bg')}`} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{type}s</span>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
-                            </Card>
-                        </div>
-                    </motion.div>
+                                <Button className="w-full flex items-center justify-center gap-2" onClick={() => setIsAddingBlock(true)}>
+                                    <Plus size={18} /> Add Focus Block
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="space-y-5">
+                                <div>
+                                    <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Block Name</label>
+                                    <input
+                                        className="pc-input"
+                                        placeholder="e.g. Deep Work: Algorithm prep"
+                                        value={newBlock.title}
+                                        onChange={(e) => setNewBlock({ ...newBlock, title: e.target.value })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Start</label>
+                                        <input
+                                            type="time"
+                                            className="pc-input"
+                                            value={newBlock.startTime}
+                                            onChange={(e) => setNewBlock({ ...newBlock, startTime: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">End</label>
+                                        <input
+                                            type="time"
+                                            className="pc-input"
+                                            value={newBlock.endTime}
+                                            onChange={(e) => setNewBlock({ ...newBlock, endTime: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Strategic Notes</label>
+                                    <textarea
+                                        className="pc-input min-h-[100px] resize-none"
+                                        placeholder="What are the specific outputs for this block?"
+                                        value={newBlock.notes}
+                                        onChange={(e) => setNewBlock({ ...newBlock, notes: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <Button className="flex-1 h-12" onClick={handleAddBlock}>Sync with Universe</Button>
+                                    <Button variant="secondary" onClick={() => setIsAddingBlock(false)}>Cancel</Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 )}
-            </AnimatePresence>
-
-            <Modal
-                open={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                title={`Focus block · ${selectedDate?.format('D MMMM')}`}
-            >
-                <div className="space-y-5">
-                    <div>
-                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Block Name</label>
-                        <input
-                            className="pc-input"
-                            placeholder="e.g. Deep Work: Algorithm prep"
-                            value={newBlock.title}
-                            onChange={(e) => setNewBlock({ ...newBlock, title: e.target.value })}
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Start</label>
-                            <input
-                                type="time"
-                                className="pc-input"
-                                value={newBlock.startTime}
-                                onChange={(e) => setNewBlock({ ...newBlock, startTime: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">End</label>
-                            <input
-                                type="time"
-                                className="pc-input"
-                                value={newBlock.endTime}
-                                onChange={(e) => setNewBlock({ ...newBlock, endTime: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Strategic Notes</label>
-                        <textarea
-                            className="pc-input min-h-[100px] resize-none"
-                            placeholder="What are the specific outputs for this block?"
-                            value={newBlock.notes}
-                            onChange={(e) => setNewBlock({ ...newBlock, notes: e.target.value })}
-                        />
-                    </div>
-                    <div className="flex gap-3 pt-2">
-                        <Button className="flex-1 h-12" onClick={handleAddBlock}>Sync with Universe</Button>
-                        <Button variant="secondary" onClick={() => setIsAddModalOpen(false)}>Back</Button>
-                    </div>
-                </div>
             </Modal>
         </div>
     );
