@@ -7,8 +7,7 @@ const getLeaderboard = async (req, res, next) => {
     try {
         const users = await User.find({}, 'name email avatar avatarConfig points streak trees createdAt')
             .sort({ points: -1 })
-            .limit(50)
-            .lean();
+            .limit(50);
 
         const leaderboard = users.map((user, index) => ({
             rank: index + 1,

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Trophy,
     User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal, HelpCircle,
-    Wallet, Activity, Sprout, ShoppingBag, Star
+    Wallet, Activity, Sprout, ShoppingBag, Star, Calendar
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -20,6 +20,7 @@ function getNavItems(user) {
     let base = [
         { path: '/', icon: LayoutDashboard, label: 'Home' },
         { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
+        { path: '/planner', icon: Calendar, label: 'Planner' },
     ];
 
     if (user?.habitsEnabled !== false) {

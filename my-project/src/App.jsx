@@ -19,6 +19,7 @@ import { FocusMode } from './pages/FocusMode';
 import { AvatarShop } from './pages/AvatarShop';
 import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
+import { Planner } from './pages/Planner';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -41,6 +42,7 @@ function AppRoutes() {
       <Route path="/tasks" element={<PrivateRoute><Layout><Tasks /></Layout></PrivateRoute>} />
       <Route path="/habits" element={<PrivateRoute><Layout><Habits /></Layout></PrivateRoute>} />
       <Route path="/leaderboard" element={<PrivateRoute><Layout><Leaderboard /></Layout></PrivateRoute>} />
+      <Route path="/planner" element={<PrivateRoute><Layout><Planner /></Layout></PrivateRoute>} />
       <Route path="/info" element={<PrivateRoute><Layout><Info /></Layout></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
       <Route path="/savings" element={<PrivateRoute><Layout><Savings /></Layout></PrivateRoute>} />
