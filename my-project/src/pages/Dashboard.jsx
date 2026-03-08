@@ -13,7 +13,7 @@ import { Button } from '../components/Button';
 import { ProgressBar } from '../components/ProgressBar';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import { WeeklyInsights } from '../components/WeeklyInsights';
-import { FocusClock } from '../components/FocusClock';
+import { ProgressCircle } from '../components/ProgressCircle';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
 
@@ -121,7 +121,7 @@ export function Dashboard() {
     const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8 pb-12">
+        <div className="max-w-6xl mx-auto space-y-6 pb-12">
             {/* Header Section */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
@@ -150,42 +150,54 @@ export function Dashboard() {
             {/* Today Overview Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Main Progress Brain */}
-                <Card className="md:col-span-2 relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+                <Card className="md:col-span-2 relative overflow-hidden flex flex-col justify-between min-h-[180px] p-5">
                     <div className="absolute top-0 right-0 p-8 opacity-5">
                         <Brain size={120} />
                     </div>
 
-                    <div>
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
-                                <Zap size={18} />
-                            </div>
-                            <h2 className="text-lg font-black">Today Intelligence</h2>
+                    <div className="flex flex-col md:flex-row gap-6 items-center">
+                        <div className="flex-shrink-0">
+                            <ProgressCircle progress={taskProgress} size={140} strokeWidth={12} color="#6366f1">
+                                <div className="text-center">
+                                    <span className="text-2xl font-black block">{Math.round(taskProgress)}%</span>
+                                    <span className="text-[10px] font-bold text-pc-muted uppercase tracking-widest">Done</span>
+                                </div>
+                            </ProgressCircle>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-8 mb-6">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-pc-muted mb-1">Tasks Done</p>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl font-black">{completedTasks.length}/{tasks.length}</span>
-                                    <span className="text-xs font-bold text-green-500">+{tasks.filter(t => t.status === 'completed' && dayjs(t.completedAt).isSame(dayjs(), 'day')).length} today</span>
+                        <div className="flex-1 w-full">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
+                                    <Zap size={18} />
                                 </div>
+                                <h2 className="text-lg font-black">Today Intelligence</h2>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-pc-muted mb-1">Focus Energy</p>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl font-black">{Math.floor(focusToday / 60)}h {focusToday % 60}m</span>
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-pc-muted mb-1">Tasks Done</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-2xl font-black">{completedTasks.length}/{tasks.length}</span>
+                                        <span className="text-[9px] font-bold text-green-500">+{tasks.filter(t => t.status === 'completed' && dayjs(t.completedAt).isSame(dayjs(), 'day')).length}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-pc-muted mb-1">Focus Energy</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-2xl font-black">{Math.floor(focusToday / 60)}h {focusToday % 60}m</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-pc-muted">
-                            <span>Efficiency Meter</span>
-                            <span>{Math.round(taskProgress)}%</span>
+                    <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-pc-muted">Current Momentum</span>
+                        <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i <= (taskProgress / 20) ? 'bg-indigo-500 animate-pulse' : 'bg-white/10'}`} />
+                            ))}
                         </div>
-                        <ProgressBar progress={taskProgress} size="md" color="indigo" />
                     </div>
                 </Card>
 
@@ -230,51 +242,66 @@ export function Dashboard() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Left Column - Focus & Activity */}
-                <div className="lg:col-span-4 space-y-8">
-                    <FocusClock />
-
-                    <Card>
-                        <div className="flex items-center justify-between mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Column - Activity & More */}
+                <div className="lg:col-span-4 space-y-6">
+                    <Card className="p-4">
+                        <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
-                                <Activity size={18} className="text-indigo-500" />
-                                <h2 className="text-sm font-black uppercase tracking-widest">Activity Timeline</h2>
+                                <Activity size={16} className="text-indigo-500" />
+                                <h2 className="text-xs font-black uppercase tracking-widest">Activity Timeline</h2>
                             </div>
                         </div>
                         <ActivityTimeline activities={activities} />
                     </Card>
+
+                    <Card className="bg-indigo-600/10 border-indigo-500/20 p-4">
+                        <h3 className="text-[10px] font-black uppercase tracking-widest mb-3">Daily Mission</h3>
+                        <div className="space-y-2">
+                            {tasks.filter(t => t.status !== 'completed').slice(0, 3).map(t => (
+                                <div key={t.id} className="flex items-center gap-2">
+                                    <div className="w-3.5 h-3.5 rounded border border-indigo-500/30 flex-shrink-0" />
+                                    <span className="text-[11px] font-bold truncate">{t.title}</span>
+                                </div>
+                            ))}
+                            {tasks.filter(t => t.status !== 'completed').length > 3 && (
+                                <p className="text-[9px] text-pc-muted italic">+{tasks.filter(t => t.status !== 'completed').length - 3} more pending</p>
+                            )}
+                        </div>
+                    </Card>
                 </div>
 
                 {/* Right Column - Tasks & Visualization */}
-                <div className="lg:col-span-8 space-y-8">
+                <div className="lg:col-span-8 space-y-6">
                     {/* Weekly Performance */}
-                    <Card>
+                    <Card className="p-4">
                         <WeeklyInsights tasks={tasks} sessions={sessions} />
                     </Card>
 
                     {/* Priority Tasks */}
-                    <Card className="relative">
-                        <div className="flex items-center justify-between mb-8">
+                    <Card className="relative p-5">
+                        <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
-                                    <Target size={20} />
+                                    <Target size={18} />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black">Focus Tasks</h2>
-                                    <p className="text-xs text-pc-muted font-medium">Critical items requiring immediate attention</p>
+                                    <h2 className="text-lg font-black">Focus Tasks</h2>
+                                    <p className="text-[10px] text-pc-muted font-medium">Critical items requiring immediate attention</p>
                                 </div>
                             </div>
-                            <Button variant="ghost" className="h-9 px-4 text-xs">View All</Button>
+                            <Button variant="ghost" className="h-8 px-3 text-[10px]">View All</Button>
                         </div>
 
                         {todaysTasks.length === 0 ? (
-                            <div className="py-12 flex flex-col items-center justify-center text-center">
-                                <div className="w-16 h-16 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mb-4">
-                                    <CheckCircle2 size={32} />
+                            <div className="py-6 flex items-center justify-center gap-6 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center">
+                                    <CheckCircle2 size={24} />
                                 </div>
-                                <h3 className="font-black text-lg">System Optimized</h3>
-                                <p className="text-xs text-pc-muted mt-1 max-w-[200px]">All critical tasks for today have been resolved.</p>
+                                <div>
+                                    <h3 className="font-black text-base">System Optimized</h3>
+                                    <p className="text-[10px] text-pc-muted mt-0.5 max-w-[180px]">All critical tasks for today resolved.</p>
+                                </div>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
