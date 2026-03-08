@@ -16,14 +16,14 @@ const register = async (req, res, next) => {
             return res.status(400).json({ success: false, message: errors.array()[0].msg });
         }
 
-        const { name, email, password } = req.body;
+        const { name, email, password, gender } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(409).json({ success: false, message: 'Email already registered' });
         }
 
-        const user = await User.create({ name, email, password });
+        const user = await User.create({ name, email, password, gender: gender || '' });
 
         const token = generateToken(user._id);
         res.status(201).json({
@@ -45,6 +45,7 @@ const register = async (req, res, next) => {
                     joinedAt: user.createdAt,
                     savingsEnabled: user.savingsEnabled || false,
                     fitnessEnabled: user.fitnessEnabled || false,
+                    gender: user.gender || '',
                 },
             },
         });
@@ -90,6 +91,7 @@ const login = async (req, res, next) => {
                     joinedAt: user.createdAt,
                     savingsEnabled: user.savingsEnabled || false,
                     fitnessEnabled: user.fitnessEnabled || false,
+                    gender: user.gender || '',
                 },
             },
         });

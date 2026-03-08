@@ -16,6 +16,7 @@ export function Login() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [gender, setGender] = useState('');
     const [loading, setLoading] = useState(false);
     const { login, register } = useAuth();
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function Login() {
         setLoading(true);
         try {
             if (isLogin) { await login(email, password); toast.success('Welcome back!'); }
-            else { await register(name, email, password); toast.success('Account created! 🎉'); }
+            else { await register(name, email, password, gender); toast.success('Account created! 🎉'); }
             navigate('/');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Something went wrong');
@@ -149,6 +150,7 @@ export function Login() {
                     {/* Form */}
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {!isLogin && (
+                            <>
                             <div>
                                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 6 }}>Name</label>
                                 <input
@@ -158,6 +160,50 @@ export function Login() {
                                     required={!isLogin}
                                 />
                             </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Gender</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setGender('male')}
+                                        style={{
+                                            padding: '12px 16px', borderRadius: '0.75rem', border: '2px solid',
+                                            borderColor: gender === 'male' ? '#3b82f6' : 'var(--border)',
+                                            background: gender === 'male' ? 'rgba(59,130,246,0.12)' : 'var(--surface2)',
+                                            color: gender === 'male' ? '#3b82f6' : 'var(--muted)',
+                                            fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                                            transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gender === 'male' ? '#3b82f6' : 'currentColor'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="10" cy="14" r="5"/>
+                                            <line x1="21" y1="3" x2="15" y2="9"/>
+                                            <polyline points="16 3 21 3 21 8"/>
+                                        </svg>
+                                        Male
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setGender('female')}
+                                        style={{
+                                            padding: '12px 16px', borderRadius: '0.75rem', border: '2px solid',
+                                            borderColor: gender === 'female' ? '#ec4899' : 'var(--border)',
+                                            background: gender === 'female' ? 'rgba(236,72,153,0.12)' : 'var(--surface2)',
+                                            color: gender === 'female' ? '#ec4899' : 'var(--muted)',
+                                            fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                                            transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gender === 'female' ? '#ec4899' : 'currentColor'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="8" r="5"/>
+                                            <line x1="12" y1="13" x2="12" y2="21"/>
+                                            <line x1="9" y1="18" x2="15" y2="18"/>
+                                        </svg>
+                                        Female
+                                    </button>
+                                </div>
+                            </div>
+                            </>
                         )}
                         <div>
                             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 6 }}>Email</label>

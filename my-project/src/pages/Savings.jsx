@@ -20,7 +20,8 @@ export function Savings() {
         totalMoney: user?.totalMoney || 0,
         monthlyIncome: user?.monthlyIncome || 0,
         cashBalance: user?.cashBalance || 0,
-        creditBalance: user?.creditBalance || 0
+        creditBalance: user?.creditBalance || 0,
+        savingsGoal: user?.savingsGoal || 50000
     });
 
     // Transaction state
@@ -67,7 +68,8 @@ export function Savings() {
                 totalMoney: Number(configData.totalMoney),
                 monthlyIncome: Number(configData.monthlyIncome),
                 cashBalance: Number(configData.cashBalance),
-                creditBalance: Number(configData.creditBalance)
+                creditBalance: Number(configData.creditBalance),
+                savingsGoal: Number(configData.savingsGoal)
             });
             setUser(updateRes.data.data);
             toast.success('Financial configuration saved!');
@@ -97,7 +99,10 @@ export function Savings() {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="space-y-6 max-w-6xl">
+        <div className="space-y-6 max-w-6xl relative">
+            {/* Background Depth Glow */}
+            <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.08)_0%,transparent_50%)] pointer-events-none" />
+            
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold font-manrope text-white mb-1">Financial Command Center</h1>
@@ -136,7 +141,7 @@ export function Savings() {
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5 overflow-hidden">
                         <motion.div 
                             initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, ((user?.totalMoney || 0) / 50000) * 100)}%` }}
+                            animate={{ width: `${Math.min(100, ((user?.totalMoney || 0) / (user?.savingsGoal || 50000)) * 100)}%` }}
                             transition={{ duration: 2, ease: "circOut" }}
                             className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]" 
                         />
@@ -211,28 +216,50 @@ export function Savings() {
             </div>
 
             {/* Cashflow Dashboard */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
-                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Monthly Cashflow In</p>
-                    <p className="text-lg font-bold text-emerald-400 font-mono">+${(user?.monthlyIncome + dashboardStats.monthlyIncome).toLocaleString()}</p>
-                </div>
-                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
-                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Monthly Burn Out</p>
-                    <p className="text-lg font-bold text-red-500 font-mono">-${dashboardStats.monthlyExpenses.toLocaleString()}</p>
-                </div>
-                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
-                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Monthly Saved</p>
-                    <p className={`text-lg font-bold font-mono ${dashboardStats.netCashflow >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="p-8 min-h-[140px] flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <ArrowUpCircle size={60} className="text-emerald-500" />
+                    </div>
+                    <p className="text-[10px] font-black text-muted/60 uppercase tracking-[0.2em] mb-2">Monthly In</p>
+                    <p className="text-2xl font-black text-emerald-400 drop-shadow-lg group-hover:scale-105 transition-transform origin-left">
+                        +${(Number(user?.monthlyIncome || 0) + dashboardStats.monthlyIncome).toLocaleString()}
+                    </p>
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-emerald-500/10" />
+                </Card>
+                
+                <Card className="p-8 min-h-[140px] flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <ArrowDownCircle size={60} className="text-red-500" />
+                    </div>
+                    <p className="text-[10px] font-black text-muted/60 uppercase tracking-[0.2em] mb-2">Monthly Burn</p>
+                    <p className="text-2xl font-black text-red-500 drop-shadow-lg group-hover:scale-105 transition-transform origin-left">
+                        -${dashboardStats.monthlyExpenses.toLocaleString()}
+                    </p>
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-500/10" />
+                </Card>
+
+                <Card className="p-8 min-h-[140px] flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <TrendingUp size={60} className="text-indigo-500" />
+                    </div>
+                    <p className="text-[10px] font-black text-muted/60 uppercase tracking-[0.2em] mb-2">Monthly Saved</p>
+                    <p className={`text-2xl font-black drop-shadow-lg group-hover:scale-105 transition-transform origin-left ${dashboardStats.netCashflow >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>
                         {dashboardStats.netCashflow >= 0 ? '+' : ''}${dashboardStats.netCashflow.toLocaleString()}
                     </p>
-                </div>
-                <div className="p-4 bg-surface-2 rounded-2xl border border-white/5">
-                    <p className="text-[9px] font-bold text-muted uppercase tracking-tighter mb-1">Investment Streak</p>
-                    <div className="flex items-center gap-2">
-                        <TrendingUp size={14} className="text-blue-400" />
-                        <p className="text-lg font-bold text-white font-mono">${dashboardStats.monthlyInvestments.toLocaleString()}</p>
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-indigo-500/10" />
+                </Card>
+
+                <Card className="p-8 min-h-[140px] flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Wallet size={60} className="text-blue-500" />
                     </div>
-                </div>
+                    <p className="text-[10px] font-black text-muted/60 uppercase tracking-[0.2em] mb-2">Invested</p>
+                    <p className="text-2xl font-black text-white group-hover:scale-105 transition-transform origin-left">
+                        ${dashboardStats.monthlyInvestments.toLocaleString()}
+                    </p>
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-500/10" />
+                </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -376,6 +403,18 @@ export function Savings() {
                             className="pc-input w-full bg-white/5 opacity-50"
                             value={configData.totalMoney}
                         />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-muted uppercase mb-2 text-indigo-400">Total Wealth Target ($)</label>
+                        <input
+                            type="number"
+                            required
+                            placeholder="e.g. 50000"
+                            className="pc-input w-full border-indigo-500/20 focus:border-indigo-500"
+                            value={configData.savingsGoal}
+                            onChange={e => setConfigData({ ...configData, savingsGoal: e.target.value })}
+                        />
+                        <p className="text-[9px] text-muted italic mt-1">This sets the 100% mark for your purple Net Worth bar.</p>
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-muted uppercase mb-2">Base Monthly Salary</label>

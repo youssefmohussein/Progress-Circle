@@ -97,6 +97,15 @@ const userSchema = new mongoose.Schema(
         monthlyIncome: {
             type: Number,
             default: 0,
+        },
+        savingsGoal: {
+            type: Number,
+            default: 50000,
+        },
+        gender: {
+            type: String,
+            enum: ['male', 'female', ''],
+            default: '',
         }
     },
     { timestamps: true }
@@ -121,6 +130,7 @@ userSchema.plugin(fieldEncryption, {
         'cashBalance',
         'creditBalance',
         'monthlyIncome',
+        'savingsGoal',
         'inventory',
     ],
     secret: process.env.DATABASE_ENCRYPTION_KEY,

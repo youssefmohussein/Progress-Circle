@@ -12,9 +12,22 @@ const CATEGORIES = [
     { key: 'pants', label: 'Pants', icon: '👖' },
     { key: 'shoes', label: 'Shoes', icon: '👟' },
     { key: 'eyes', label: 'Eyes', icon: '👀' },
+    { key: 'eyeColor', label: 'Eye Color', icon: '🎨' },
     { key: 'accessory', label: 'Accessories', icon: '🎩' },
-    { key: 'bg', label: 'Background', icon: '🎨' },
+    { key: 'bg', label: 'Background', icon: '🌅' },
 ];
+
+const EYE_COLOR_MAP = {
+    'Dark Brown': '#5c3317',
+    'Hazel':      '#8b6914',
+    'Blue':       '#3b82f6',
+    'Green':      '#22c55e',
+    'Gray':       '#94a3b8',
+    'Amber':      '#f59e0b',
+    'Violet':     '#8b5cf6',
+    'Red':        '#ef4444',
+    'Gold':       '#eab308',
+};
 
 
 
@@ -131,6 +144,67 @@ export function AvatarShop() {
 
             {/* Items grid */}
             <AnimatePresence mode="wait">
+                {activeTab === 'eyeColor' ? (
+                    <motion.div
+                        key="eyeColor"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.18 }}
+                        className="grid gap-4"
+                        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))' }}
+                    >
+                        {items.map((item, i) => {
+                            const owned = isOwned(item.id);
+                            const equipped = getEquippedIndex() === i;
+                            const isMilestone = !!item.milestone;
+                            const color = EYE_COLOR_MAP[item.name] || '#888';
+                            return (
+                                <motion.div
+                                    key={item.id}
+                                    whileHover={{ y: -2 }}
+                                    onClick={() => owned && handlePreview(i)}
+                                    className="relative flex flex-col items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all"
+                                    style={{
+                                        background: equipped ? 'rgba(99,102,241,0.15)' : 'var(--color-surface-2)',
+                                        border: equipped ? `2px solid ${color}` : '2px solid transparent',
+                                    }}
+                                >
+                                    {/* Color swatch */}
+                                    <div style={{
+                                        width: 52, height: 52, borderRadius: '50%',
+                                        background: color,
+                                        boxShadow: equipped ? `0 0 16px ${color}80` : `0 0 8px ${color}40`,
+                                        border: `3px solid ${color}`,
+                                        transition: 'all 0.3s',
+                                    }} />
+                                    <p className="text-xs font-semibold text-center" style={{ color: 'var(--color-text)' }}>{item.name}</p>
+                                    {equipped ? (
+                                        <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color }}><Check size={10} />Equipped</span>
+                                    ) : owned ? (
+                                        <button
+                                            onClick={e => { e.stopPropagation(); handlePreview(i); }}
+                                            className="text-[10px] font-semibold px-2 py-0.5 rounded-lg text-white"
+                                            style={{ background: color }}
+                                        >Equip</button>
+                                    ) : isMilestone ? (
+                                        <span className="text-[10px] text-yellow-500 font-semibold flex items-center gap-0.5"><Lock size={9} />Milestone</span>
+                                    ) : (
+                                        <button
+                                            onClick={e => { e.stopPropagation(); handleBuy(item.id, item.price); }}
+                                            disabled={buying === item.id || points < item.price}
+                                            className="text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center gap-0.5 text-white disabled:opacity-50"
+                                            style={{ background: points >= item.price ? color : '#6b7280' }}
+                                        >
+                                            <Coins size={9} />
+                                            {buying === item.id ? '…' : `${item.price} pts`}
+                                        </button>
+                                    )}
+                                </motion.div>
+                            );
+                        })}
+                    </motion.div>
+                ) : (
                 <motion.div
                     key={activeTab}
                     initial={{ opacity: 0, y: 10 }}
@@ -194,6 +268,7 @@ export function AvatarShop() {
                         );
                     })}
                 </motion.div>
+                )}
             </AnimatePresence>
         </div>
     );

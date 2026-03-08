@@ -3,10 +3,10 @@ const User = require('../models/User');
 
 const updateSavingsConfig = async (req, res, next) => {
     try {
-        const { totalMoney, monthlyIncome, cashBalance, creditBalance } = req.body;
+        const { totalMoney, monthlyIncome, cashBalance, creditBalance, savingsGoal } = req.body;
         const user = await User.findByIdAndUpdate(
             req.user._id,
-            { totalMoney, monthlyIncome, cashBalance, creditBalance },
+            { totalMoney, monthlyIncome, cashBalance, creditBalance, savingsGoal },
             { new: true, runValidators: true }
         );
         res.status(200).json({ success: true, data: user });

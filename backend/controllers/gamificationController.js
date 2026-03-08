@@ -46,6 +46,17 @@ const SHOP_ITEMS = {
         { id: 'eyes_7', name: 'Cute', price: 200 },
         { id: 'eyes_8', name: 'Angry', price: 150 }
     ],
+    eyeColor: [
+        { id: 'eyeColor_0', name: 'Dark Brown', price: 0 },
+        { id: 'eyeColor_1', name: 'Hazel', price: 0 },
+        { id: 'eyeColor_2', name: 'Blue', price: 150 },
+        { id: 'eyeColor_3', name: 'Green', price: 150 },
+        { id: 'eyeColor_4', name: 'Gray', price: 200 },
+        { id: 'eyeColor_5', name: 'Amber', price: 200 },
+        { id: 'eyeColor_6', name: 'Violet', price: 350 },
+        { id: 'eyeColor_7', name: 'Red', price: 400 },
+        { id: 'eyeColor_8', name: 'Gold', price: 500 },
+    ],
     accessory: [
         { id: 'accessory_0', name: 'None', price: 0 },
         { id: 'accessory_1', name: 'Glasses', price: 200 },
