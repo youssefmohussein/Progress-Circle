@@ -117,10 +117,6 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 // Apply encryption
 userSchema.plugin(fieldEncryption, {
     fields: [
-        'name',
-        'avatar',
-        'points',
-        'streak',
         'totalMoney',
         'cashBalance',
         'creditBalance',
