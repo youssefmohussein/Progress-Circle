@@ -101,6 +101,9 @@ const updateTask = async (req, res, next) => {
             // if lastDate === today, streak is already counted for today
 
             await User.findByIdAndUpdate(req.user._id, update);
+        } else if (wasCompleted && !isNowCompleted) {
+            // Deduct points if task completion is undone
+            await User.findByIdAndUpdate(req.user._id, { $inc: { points: -TASK_POINTS } });
         }
 
         res.status(200).json({ success: true, data: task });

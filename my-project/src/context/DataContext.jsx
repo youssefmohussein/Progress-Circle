@@ -12,7 +12,7 @@ import { useAuth } from './AuthContext';
 const DataContext = createContext(undefined);
 
 export function DataProvider({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, refreshUser } = useAuth();
 
     const [tasks, setTasks] = useState([]);
     const [habits, setHabits] = useState([]);
@@ -59,11 +59,13 @@ export function DataProvider({ children }) {
     const addTask = async (task) => {
         const res = await tasksAPI.create(task);
         setTasks((prev) => [normalizeId(res.data.data), ...prev]);
+        if (refreshUser) await refreshUser();
     };
 
     const updateTask = async (id, updates) => {
         const res = await tasksAPI.update(id, updates);
         setTasks((prev) => prev.map((t) => (t.id === id ? normalizeId(res.data.data) : t)));
+        if (updates.status && refreshUser) await refreshUser();
     };
 
     const deleteTask = async (id) => {
