@@ -63,6 +63,14 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: null
         },
+        streakFreezes: {
+            type: Number,
+            default: 0
+        },
+        streakHistory: {
+            type: [Date],
+            default: []
+        },
         isAdmin: {
             type: Boolean,
             default: false,
@@ -140,6 +148,22 @@ const userSchema = new mongoose.Schema(
                 type: String,
                 default: '',
             },
+        },
+        musicPreferences: {
+            platform: {
+                type: String,
+                enum: ['spotify', 'anghami', 'apple', ''],
+                default: '',
+            },
+            playlistUrl: {
+                type: String,
+                default: '',
+            },
+        },
+        linkedAccounts: {
+            spotify: { type: Boolean, default: false },
+            anghami: { type: Boolean, default: false },
+            apple: { type: Boolean, default: false },
         },
     },
     { timestamps: true }

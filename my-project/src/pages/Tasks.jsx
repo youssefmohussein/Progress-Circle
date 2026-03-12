@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
 import { Confetti } from '../components/Confetti';
-import { Plus, CheckSquare, Pencil, Trash2, Clock, Check, Bell, Tag, Settings, Timer, ChevronDown, ChevronRight, FileText, Layout } from 'lucide-react';
+import { Plus, CheckSquare, Pencil, Trash2, Clock, Check, Bell, Tag, Settings, Timer, ChevronDown, ChevronRight, FileText, Layout, Crown } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -12,6 +12,8 @@ import { PriorityBadge, StatusBadge } from '../components/Badge';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { toast } from 'sonner';
+
+import { useAuth } from '../context/AuthContext';
 
 const FILTERS = ['All'];
 
@@ -155,6 +157,7 @@ const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handle
 };
 
 export function Tasks() {
+    const { user } = useAuth();
     const { tasks, categories, addTask, updateTask, deleteTask } = useData();
     const [filter, setFilter] = useState('All');
     const [modalOpen, setModalOpen] = useState(false);
@@ -271,6 +274,7 @@ export function Tasks() {
                 </div>
                 <div className="flex gap-3">
                     <Button variant="secondary" icon={Settings} onClick={() => setCategoryModalOpen(true)}>Categories</Button>
+                    <Button icon={Plus} onClick={() => openCreateModal(false)}>New Task</Button>
                 </div>
             </div>
 
@@ -292,10 +296,10 @@ export function Tasks() {
                 })}
                 <div className="h-6 w-px bg-slate-500/30 mx-2" />
                 <button
-                    onClick={() => openCreateModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.15em] text-indigo-500 hover:text-indigo-400 transition-all"
+                    onClick={() => user?.plan === 'premium' ? openCreateModal(true) : toast.error('Big Tasks are a Premium feature! ✨')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.15em] transition-all ${user?.plan === 'premium' ? 'text-indigo-500 hover:text-indigo-400' : 'text-amber-500 opacity-80'}`}
                 >
-                    <Plus size={16} /> Big Task
+                    {user?.plan !== 'premium' ? <Crown size={14} /> : <Plus size={16} />} Big Task
                 </button>
             </div>
 
@@ -358,15 +362,26 @@ export function Tasks() {
                         )}
                     </div>
 
-                    <div className="pc-card bg-indigo-50/30 dark:bg-indigo-900/10 p-4 border border-indigo-100/50 dark:border-indigo-900/30">
+                    <div className={`pc-card p-4 border transition-all ${user?.plan === 'premium' ? 'bg-indigo-50/30 dark:bg-indigo-900/10 border-indigo-100/50 dark:border-indigo-900/30' : 'bg-muted/5 border-white/5 opacity-80'}`}>
                         <div className="flex items-center justify-between mb-4">
-                            <span className="text-[11px] font-black text-indigo-500 uppercase tracking-[0.2em]">Work Counter</span>
+                            <div className="flex items-center gap-2">
+                                <span className={`text-[11px] font-black uppercase tracking-[0.2em] ${user?.plan === 'premium' ? 'text-indigo-500' : 'text-muted'}`}>Work Counter</span>
+                                {user?.plan !== 'premium' && <Crown size={12} className="text-amber-500" />}
+                            </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold text-muted">ENABLE</span>
-                                <input type="checkbox" className="w-4 h-4" checked={form.totalWork > 0} onChange={(e) => setForm({ ...form, totalWork: e.target.checked ? 10 : 0 })} />
+                                <input 
+                                    type="checkbox" 
+                                    className="w-4 h-4 cursor-pointer" 
+                                    checked={form.totalWork > 0} 
+                                    onChange={(e) => {
+                                        if (user?.plan !== 'premium') return toast.error('Work Counters are Premium! ✨');
+                                        setForm({ ...form, totalWork: e.target.checked ? 10 : 0 });
+                                    }} 
+                                />
                             </div>
                         </div>
-                        {form.totalWork > 0 && (
+                        {form.totalWork > 0 && user?.plan === 'premium' && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-bold text-muted uppercase mb-1">Total (e.g., Lessons)</label>
@@ -377,6 +392,9 @@ export function Tasks() {
                                     <input type="number" className="pc-input text-sm" value={form.completedWork} onChange={(e) => setForm({ ...form, completedWork: parseInt(e.target.value) || 0 })} />
                                 </div>
                             </div>
+                        )}
+                        {user?.plan !== 'premium' && (
+                            <p className="text-[10px] text-muted italic">Break tasks into measurable steps with counters.</p>
                         )}
                     </div>
 
@@ -419,8 +437,20 @@ export function Tasks() {
                     )}
 
                     <div>
-                        <label className="block text-[11px] font-black text-muted uppercase tracking-[0.15em] mb-2">Project Notes</label>
-                        <textarea className="pc-input resize-none text-sm min-h-[80px]" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Add specifics, progress notes, or lesson names..." />
+                        <div className="flex items-center gap-2 mb-2">
+                            <label className="block text-[11px] font-black text-muted uppercase tracking-[0.15em]">Project Notes</label>
+                            {user?.plan !== 'premium' && <Crown size={12} className="text-amber-500" />}
+                        </div>
+                        <textarea 
+                            className={`pc-input resize-none text-sm min-h-[80px] ${user?.plan !== 'premium' ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} 
+                            value={form.notes} 
+                            onChange={(e) => {
+                                if (user?.plan !== 'premium') return toast.error('Notes are a Premium feature! ✨');
+                                setForm({ ...form, notes: e.target.value });
+                            }} 
+                            placeholder={user?.plan === 'premium' ? "Add specifics, progress notes, or lesson names..." : "Upgrade to unlock project notes"}
+                            readOnly={user?.plan !== 'premium'}
+                        />
                     </div>
 
                     <div className="flex gap-3 pt-4">

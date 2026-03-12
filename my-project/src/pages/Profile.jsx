@@ -8,6 +8,8 @@ import { Card } from '../components/Card';
 import { AvatarDisplay } from '../components/AvatarDisplay';
 import { StatCard } from '../components/StatCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { StreakCalendar } from '../components/StreakCalendar';
+import { Snowflake, Check, ExternalLink, Link2, Music } from 'lucide-react';
 import { useState } from 'react';
 import api from '../api/client';
 import { toast } from 'sonner';
@@ -17,6 +19,11 @@ export function Profile() {
     const { tasks } = useData();
     const { gamData } = useGamification();
     const [updating, setUpdating] = useState(false);
+    
+    // Music Preferences Local States
+    const [musicPlatform, setMusicPlatform] = useState(user.musicPreferences?.platform || '');
+    const [playlistUrl, setPlaylistUrl] = useState(user.musicPreferences?.playlistUrl || '');
+    const [isSavingMusic, setIsSavingMusic] = useState(false);
 
     if (!user || !tasks) return <LoadingSpinner />;
 
@@ -36,6 +43,47 @@ export function Profile() {
             }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update preferences');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const saveMusicPreferences = async () => {
+        try {
+            setIsSavingMusic(true);
+            const res = await api.put('/users/profile', {
+                musicPreferences: {
+                    platform: musicPlatform,
+                    playlistUrl
+                }
+            });
+            if (res.data?.success) {
+                setUser(res.data.data);
+                toast.success('Music preferences synced with profile.');
+            }
+        } catch (error) {
+            toast.error('Failed to sync music preferences');
+        } finally {
+            setIsSavingMusic(false);
+        }
+    };
+
+    const toggleAccountLink = async (platform) => {
+        try {
+            setUpdating(true);
+            const currentLinked = user.linkedAccounts || {};
+            const res = await api.put('/users/profile', {
+                linkedAccounts: {
+                    ...currentLinked,
+                    [platform]: !currentLinked[platform]
+                }
+            });
+            if (res.data?.success) {
+                setUser(res.data.data);
+                toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} account ${!currentLinked[platform] ? 'linked' : 'unlinked'}.`);
+            }
+        } catch (error) {
+            toast.error('Failed to update account link');
         } finally {
             setUpdating(false);
         }
@@ -86,6 +134,14 @@ export function Profile() {
                             <span className="font-semibold text-indigo-500">{user.points || 0} pts</span>
                             <span className="hidden sm:inline">·</span>
                             <span>{user.streak || 0} day streak 🔥</span>
+                            {user.plan === 'premium' && (
+                                <>
+                                    <span className="hidden sm:inline">·</span>
+                                    <span className="flex items-center gap-1 text-blue-400 font-bold">
+                                        <Snowflake size={14} /> {user.streakFreezes || 0} Freezes
+                                    </span>
+                                </>
+                            )}
                             {gamData && <><span className="hidden sm:inline">·</span><span>🌳 {gamData.trees?.length || 0} trees</span></>}
                             {joined && <><span className="hidden sm:inline">·</span><span className="text-xs">Since {joined}</span></>}
                         </div>
@@ -97,6 +153,15 @@ export function Profile() {
             <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="indigo" delay={0} />
                 <StatCard label="Total Nodes" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
+            </div>
+
+            {/* Streak Consistency Calendar */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-lg font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Consistency Calendar</h3>
+                    <Link to="/pricing" className="text-[10px] font-black uppercase tracking-widest text-indigo-500">View Gating</Link>
+                </div>
+                <StreakCalendar history={user.streakHistory} plan={user.plan} />
             </div>
 
             {/* Gamification Quick Access */}
@@ -178,6 +243,116 @@ export function Profile() {
                             </button>
                         </div>
                     ))}
+                </div>
+            </Card>
+
+            {/* Connected Services */}
+            <Card>
+                <div className="flex items-center gap-2 mb-4">
+                    <Link2 className="text-indigo-500" size={20} />
+                    <h3 className="text-lg font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Connected Services</h3>
+                </div>
+                <p className="text-pc-muted text-xs mb-6">Sign in to your accounts to unlock full track playback & private playlists.</p>
+
+                <div className="space-y-4">
+                    {[
+                        { id: 'spotify', name: 'Spotify', color: '#1DB954', loginUrl: 'https://accounts.spotify.com/en/login' },
+                        { id: 'anghami', name: 'Anghami', color: '#ed1c24', loginUrl: 'https://play.anghami.com/login' },
+                        { id: 'apple', name: 'Apple Music', color: '#fc3c44', loginUrl: 'https://music.apple.com/login' },
+                    ].map((platform) => {
+                        const isLinked = user.linkedAccounts?.[platform.id];
+                        return (
+                            <div key={platform.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 group hover:border-white/10 transition-all">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2.5 rounded-xl transition-all" style={{ backgroundColor: isLinked ? platform.color + '22' : 'rgba(255,255,255,0.05)' }}>
+                                        <Music size={18} style={{ color: isLinked ? platform.color : 'rgba(255,255,255,0.3)' }} />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-sm tracking-tight">{platform.name}</p>
+                                        <p className="text-[10px] text-pc-muted font-medium">Session-based auth required</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    {!isLinked ? (
+                                        <>
+                                            <a 
+                                                href={platform.loginUrl} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-wider hover:bg-white/5 transition-all text-pc-muted"
+                                            >
+                                                <ExternalLink size={12} /> Sign In
+                                            </a>
+                                            <button 
+                                                onClick={() => toggleAccountLink(platform.id)}
+                                                className="px-3 py-1.5 rounded-xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider hover:bg-indigo-600 transition-all"
+                                            >
+                                                Confirm Link
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button 
+                                            onClick={() => toggleAccountLink(platform.id)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-wider hover:bg-white/5 transition-all text-green-500 font-black"
+                                        >
+                                            <Check size={12} /> Linked
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </Card>
+
+            {/* Deep Work Radio Settings */}
+            <Card className="border-indigo-500/20 bg-indigo-500/5">
+                <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="text-indigo-500" size={20} />
+                    <h3 className="text-lg font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Deep Radio Hub</h3>
+                </div>
+                <p className="text-xs text-pc-muted mb-6">Bind your signature playlist to your cockpit for instant focus activation.</p>
+
+                <div className="space-y-4">
+                    <div className="flex gap-2">
+                        {[
+                            { id: 'spotify', name: 'Spotify', color: '#1DB954' },
+                            { id: 'anghami', name: 'Anghami', color: '#ed1c24' },
+                            { id: 'apple', name: 'Apple Music', color: '#fc3c44' },
+                        ].map(p => (
+                            <button
+                                key={p.id}
+                                onClick={() => setMusicPlatform(p.id)}
+                                className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl border transition-all ${
+                                    musicPlatform === p.id 
+                                        ? `bg-white/10 border-white/20 text-white` 
+                                        : 'bg-white/5 border-transparent text-pc-muted hover:bg-white/10'
+                                }`}
+                                style={{ borderBottom: musicPlatform === p.id ? `3px solid ${p.color}` : '' }}
+                            >
+                                <span className="text-[10px] font-black uppercase tracking-wider">{p.name}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Paste your favorite playlist link..."
+                            value={playlistUrl}
+                            onChange={(e) => setPlaylistUrl(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-xs focus:outline-none focus:border-indigo-500/50 transition-all font-medium"
+                        />
+                    </div>
+
+                    <button
+                        onClick={saveMusicPreferences}
+                        disabled={isSavingMusic || (!musicPlatform && !playlistUrl)}
+                        className="w-full py-3 rounded-2xl bg-indigo-500 text-white text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all disabled:opacity-50"
+                    >
+                        {isSavingMusic ? 'Binding Settings...' : 'Save Radio Profile'}
+                    </button>
                 </div>
             </Card>
         </div>

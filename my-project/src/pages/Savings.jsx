@@ -30,6 +30,10 @@ export function Savings() {
     const [txData, setTxData] = useState({ type: 'expense', amount: '', category: '', description: '', fromWho: '', account: 'cash' });
 
     const fetchTransactions = async () => {
+        if (user?.plan !== 'premium') {
+            setLoading(false);
+            return;
+        }
         try {
             const res = await api.get('/savings');
             setTransactions(res.data.data);

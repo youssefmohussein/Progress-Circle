@@ -19,6 +19,8 @@ const getProfile = async (req, res) => {
             fitnessEnabled: user.fitnessEnabled,
             nutritionEnabled: user.nutritionEnabled,
             habitsEnabled: user.habitsEnabled,
+            musicPreferences: user.musicPreferences,
+            linkedAccounts: user.linkedAccounts,
         },
     });
 };
@@ -28,7 +30,7 @@ const getProfile = async (req, res) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
     try {
-        const { name, avatar, savingsEnabled, fitnessEnabled } = req.body;
+        const { name, avatar, savingsEnabled, fitnessEnabled, musicPreferences, linkedAccounts } = req.body;
 
         const updateData = {};
         if (name !== undefined) updateData.name = name;
@@ -37,6 +39,8 @@ const updateProfile = async (req, res, next) => {
         if (fitnessEnabled !== undefined) updateData.fitnessEnabled = fitnessEnabled;
         if (req.body.nutritionEnabled !== undefined) updateData.nutritionEnabled = req.body.nutritionEnabled;
         if (req.body.habitsEnabled !== undefined) updateData.habitsEnabled = req.body.habitsEnabled;
+        if (musicPreferences !== undefined) updateData.musicPreferences = musicPreferences;
+        if (linkedAccounts !== undefined) updateData.linkedAccounts = linkedAccounts;
 
         const user = await User.findByIdAndUpdate(
             req.user._id,
@@ -58,6 +62,8 @@ const updateProfile = async (req, res, next) => {
                 fitnessEnabled: user.fitnessEnabled,
                 nutritionEnabled: user.nutritionEnabled,
                 habitsEnabled: user.habitsEnabled,
+                musicPreferences: user.musicPreferences,
+                linkedAccounts: user.linkedAccounts,
             },
         });
     } catch (error) {

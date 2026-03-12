@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ShoppingBag, Check, Lock, Coins } from 'lucide-react';
+import { Sparkles, ShoppingBag, Check, Lock, Coins, Snowflake } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGamification } from '../context/GamificationContext';
 import { AvatarDisplay } from '../components/AvatarDisplay';
@@ -15,6 +15,7 @@ const CATEGORIES = [
     { key: 'eyeColor', label: 'Eye Color', icon: '🎨' },
     { key: 'accessory', label: 'Accessories', icon: '🎩' },
     { key: 'bg', label: 'Background', icon: '🌅' },
+    { key: 'powerups', label: 'Powerups', icon: '⚡' },
 ];
 
 const EYE_COLOR_MAP = {
@@ -144,7 +145,44 @@ export function AvatarShop() {
 
             {/* Items grid */}
             <AnimatePresence mode="wait">
-                {activeTab === 'eyeColor' ? (
+                {activeTab === 'powerups' ? (
+                    <motion.div
+                        key="powerups"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="grid gap-4"
+                        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}
+                    >
+                        {items.map((item) => (
+                            <motion.div
+                                key={item.id}
+                                whileHover={{ y: -2 }}
+                                className="relative flex flex-col items-center gap-3 p-5 rounded-2xl bg-surface-2 border border-white/5"
+                            >
+                                <div className="p-4 rounded-full bg-blue-500/10 text-blue-400">
+                                    <Snowflake size={32} />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm font-black text-white uppercase tracking-widest">{item.name}</p>
+                                    <p className="text-[10px] text-muted leading-tight mt-1 px-2">{item.desc}</p>
+                                </div>
+                                <button
+                                    onClick={() => handleBuy(item.id, item.price)}
+                                    disabled={buying === item.id || points < item.price || gamData.userPlan !== 'premium'}
+                                    className="w-full mt-2 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 text-white disabled:opacity-50"
+                                    style={{ background: points >= item.price && gamData.userPlan === 'premium' ? 'linear-gradient(135deg, #3b82f6, #60a5fa)' : '#374151' }}
+                                >
+                                    {gamData.userPlan !== 'premium' ? (
+                                        <><Lock size={12} /> Pro Only</>
+                                    ) : (
+                                        <><Coins size={12} /> {buying === item.id ? '...' : `${item.price} pts`}</>
+                                    )}
+                                </button>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                ) : activeTab === 'eyeColor' ? (
                     <motion.div
                         key="eyeColor"
                         initial={{ opacity: 0, y: 10 }}

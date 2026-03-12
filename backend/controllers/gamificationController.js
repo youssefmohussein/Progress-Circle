@@ -97,6 +97,9 @@ const SHOP_ITEMS = {
         { id: 'shoes_3', name: 'Slippers', price: 100 },
         { id: 'shoes_4', name: 'Dress Shoes', price: 400 },
         { id: 'shoes_5', name: 'Sandals', price: 150 }
+    ],
+    powerups: [
+        { id: 'powerup_freeze', name: 'Streak Freeze', price: 500, desc: 'Protects your streak if you miss a day.' }
     ]
 };
 
@@ -234,6 +237,7 @@ exports.getGamificationData = async (req, res, next) => {
                 trees: user.trees || [],
                 shopItems: SHOP_ITEMS,
                 milestones,
+                userPlan: user.plan,
             },
         });
     } catch (err) {
@@ -309,10 +313,19 @@ exports.buyItem = async (req, res, next) => {
             return res.status(400).json({ success: false, message: `Not enough points. Need ${item.price}, you have ${user.points}.` });
         }
 
-        await User.findByIdAndUpdate(req.user._id, {
-            $inc: { points: -item.price },
-            $addToSet: { inventory: itemId },
-        });
+        if (itemId === 'powerup_freeze') {
+            if (user.plan !== 'premium') {
+                return res.status(403).json({ success: false, message: 'Streak Freezes are a Premium-only feature.' });
+            }
+            await User.findByIdAndUpdate(req.user._id, {
+                $inc: { points: -item.price, streakFreezes: 1 }
+            });
+        } else {
+            await User.findByIdAndUpdate(req.user._id, {
+                $inc: { points: -item.price },
+                $addToSet: { inventory: itemId },
+            });
+        }
 
         res.status(200).json({ success: true, data: { itemId, pointsSpent: item.price } });
     } catch (err) {

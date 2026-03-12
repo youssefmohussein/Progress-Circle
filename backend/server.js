@@ -22,6 +22,7 @@ const gamificationRoutes = require('./routes/gamificationRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const integrationRoutes = require('./routes/integrationRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -89,6 +90,7 @@ app.use('/api/gamification', gamificationRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/admin/analytics', analyticsRoutes);
+app.use('/api/integration', integrationRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

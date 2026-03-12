@@ -119,9 +119,16 @@ export function DataProvider({ children }) {
     const endSession = async (notes, sessionId) => {
         const sid = sessionId || activeSession?.id || activeSession?._id;
         if (!sid) return;
-        await sessionsAPI.end(sid, { notes });
+        const res = await sessionsAPI.end(sid, { notes });
         setActiveSession(null);
+        if (res.data.treeAdded) {
+            toast.success(`✨ Fantastic work! You just grew a new ${res.data.treeAdded}!`, {
+                description: 'Check your Focus Farm to see it.',
+                duration: 5000,
+            });
+        }
         await fetchAll();
+        if (refreshUser) await refreshUser();
     };
 
     const logManual = async (data) => {

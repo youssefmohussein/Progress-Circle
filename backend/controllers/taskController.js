@@ -39,6 +39,16 @@ const createTask = async (req, res, next) => {
 
         if (!title) return res.status(400).json({ success: false, message: 'Title is required' });
 
+        // Gating: Advanced features (Big Tasks, Sub-tasks, Work Counters, Notes) are PREMIUM only
+        if (req.user.plan !== 'premium') {
+            if (isBigTask || parentId || (totalWork > 0) || notes) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Container tasks, Sub-tasks, Work counters, and Notes are Premium features. Please upgrade to unlock them!' 
+                });
+            }
+        }
+
         const task = await Task.create({
             userId: req.user._id,
             title,
@@ -84,7 +94,11 @@ const updateTask = async (req, res, next) => {
             const yesterday = new Date(today - 86400000).getTime();
             const lastDate = user.lastTaskCompletionDate ? new Date(user.lastTaskCompletionDate).setHours(0, 0, 0, 0) : null;
 
-            let update = { $inc: { points: TASK_POINTS }, $set: { lastTaskCompletionDate: now } };
+            let update = { 
+                $inc: { points: TASK_POINTS }, 
+                $set: { lastTaskCompletionDate: now },
+                $addToSet: { streakHistory: today } // Track unique dates of completion
+            };
 
             if (!lastDate) {
                 update.$set.streak = 1;
@@ -94,9 +108,19 @@ const updateTask = async (req, res, next) => {
                 const newStreak = (user.streak || 0) + 1;
                 if (newStreak % 7 === 0) {
                     update.$inc.points = (update.$inc.points || 0) + 100;
+                    if (user.plan === 'premium') {
+                        update.$inc.streakFreezes = 1;
+                    }
                 }
             } else if (lastDate < yesterday) {
-                update.$set.streak = 1;
+                // Streak Freeze logic for Premium users
+                if (user.plan === 'premium' && user.streakFreezes > 0 && lastDate === new Date(today - (86400000 * 2)).setHours(0,0,0,0)) {
+                    // If missed exactly one day and has a freeze
+                    update.$inc.streak = 1;
+                    update.$inc.streakFreezes = -1;
+                } else {
+                    update.$set.streak = 1;
+                }
             }
             // if lastDate === today, streak is already counted for today
 

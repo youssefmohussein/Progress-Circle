@@ -44,6 +44,10 @@ export function Fitness() {
     });
 
     const fetchData = async () => {
+        if (user?.plan !== 'premium') {
+            setLoading(false);
+            return;
+        }
         try {
             const [cycleRes, metricRes] = await Promise.all([
                 api.get('/fitness/cycle'),
