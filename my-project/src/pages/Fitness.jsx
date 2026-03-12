@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Dumbbell, Utensils, Save, TrendingUp, Scale, ChevronRight, Plus, Trash2, Edit2, Calendar } from 'lucide-react';
+import { Activity, Dumbbell, Utensils, Save, TrendingUp, Scale, ChevronRight, Plus, Trash2, Edit2, Calendar, Crown, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -9,6 +11,7 @@ import { Modal } from '../components/Modal';
 import { toast } from 'sonner';
 
 export function Fitness() {
+    const { user } = useAuth();
     const [cycle, setCycle] = useState(null);
     const [metrics, setMetrics] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -183,6 +186,60 @@ export function Fitness() {
     };
 
     if (loading) return <LoadingSpinner />;
+
+    // Premium Gating Overlay
+    if (user?.plan !== 'premium') {
+        return (
+            <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden rounded-3xl">
+                {/* Blurred Preview Background */}
+                <div className="absolute inset-0 opacity-20 blur-xl pointer-events-none select-none grayscale">
+                    <div className="p-10 space-y-8">
+                        <div className="grid grid-cols-4 gap-4">
+                            <div className="h-20 bg-white/10 rounded-2xl" />
+                            <div className="h-20 bg-white/10 rounded-2xl" />
+                            <div className="h-20 bg-white/10 rounded-2xl" />
+                            <div className="h-20 bg-white/10 rounded-2xl" />
+                        </div>
+                        <div className="h-96 bg-white/10 rounded-3xl" />
+                    </div>
+                </div>
+
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative z-10 max-w-md w-full p-8 text-center bg-surface/80 backdrop-blur-xl border border-white/10 rounded-[32px] shadow-2xl"
+                >
+                    <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/20">
+                        <Dumbbell size={40} className="text-white" />
+                    </div>
+                    <h2 className="text-2xl font-black text-white mb-3">Fitness Lab is Premium</h2>
+                    <p className="text-muted text-sm leading-relaxed mb-8">
+                        Level up your physical wellness. Track custom training cycles, log every meal, and monitor detailed body metrics as you transform.
+                    </p>
+                    
+                    <div className="space-y-3 mb-8">
+                        {[
+                            'Custom Training Cycles',
+                            'Detailed Daily Workout Logs',
+                            'Calorie & Meal Tracking',
+                            'Body Metric History Charts'
+                        ].map((feature, i) => (
+                            <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-white/70 uppercase tracking-widest">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                {feature}
+                            </div>
+                        ))}
+                    </div>
+
+                    <Link to="/pricing">
+                        <Button className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-black uppercase tracking-widest text-sm shadow-xl shadow-emerald-500/20 border-none transition-all">
+                            Start Journey Now
+                        </Button>
+                    </Link>
+                </motion.div>
+            </div>
+        );
+    }
 
     if (!cycle || showSetup) {
         return (

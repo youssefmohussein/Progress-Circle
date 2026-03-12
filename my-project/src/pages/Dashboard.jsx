@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, Flame, Trophy, Target, TrendingUp, Clock, CalendarDays, Brain, BellRing, Sparkles, Timer, PieChart, BarChart3, ArrowRight, Zap, Coffee, Activity } from 'lucide-react';
+import { CheckCircle2, Flame, Trophy, Target, TrendingUp, Clock, CalendarDays, Brain, BellRing, Sparkles, Timer, PieChart, BarChart3, ArrowRight, Zap, Coffee, Activity, Crown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { StatCard } from '../components/StatCard';
@@ -126,7 +126,7 @@ export function Dashboard() {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">Premium System</span>
+                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">{user?.plan === 'premium' ? 'Premium ✨' : 'Free Plan'}</span>
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">•</span>
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">{dayjs().format('MMMM D, YYYY')}</span>
                     </div>
@@ -250,6 +250,7 @@ export function Dashboard() {
                             <div className="flex items-center gap-2">
                                 <Activity size={16} className="text-indigo-500" />
                                 <h2 className="text-xs font-black uppercase tracking-widest">Activity Timeline</h2>
+                                {user?.plan !== 'premium' && <span className="ml-2 text-[8px] pc-badge-premium px-1 py-0 px-2 rounded-full">Pro</span>}
                             </div>
                         </div>
                         <ActivityTimeline activities={activities} />
@@ -274,7 +275,12 @@ export function Dashboard() {
                 {/* Right Column - Tasks & Visualization */}
                 <div className="lg:col-span-8 space-y-6">
                     {/* Weekly Performance */}
-                    <Card className="p-4">
+                    <Card className="p-4 relative">
+                        {user?.plan !== 'premium' && (
+                            <div className="absolute top-4 right-4 flex items-center gap-1 text-[9px] font-black bg-indigo-500/10 text-indigo-400 px-2 py-1 rounded-full border border-indigo-500/20">
+                                <Crown size={10} /> ADVANCED
+                            </div>
+                        )}
                         <WeeklyInsights tasks={tasks} sessions={sessions} />
                     </Card>
 

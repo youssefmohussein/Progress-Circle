@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Settings, Receipt, ArrowUpCircle, ArrowDownCircle, Users, BarChart3, CreditCard, Banknote, ShieldCheck } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Settings, Receipt, ArrowUpCircle, ArrowDownCircle, Users, BarChart3, CreditCard, Banknote, ShieldCheck, Crown, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/Card';
@@ -97,6 +98,60 @@ export function Savings() {
     };
 
     if (loading) return <LoadingSpinner />;
+
+    // Premium Gating Overlay
+    if (user?.plan !== 'premium') {
+        return (
+            <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden rounded-3xl">
+                {/* Blurred Preview Background */}
+                <div className="absolute inset-0 opacity-20 blur-xl pointer-events-none select-none grayscale">
+                    <div className="p-10 space-y-8">
+                        <div className="h-32 bg-white/10 rounded-3xl" />
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="h-24 bg-white/10 rounded-2xl" />
+                            <div className="h-24 bg-white/10 rounded-2xl" />
+                            <div className="h-24 bg-white/10 rounded-2xl" />
+                        </div>
+                        <div className="h-64 bg-white/10 rounded-3xl" />
+                    </div>
+                </div>
+
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative z-10 max-w-md w-full p-8 text-center bg-surface/80 backdrop-blur-xl border border-white/10 rounded-[32px] shadow-2xl"
+                >
+                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/20">
+                        <Crown size={40} className="text-white" />
+                    </div>
+                    <h2 className="text-2xl font-black text-white mb-3">Treasury is Premium</h2>
+                    <p className="text-muted text-sm leading-relaxed mb-8">
+                        Master your wealth with advanced financial tracking. Log transactions across multiple accounts, monitor cashflow, and hit your savings goals.
+                    </p>
+                    
+                    <div className="space-y-3 mb-8">
+                        {[
+                            'Unlimited Transaction Logging',
+                            'Bank & Credit Account Sync (Manual)',
+                            'Visual Cashflow Analytics',
+                            'Savings Goal Tracking'
+                        ].map((feature, i) => (
+                            <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-white/70 uppercase tracking-widest">
+                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                {feature}
+                            </div>
+                        ))}
+                    </div>
+
+                    <Link to="/pricing">
+                        <Button className="w-full h-14 rounded-2xl bg-indigo-500 hover:bg-indigo-600 font-black uppercase tracking-widest text-sm shadow-xl shadow-indigo-500/20 border-none transition-all">
+                            Unlock Full Access
+                        </Button>
+                    </Link>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 max-w-6xl relative">

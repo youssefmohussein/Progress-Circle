@@ -20,6 +20,14 @@ const createCategory = async (req, res, next) => {
         const { name, color, icon } = req.body;
         if (!name) return res.status(400).json({ success: false, message: 'Category name is required' });
 
+        // Gating: Custom categories are PREMIUM only
+        if (req.user.plan !== 'premium') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Custom categories are a Premium feature. Please upgrade to create your own!' 
+            });
+        }
+
         const category = await Category.create({
             userId: req.user._id,
             name,

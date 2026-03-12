@@ -25,6 +25,17 @@ const createHabit = async (req, res, next) => {
         if (!frequency) return res.status(400).json({ success: false, message: 'Frequency is required' });
         if (!duration) return res.status(400).json({ success: false, message: 'Duration is required' });
 
+        // Gating: Free users limited to 5 habits
+        if (req.user.plan !== 'premium') {
+            const count = await Habit.countDocuments({ userId: req.user._id });
+            if (count >= 5) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Free plan limit reached (5 habits). Please upgrade to Premium for unlimited habits!' 
+                });
+            }
+        }
+
         const habit = await Habit.create({
             userId: req.user._id,
             name,
