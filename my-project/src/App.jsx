@@ -20,6 +20,8 @@ import { AvatarShop } from './pages/AvatarShop';
 import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
 import { Planner } from './pages/Planner';
+import Pricing from './pages/Pricing';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -55,6 +57,9 @@ function AppRoutes() {
       <Route path="/milestones" element={<PrivateRoute><Layout><Unlockables /></Layout></PrivateRoute>} />
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
+
+      <Route path="/pricing" element={<PrivateRoute><Layout><Pricing /></Layout></PrivateRoute>} />
+      <Route path="/payment/success" element={<PrivateRoute><PaymentSuccess /></PrivateRoute>} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" />} />

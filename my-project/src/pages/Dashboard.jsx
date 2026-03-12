@@ -16,6 +16,7 @@ import { WeeklyInsights } from '../components/WeeklyInsights';
 import { ProgressCircle } from '../components/ProgressCircle';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
+import AdBanner from '../components/AdBanner';
 
 const QUOTES = [
     'Great work today!',
@@ -362,6 +363,9 @@ export function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Ad Banner — free users only */}
+            <AdBanner slot="7245183921" style={{ marginTop: '8px' }} />
         </div>
     );
 }

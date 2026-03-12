@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Trophy, Calendar, TrendingUp, Sprout, ShoppingBag, Star } from 'lucide-react';
+import { Trophy, Calendar, TrendingUp, Sprout, ShoppingBag, Star, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -55,6 +55,33 @@ export function Profile() {
                     <div className="flex-1">
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
                         <p className="text-sm text-muted">{user.email}</p>
+
+                        {/* Plan Badge */}
+                        <div className="flex items-center gap-2 mt-2">
+                            {user.plan === 'premium' ? (
+                                <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                    color: '#fff', fontSize: '11px', fontWeight: 700,
+                                    padding: '2px 10px', borderRadius: '999px',
+                                }}>
+                                    <Crown size={11} /> Premium
+                                </span>
+                            ) : (
+                                <Link to="/pricing" style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                    background: 'rgba(99,102,241,0.12)', color: '#6366f1',
+                                    fontSize: '11px', fontWeight: 700,
+                                    padding: '2px 10px', borderRadius: '999px', textDecoration: 'none',
+                                }}>
+                                    ✦ Upgrade to Premium
+                                </Link>
+                            )}
+                            {user.plan === 'premium' && (
+                                <Link to="/pricing" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', textDecoration: 'underline' }}>Manage</Link>
+                            )}
+                        </div>
+
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-2 text-sm text-muted">
                             <span className="font-semibold text-indigo-500">{user.points || 0} pts</span>
                             <span className="hidden sm:inline">·</span>

@@ -107,7 +107,40 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ['male', 'female', ''],
             default: '',
-        }
+        },
+        plan: {
+            type: String,
+            enum: ['free', 'premium'],
+            default: 'free',
+        },
+        subscription: {
+            status: {
+                type: String,
+                enum: ['inactive', 'active', 'cancelled', 'expired'],
+                default: 'inactive',
+            },
+            billingCycle: {
+                type: String,
+                enum: ['monthly', 'yearly', ''],
+                default: '',
+            },
+            currentPeriodEnd: {
+                type: Date,
+                default: null,
+            },
+            paymobOrderId: {
+                type: String,
+                default: '',
+            },
+            paymobTransactionId: {
+                type: String,
+                default: '',
+            },
+            paymobToken: {
+                type: String,
+                default: '',
+            },
+        },
     },
     { timestamps: true }
 );
