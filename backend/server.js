@@ -4,6 +4,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const { startExpireJob } = require('./jobs/expireSubscriptions');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -19,6 +20,8 @@ const savingsRoutes = require('./routes/savingsRoutes');
 const fitnessRoutes = require('./routes/fitnessRoutes');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -36,13 +39,21 @@ app.use(
     })
 );
 
+// ─── Raw body parser for PayMob webhook (MUST be before express.json) ────────
+app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }), (req, res, next) => {
+    if (req.body && Buffer.isBuffer(req.body)) {
+        try { req.body = JSON.parse(req.body.toString()); } catch (e) { /* ignore */ }
+    }
+    next();
+});
+
 // ─── Body Parser ─────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10kb' })); // Limit payload size
+app.use(express.json({ limit: '10kb' }));
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200,                  // max requests per window
+    windowMs: 15 * 60 * 1000,
+    max: 200,
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, message: 'Too many requests, please try again later.' },
@@ -70,13 +81,14 @@ app.use('/api/goals', goalRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
-
 app.use('/api/categories', categoryRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/savings', savingsRoutes);
 app.use('/api/fitness', fitnessRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/admin/analytics', analyticsRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -86,8 +98,23 @@ app.use((req, res) => {
 // ─── Global Error Handler ────────────────────────────────────────────────────
 app.use(errorHandler);
 
-// ─── Start Server ─────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// ─── Start Server (with auto port fallback) ────────────────────────────────
+const startServer = (port) => {
+    const server = app.listen(port, () => {
+        console.log(`Server running on port ${port}`);
+        // Start subscription expiration cron job
+        startExpireJob();
+    });
+
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.warn(`Port ${port} is in use, trying port ${port + 1}...`);
+            startServer(port + 1);
+        } else {
+            throw err;
+        }
+    });
+};
+
+const PORT = parseInt(process.env.PORT) || 5000;
+startServer(PORT);
