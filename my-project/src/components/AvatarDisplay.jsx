@@ -75,8 +75,12 @@ const EYE_COLORS = [
 
 // ─── Layer Renderers ──────────────────────────────────────────────────────────
 
-function BgLayer({ index, gradId }) {
-    const [c1, c2] = BG_COLORS[index] ?? BG_COLORS[0];
+function BgLayer({ index, gradId, userTheme }) {
+    let [c1, c2] = BG_COLORS[index] ?? BG_COLORS[0];
+    if (index === 0 && userTheme) {
+        if (userTheme.primaryColor) c1 = userTheme.primaryColor;
+        if (userTheme.accentColor) c2 = userTheme.accentColor;
+    }
     return (
         <defs>
             <radialGradient id={gradId} cx="50%" cy="50%" r="70%">
@@ -568,7 +572,7 @@ function AccessoryLayer({ index }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function AvatarDisplay({ avatarConfig = {}, size = 'md', className = '', showBg = true }) {
+export function AvatarDisplay({ avatarConfig = {}, size = 'md', className = '', showBg = true, userTheme = null }) {
     const { hair = 0, shirt = 0, pants = 0, shoes = 0, eyes = 0, eyeColor = 0, accessory = 0, bg = 0 } = avatarConfig;
 
     const reactId = useId();
@@ -590,7 +594,7 @@ export function AvatarDisplay({ avatarConfig = {}, size = 'md', className = '', 
             style={{ borderRadius: '50%', display: 'block', flexShrink: 0 }}
         >
             {/* Background Layer (Static Full Size) */}
-            <BgLayer index={bg} gradId={gradId} />
+            <BgLayer index={bg} gradId={gradId} userTheme={userTheme} />
             {showBg && <circle cx="50" cy="55" r="55" fill={`url(#${gradId})`} />}
 
             {/* Slimmer, taller figure — scale to fit circle */}

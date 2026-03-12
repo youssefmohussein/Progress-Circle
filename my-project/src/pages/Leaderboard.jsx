@@ -56,7 +56,7 @@ export function Leaderboard() {
                                 style={{ minWidth: 0, flex: 1, maxWidth: 110 }}
                             >
                                 <span className="text-lg sm:text-2xl">{m.emoji}</span>
-                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} size={isFirst ? 'lg' : 'md'} />
+                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} userTheme={entry.user?.themePreferences} size={isFirst ? 'lg' : 'md'} />
                                 <div className="text-center max-w-full px-1">
                                     <p className="text-xs font-bold truncate" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
                                     <p className="text-[10px] text-[var(--primary)] font-semibold">{entry.user?.points} pts</p>
@@ -93,7 +93,7 @@ export function Leaderboard() {
                                 <div className="w-8 flex-shrink-0 flex justify-center">
                                     {m ? <span className="text-xl">{m.emoji}</span> : <span className="text-sm font-bold text-muted">#{entry.rank}</span>}
                                 </div>
-                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} size="sm" />
+                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} userTheme={entry.user?.themePreferences} size="sm" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                                         {entry.user?.name} {isMe && <span className="text-xs text-[var(--primary)] font-normal">(you)</span>}

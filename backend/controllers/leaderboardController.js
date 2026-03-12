@@ -5,7 +5,7 @@ const User = require('../models/User');
 // @access  Private
 const getLeaderboard = async (req, res, next) => {
     try {
-        const users = await User.find({}, 'name email avatar avatarConfig points streak trees createdAt')
+        const users = await User.find({}, 'name email avatar avatarConfig themePreferences points streak trees createdAt')
             .sort({ points: -1 })
             .limit(50);
 
@@ -18,6 +18,7 @@ const getLeaderboard = async (req, res, next) => {
                 email: user.email,
                 avatar: user.avatar,
                 avatarConfig: user.avatarConfig,
+                themePreferences: user.themePreferences,
                 treesCount: (user.trees || []).length,
                 points: user.points,
                 streak: user.streak,
