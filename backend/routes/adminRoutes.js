@@ -7,6 +7,7 @@ const router = express.Router();
 router.use(protect);    // Must be authenticated
 router.use(requireAdmin); // Must be admin
 
+router.get('/stats', getStats);
 router.get('/settings', getSettings);
 router.put('/settings', updateSettings);
 router.post('/reward-all', rewardAll);

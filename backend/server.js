@@ -4,6 +4,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const maintenanceMiddleware = require('./middleware/maintenanceMiddleware');
 const { startExpireJob } = require('./jobs/expireSubscriptions');
 
 // Route imports
@@ -60,6 +61,10 @@ const limiter = rateLimit({
     message: { success: false, message: 'Too many requests, please try again later.' },
 });
 app.use('/api', limiter);
+app.use(maintenanceMiddleware); // Apply after auth-check or limiters? 
+// Wait, maintenance needs req.user for admin check. It must be after 'protect' for most routes.
+// But some routes don't have 'protect' yet. 
+// Let's place it here, but maintenanceMiddleware itself needs to handle null user.
 
 // Stricter limiter for auth routes
 const authLimiter = rateLimit({
