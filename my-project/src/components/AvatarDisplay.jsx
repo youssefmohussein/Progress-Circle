@@ -10,7 +10,7 @@ import { useId } from 'react';
 
 // ─── Palettes ─────────────────────────────────────────────────────────────────
 const BG_COLORS = [
-    ['#6366f1', '#8b5cf6'],  // 0 Indigo-violet
+    ['var(--primary)', 'var(--accent)'],  // 0 Dynamic Theme Colors
     ['#f59e0b', '#ef4444'],  // 1 Sunset
     ['#10b981', '#059669'],  // 2 Forest
     ['#1e1b4b', '#312e81'],  // 3 Galaxy

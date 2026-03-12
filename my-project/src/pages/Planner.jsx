@@ -17,8 +17,8 @@ dayjs.extend(isBetween);
 
 const EVENT_COLORS = {
     task: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' },
-    habit: { bg: 'bg-pink-500/10', text: 'text-pink-500', border: 'border-pink-500/20' },
-    session: { bg: 'bg-indigo-500/10', text: 'text-indigo-500', border: 'border-indigo-500/20' },
+    habit: { bg: 'bg-[var(--accent)]/10', text: 'text-[var(--accent)]', border: 'border-[var(--accent)]/20' },
+    session: { bg: 'bg-[var(--primary)]/10', text: 'text-[var(--primary)]', border: 'border-[var(--primary)]/20' },
     plan: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
 };
 
@@ -119,7 +119,7 @@ export function Planner() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-black pc-gradient-text tracking-tight flex items-center gap-3">
-                        <CalendarIcon className="text-indigo-500" size={32} />
+                        <CalendarIcon className="text-[var(--primary)]" size={32} />
                         Universe Planner
                     </h1>
                     <p className="text-muted text-sm font-medium mt-1 uppercase tracking-widest">
@@ -162,19 +162,19 @@ export function Planner() {
                                     setIsDayModalOpen(true);
                                     setIsAddingBlock(false);
                                 }}
-                                className={`relative p-2 border-r border-b border-gray-100 dark:border-slate-800 cursor-pointer transition-all hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5
+                                className={`relative p-2 border-r border-b border-gray-100 dark:border-slate-800 cursor-pointer transition-all hover:bg-[var(--primary)]/5
                                     ${!day.currentMonth ? 'bg-gray-50/50 dark:bg-slate-900/20 opacity-30' : ''}
-                                    ${isSelected ? 'bg-indigo-50/50 dark:bg-indigo-500/10 ring-2 ring-inset ring-indigo-500/30' : ''}
+                                    ${isSelected ? 'bg-[var(--primary)]/10 ring-2 ring-inset ring-[var(--primary)]/30' : ''}
                                 `}
                             >
                                 <div className="flex justify-between items-start">
                                     <span className={`text-xs font-black w-6 h-6 flex items-center justify-center rounded-lg transition-colors
-                                        ${isToday ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400'}
+                                        ${isToday ? 'bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30' : 'text-slate-400'}
                                     `}>
                                         {day.date.date()}
                                     </span>
                                     {dayEvents.length > 0 && (
-                                        <span className="text-[9px] font-black text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-tighter">
+                                        <span className="text-[9px] font-black text-[var(--primary)] bg-[var(--primary)]/10 px-1.5 py-0.5 rounded-md uppercase tracking-tighter">
                                             {dayEvents.length}
                                         </span>
                                     )}
@@ -244,7 +244,7 @@ export function Planner() {
                                         ))
                                     )}
                                 </div>
-                                <Button className="w-full flex items-center justify-center gap-2" onClick={() => setIsAddingBlock(true)}>
+                                <Button className="w-full flex items-center justify-center gap-2 pc-btn-primary" onClick={() => setIsAddingBlock(true)}>
                                     <Plus size={18} /> Add Focus Block
                                 </Button>
                             </>

@@ -14,8 +14,10 @@ import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { Card } from '../../components/Card';
 import { toast } from 'sonner';
+import { useAuth } from '../../context/AuthContext';
 
 export function AdminDashboard() {
+    const { user: currentUser, refreshUser } = useAuth();
     const [stats, setStats] = useState(null);
     const [users, setUsers] = useState([]);
     const [settings, setSettings] = useState(null);
@@ -59,6 +61,9 @@ export function AdminDashboard() {
             toast.success('CORE OVERWRITE SUCCESSFUL');
             setEditingUser(null);
             fetchData();
+            if (currentUser && currentUser.id === id) {
+                refreshUser();
+            }
         } catch { toast.error('OVERWRITE FAILED: SECURITY PROTOCOL'); }
         finally { setIsSaving(false); }
     };

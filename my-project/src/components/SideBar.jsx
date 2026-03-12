@@ -50,7 +50,7 @@ const gamificationLinks = [
 
 const getSidebarBase = (dark, primary) => ({
     background: dark
-        ? `linear-gradient(180deg, ${primary} 0%, #0f0e2a 100%)`
+        ? `linear-gradient(180deg, ${primary} 0%, var(--surface) 100%)`
         : 'var(--surface)',
     display: 'flex',
     flexDirection: 'column',
@@ -209,7 +209,7 @@ function MoreDrawer({ onClose }) {
     const drawerStyle = {
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60,
         background: dark
-            ? 'linear-gradient(180deg, var(--primary) 0%, #0f0e2a 100%)'
+            ? 'linear-gradient(180deg, var(--primary) 0%, var(--surface) 100%)'
             : 'var(--surface)',
         borderRadius: '20px 20px 0 0',
         padding: '8px 0 calc(16px + env(safe-area-inset-bottom))',

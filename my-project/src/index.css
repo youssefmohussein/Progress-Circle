@@ -111,8 +111,8 @@ h6 {
 }
 
 .pc-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
 }
 
 /* Card */
@@ -171,11 +171,11 @@ h6 {
 .pc-btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: #fff;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35), 0 0 8px var(--accent);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.35), 0 0 8px var(--accent);
 }
 
 .pc-btn-primary:hover {
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.45);
   transform: translateY(-1px);
 }
 
@@ -214,7 +214,7 @@ h6 {
 
 /* Sidebar */
 .pc-sidebar {
-  background: linear-gradient(180deg, #1e1b4b 0%, #0f0e2a 100%);
+  background: linear-gradient(180deg, var(--primary) 0%, var(--surface) 100%);
 }
 
 /* Animations */

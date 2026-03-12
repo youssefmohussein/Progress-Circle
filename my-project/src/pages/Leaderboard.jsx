@@ -59,7 +59,7 @@ export function Leaderboard() {
                                 <AvatarDisplay avatarConfig={entry.user?.avatarConfig} size={isFirst ? 'lg' : 'md'} />
                                 <div className="text-center max-w-full px-1">
                                     <p className="text-xs font-bold truncate" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
-                                    <p className="text-[10px] text-indigo-500 font-semibold">{entry.user?.points} pts</p>
+                                    <p className="text-[10px] text-[var(--primary)] font-semibold">{entry.user?.points} pts</p>
                                     {entry.user?.treesCount > 0 && (
                                         <p className="text-[10px] text-emerald-400">🌳 {entry.user.treesCount}</p>
                                     )}
@@ -86,9 +86,9 @@ export function Leaderboard() {
                                 initial={{ opacity: 0, x: -8 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.03 }}
-                                className={`flex items-center gap-3 p-2 sm:p-3 rounded-xl transition-colors ${isMe ? 'border-2 border-indigo-400/40' : 'hover:opacity-90'
+                                className={`flex items-center gap-3 p-2 sm:p-3 rounded-xl transition-colors ${isMe ? 'border-2 border-[var(--primary)]/40' : 'hover:opacity-90'
                                     }`}
-                                style={{ background: isMe ? 'rgba(99,102,241,0.08)' : 'var(--color-surface-2)' }}
+                                style={{ background: isMe ? 'color-mix(in srgb, var(--primary) 8%, var(--color-surface-2))' : 'var(--color-surface-2)' }}
                             >
                                 <div className="w-8 flex-shrink-0 flex justify-center">
                                     {m ? <span className="text-xl">{m.emoji}</span> : <span className="text-sm font-bold text-muted">#{entry.rank}</span>}
@@ -96,16 +96,16 @@ export function Leaderboard() {
                                 <AvatarDisplay avatarConfig={entry.user?.avatarConfig} size="sm" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                                        {entry.user?.name} {isMe && <span className="text-xs text-indigo-400 font-normal">(you)</span>}
+                                        {entry.user?.name} {isMe && <span className="text-xs text-[var(--primary)] font-normal">(you)</span>}
                                     </p>
                                     <p className="text-xs text-muted flex items-center gap-2 mt-1">
                                         <span className="flex items-center gap-1"><Flame size={10} className="text-orange-400" />{entry.user?.streak} days</span>
-                                        <span className="flex items-center gap-1"><CheckSquare size={10} className="text-indigo-400" />{entry.user?.points} total</span>
+                                        <span className="flex items-center gap-1"><CheckSquare size={10} className="text-[var(--primary)]" />{entry.user?.points} total</span>
                                         {entry.user?.treesCount > 0 && <span className="text-emerald-400">🌳 {entry.user.treesCount}</span>}
                                     </p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-base font-bold text-indigo-500" style={{ fontFamily: 'Manrope, sans-serif' }}>{entry.user?.points}</p>
+                                    <p className="text-base font-bold text-[var(--primary)]" style={{ fontFamily: 'Manrope, sans-serif' }}>{entry.user?.points}</p>
                                     <p className="text-xs text-muted">points</p>
                                 </div>
                             </motion.div>

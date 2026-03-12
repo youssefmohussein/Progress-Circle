@@ -206,34 +206,50 @@ export function Profile() {
 
                 <div className="space-y-8">
                     {/* Immersive Presets */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        {universeThemes.map((t) => (
-                            <button
-                                key={t.name}
-                                onClick={() => saveThemePreference({ 
-                                    primaryColor: t.primary, 
-                                    accentColor: t.accent,
-                                    bg: t.bg,
-                                    surface: t.surface,
-                                    mode: 'dark'
-                                })}
-                                className={`group relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all overflow-hidden ${
-                                    theme.primaryColor === t.primary ? 'bg-white/[0.07] border-primary/40 ring-1 ring-primary/40' : 'bg-white/5 border-transparent hover:border-white/20'
-                                } border`}
-                            >
-                                <div className="flex gap-2">
-                                    <div className="w-5 h-5 rounded-full shadow-lg" style={{ background: t.primary }} />
-                                    <div className="w-5 h-5 rounded-full shadow-lg" style={{ background: t.accent }} />
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-colors">{t.name}</span>
-                                {theme.primaryColor === t.primary && (
-                                    <div className="absolute top-2 right-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    {user.plan === 'premium' ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            {universeThemes.map((t) => (
+                                <button
+                                    key={t.name}
+                                    onClick={() => saveThemePreference({ 
+                                        primaryColor: t.primary, 
+                                        accentColor: t.accent,
+                                        bg: t.bg,
+                                        surface: t.surface,
+                                        mode: 'dark'
+                                    })}
+                                    className={`group relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all overflow-hidden ${
+                                        theme.primaryColor === t.primary ? 'bg-white/[0.07] border-primary/40 ring-1 ring-primary/40' : 'bg-white/5 border-transparent hover:border-white/20'
+                                    } border`}
+                                >
+                                    <div className="flex gap-2">
+                                        <div className="w-5 h-5 rounded-full shadow-lg" style={{ background: t.primary }} />
+                                        <div className="w-5 h-5 rounded-full shadow-lg" style={{ background: t.accent }} />
                                     </div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-colors">{t.name}</span>
+                                    {theme.primaryColor === t.primary && (
+                                        <div className="absolute top-2 right-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="relative p-8 rounded-2xl bg-white/[0.02] border border-white/5 overflow-hidden flex flex-col items-center text-center">
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 pointer-events-none" />
+                            <Lock className="text-amber-500 mb-3 opacity-80" size={32} />
+                            <h4 className="text-sm font-black text-white mb-2">Pro Feature Locked</h4>
+                            <p className="text-xs text-pc-muted mb-4 max-w-xs">
+                                Upgrade to Premium to unlock immersive Universe Themes and customize your entire Progress Circle experience.
+                            </p>
+                            <Link to="/pricing">
+                                <Button className="relative z-10 px-6 py-2 rounded-xl text-xs font-black shadow-lg shadow-amber-500/20" variant="primary" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+                                    <Crown size={14} className="mr-2 inline" /> Unlock Themes
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
 
                     <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-3">
                         <Sparkles className="text-primary/70 shrink-0" size={16} />
