@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Repeat, Trash2, CheckCircle2, Calendar, Clock, Sparkles } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Modal } from '../components/Modal';
@@ -11,6 +13,8 @@ import { toast } from 'sonner';
 
 export function Habits() {
     const { habits, addHabit, toggleHabit, deleteHabit } = useData();
+    const { user } = useAuth();
+
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState({
         name: '', description: '', frequency: 1, duration: 4 // default 4 weeks
@@ -52,8 +56,17 @@ export function Habits() {
                     <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Habit Loops</h1>
                     <p className="text-xs text-muted font-medium mt-1 uppercase tracking-[0.2em]">{habits.length} active loops</p>
                 </div>
-                <Button icon={Plus} onClick={() => setModalOpen(true)}>New Habit</Button>
+                {user?.plan === 'free' && habits.length >= 5 ? (
+                    <Link to="/pricing">
+                        <Button variant="premium" className="bg-gradient-to-r from-amber-500 to-orange-600 border-none">
+                            ✨ Unlock Unlimited
+                        </Button>
+                    </Link>
+                ) : (
+                    <Button icon={Plus} onClick={() => setModalOpen(true)}>New Habit</Button>
+                )}
             </div>
+
 
             {habits.length === 0 ? (
                 <EmptyState icon={Repeat} title="No active loops" description="consistency is the key to mastery. Start a new habit today." />
