@@ -63,14 +63,6 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: null
         },
-        streakFreezes: {
-            type: Number,
-            default: 0
-        },
-        streakHistory: {
-            type: [Date],
-            default: []
-        },
         isAdmin: {
             type: Boolean,
             default: false,
@@ -116,55 +108,36 @@ const userSchema = new mongoose.Schema(
             enum: ['male', 'female', ''],
             default: '',
         },
-        plan: {
-            type: String,
-            enum: ['free', 'premium'],
-            default: 'free',
-        },
-        subscription: {
-            status: {
-                type: String,
-                enum: ['inactive', 'active', 'cancelled', 'expired'],
-                default: 'inactive',
-            },
-            billingCycle: {
-                type: String,
-                enum: ['monthly', 'yearly', ''],
-                default: '',
-            },
-            currentPeriodEnd: {
-                type: Date,
-                default: null,
-            },
-            paymobOrderId: {
-                type: String,
-                default: '',
-            },
-            paymobTransactionId: {
-                type: String,
-                default: '',
-            },
-            paymobToken: {
-                type: String,
-                default: '',
-            },
+        themePreferences: {
+            primaryColor: { type: String, default: '#6366f1' },
+            accentColor: { type: String, default: '#8b5cf6' },
+            bg: { type: String, default: '' },
+            surface: { type: String, default: '' },
+            mode: { type: String, default: 'dark' },
+            glassmorphism: { type: Boolean, default: true },
         },
         musicPreferences: {
-            platform: {
-                type: String,
-                enum: ['spotify', 'anghami', 'apple', ''],
-                default: '',
-            },
-            playlistUrl: {
-                type: String,
-                default: '',
-            },
+            platform: { type: String, default: '' },
+            playlistUrl: { type: String, default: '' },
         },
         linkedAccounts: {
             spotify: { type: Boolean, default: false },
             anghami: { type: Boolean, default: false },
             apple: { type: Boolean, default: false },
         },
+        streakHistory: {
+            type: [Date],
+            default: [],
+        },
+        streakFreezes: {
+            type: Number,
+            default: 0,
+        },
+        plan: {
+            type: String,
+            enum: ['free', 'premium'],
+            default: 'free',
+        }
     },
     { timestamps: true }
 );

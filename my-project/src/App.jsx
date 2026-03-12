@@ -20,8 +20,6 @@ import { AvatarShop } from './pages/AvatarShop';
 import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
 import { Planner } from './pages/Planner';
-import Pricing from './pages/Pricing';
-import PaymentSuccess from './pages/PaymentSuccess';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -58,9 +56,6 @@ function AppRoutes() {
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
 
-      <Route path="/pricing" element={<PrivateRoute><Layout><Pricing /></Layout></PrivateRoute>} />
-      <Route path="/payment/success" element={<PrivateRoute><PaymentSuccess /></PrivateRoute>} />
-
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
@@ -70,8 +65,8 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <ThemeProvider>
           <DataProvider>
             <GamificationProvider>
               <AppRoutes />
@@ -88,8 +83,8 @@ function App() {
               />
             </GamificationProvider>
           </DataProvider>
-        </AuthProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

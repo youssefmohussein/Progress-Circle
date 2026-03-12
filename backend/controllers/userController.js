@@ -12,15 +12,20 @@ const getProfile = async (req, res) => {
             name: user.name,
             email: user.email,
             avatar: user.avatar,
+            avatarConfig: user.avatarConfig,
             points: user.points,
             streak: user.streak,
+            streakHistory: user.streakHistory,
+            streakFreezes: user.streakFreezes,
             joinedAt: user.createdAt,
             savingsEnabled: user.savingsEnabled,
             fitnessEnabled: user.fitnessEnabled,
             nutritionEnabled: user.nutritionEnabled,
             habitsEnabled: user.habitsEnabled,
+            themePreferences: user.themePreferences,
             musicPreferences: user.musicPreferences,
             linkedAccounts: user.linkedAccounts,
+            plan: user.plan,
         },
     });
 };
@@ -30,21 +35,29 @@ const getProfile = async (req, res) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
     try {
-        const { name, avatar, savingsEnabled, fitnessEnabled, musicPreferences, linkedAccounts } = req.body;
+        const { 
+            name, avatar, savingsEnabled, fitnessEnabled, 
+            nutritionEnabled, habitsEnabled, themePreferences,
+            musicPreferences, linkedAccounts, avatarConfig
+        } = req.body;
 
         const updateData = {};
         if (name !== undefined) updateData.name = name;
         if (avatar !== undefined) updateData.avatar = avatar;
+        if (avatarConfig !== undefined) updateData.avatarConfig = avatarConfig;
         if (savingsEnabled !== undefined) updateData.savingsEnabled = savingsEnabled;
         if (fitnessEnabled !== undefined) updateData.fitnessEnabled = fitnessEnabled;
-        if (req.body.nutritionEnabled !== undefined) updateData.nutritionEnabled = req.body.nutritionEnabled;
-        if (req.body.habitsEnabled !== undefined) updateData.habitsEnabled = req.body.habitsEnabled;
+        if (nutritionEnabled !== undefined) updateData.nutritionEnabled = nutritionEnabled;
+        if (habitsEnabled !== undefined) updateData.habitsEnabled = habitsEnabled;
+        
+        // Deep merge or overwrite for objects
+        if (themePreferences !== undefined) updateData.themePreferences = themePreferences;
         if (musicPreferences !== undefined) updateData.musicPreferences = musicPreferences;
         if (linkedAccounts !== undefined) updateData.linkedAccounts = linkedAccounts;
 
         const user = await User.findByIdAndUpdate(
             req.user._id,
-            updateData,
+            { $set: updateData },
             { new: true, runValidators: true }
         );
 
@@ -55,15 +68,20 @@ const updateProfile = async (req, res, next) => {
                 name: user.name,
                 email: user.email,
                 avatar: user.avatar,
+                avatarConfig: user.avatarConfig,
                 points: user.points,
                 streak: user.streak,
+                streakHistory: user.streakHistory,
+                streakFreezes: user.streakFreezes,
                 joinedAt: user.createdAt,
                 savingsEnabled: user.savingsEnabled,
                 fitnessEnabled: user.fitnessEnabled,
                 nutritionEnabled: user.nutritionEnabled,
                 habitsEnabled: user.habitsEnabled,
+                themePreferences: user.themePreferences,
                 musicPreferences: user.musicPreferences,
                 linkedAccounts: user.linkedAccounts,
+                plan: user.plan,
             },
         });
     } catch (error) {

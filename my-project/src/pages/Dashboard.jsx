@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, Flame, Trophy, Target, TrendingUp, Clock, CalendarDays, Brain, BellRing, Sparkles, Timer, PieChart, BarChart3, ArrowRight, Zap, Coffee, Activity, Crown } from 'lucide-react';
+import { CheckCircle2, Flame, Trophy, Target, TrendingUp, Clock, CalendarDays, Brain, BellRing, Sparkles, Timer, PieChart, BarChart3, ArrowRight, Zap, Coffee, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { StatCard } from '../components/StatCard';
@@ -16,7 +16,6 @@ import { WeeklyInsights } from '../components/WeeklyInsights';
 import { ProgressCircle } from '../components/ProgressCircle';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
-import AdBanner from '../components/AdBanner';
 
 const QUOTES = [
     'Great work today!',
@@ -127,7 +126,7 @@ export function Dashboard() {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">{user?.plan === 'premium' ? 'Premium ✨' : 'Free Plan'}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">Premium System</span>
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">•</span>
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">{dayjs().format('MMMM D, YYYY')}</span>
                     </div>
@@ -151,10 +150,10 @@ export function Dashboard() {
             {/* Today Overview Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Main Progress Brain */}
-                <Card className="md:col-span-2 relative overflow-hidden flex flex-col justify-between min-h-[180px] p-5">
-                    <div className="absolute top-0 right-0 p-8 opacity-5">
-                        <Brain size={120} />
-                    </div>
+                <Card className="md:col-span-2 pc-card overflow-hidden group relative">
+                    {/* Glowing background effect */}
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-all duration-700" />
 
                     <div className="flex flex-col md:flex-row gap-6 items-center">
                         <div className="flex-shrink-0">
@@ -168,8 +167,8 @@ export function Dashboard() {
 
                         <div className="flex-1 w-full">
                             <div className="flex items-center gap-2 mb-4">
-                                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
-                                    <Zap size={18} />
+                                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
+                                    <Zap className="text-primary" size={24} />
                                 </div>
                                 <h2 className="text-lg font-black">Today Intelligence</h2>
                             </div>
@@ -196,17 +195,17 @@ export function Dashboard() {
                         <span className="text-[10px] font-black uppercase tracking-widest text-pc-muted">Current Momentum</span>
                         <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map(i => (
-                                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i <= (taskProgress / 20) ? 'bg-indigo-500 animate-pulse' : 'bg-white/10'}`} />
+                                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i <= (taskProgress / 20) ? 'bg-primary animate-pulse' : 'bg-white/10'}`} />
                             ))}
                         </div>
                     </div>
                 </Card>
 
                 {/* Smart Time Suggestion */}
-                <Card className="flex flex-col justify-between border-l-4 border-l-indigo-500 bg-indigo-500/5">
+                <Card className="flex flex-col justify-between border-l-4 border-l-primary bg-primary/5">
                     <div>
                         <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={16} className="text-indigo-500" />
+                            <Sparkles size={16} className="text-primary" />
                             <h3 className="text-xs font-black uppercase tracking-widest">Smart Suggestion</h3>
                         </div>
                         <p className="font-bold text-sm leading-snug">
@@ -216,7 +215,7 @@ export function Dashboard() {
                         </p>
                     </div>
 
-                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 mt-4 hover:gap-3 transition-all">
+                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary mt-4 hover:gap-3 transition-all">
                         View Planner <ArrowRight size={12} />
                     </button>
                 </Card>
@@ -251,7 +250,6 @@ export function Dashboard() {
                             <div className="flex items-center gap-2">
                                 <Activity size={16} className="text-indigo-500" />
                                 <h2 className="text-xs font-black uppercase tracking-widest">Activity Timeline</h2>
-                                {user?.plan !== 'premium' && <span className="ml-2 text-[8px] pc-badge-premium px-1 py-0 px-2 rounded-full">Pro</span>}
                             </div>
                         </div>
                         <ActivityTimeline activities={activities} />
@@ -276,12 +274,7 @@ export function Dashboard() {
                 {/* Right Column - Tasks & Visualization */}
                 <div className="lg:col-span-8 space-y-6">
                     {/* Weekly Performance */}
-                    <Card className="p-4 relative">
-                        {user?.plan !== 'premium' && (
-                            <div className="absolute top-4 right-4 flex items-center gap-1 text-[9px] font-black bg-indigo-500/10 text-indigo-400 px-2 py-1 rounded-full border border-indigo-500/20">
-                                <Crown size={10} /> ADVANCED
-                            </div>
-                        )}
+                    <Card className="p-4">
                         <WeeklyInsights tasks={tasks} sessions={sessions} />
                     </Card>
 
@@ -289,11 +282,12 @@ export function Dashboard() {
                     <Card className="relative p-5">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
-                                    <Target size={18} />
+                                <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary group-hover:bg-primary/20 transition-all">
+                                    <Target size={20} />
+                                    <div className="absolute bottom-0 left-0 h-0.5 bg-primary/40 rounded-full transition-all group-hover:w-full" style={{ width: `${taskProgress}%` }} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-black">Focus Tasks</h2>
+                                    <p className="text-2xl font-black text-primary">{Math.round(taskProgress)}%</p>
                                     <p className="text-[10px] text-pc-muted font-medium">Critical items requiring immediate attention</p>
                                 </div>
                             </div>
@@ -363,9 +357,6 @@ export function Dashboard() {
                     </div>
                 </div>
             </div>
-
-            {/* Ad Banner — free users only */}
-            <AdBanner slot="7245183921" style={{ marginTop: '8px' }} />
         </div>
     );
 }

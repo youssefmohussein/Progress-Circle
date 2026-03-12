@@ -1,18 +1,24 @@
-import { motion } from 'framer-motion';
-import { Trophy, Calendar, TrendingUp, Sprout, ShoppingBag, Star, Crown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    User, Mail, Calendar, Trophy, Zap, Shield, 
+    Palette, Sun, Moon, Sparkles, ChevronRight,
+    Music, Link2, ExternalLink, Check, Star, ShoppingBag, Sprout,
+    Flame, Snowflake, Crown, TrendingUp, RotateCcw
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useGamification } from '../context/GamificationContext';
 import { Card } from '../components/Card';
+import { Button } from '../components/Button';
 import { AvatarDisplay } from '../components/AvatarDisplay';
-import { StatCard } from '../components/StatCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { StatCard } from '../components/StatCard';
 import { StreakCalendar } from '../components/StreakCalendar';
-import { Snowflake, Check, ExternalLink, Link2, Music } from 'lucide-react';
-import { useState } from 'react';
 import api from '../api/client';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useTheme } from '../context/ThemeContext';
 
 export function Profile() {
     const { user, setUser } = useAuth();
@@ -21,9 +27,11 @@ export function Profile() {
     const [updating, setUpdating] = useState(false);
     
     // Music Preferences Local States
-    const [musicPlatform, setMusicPlatform] = useState(user.musicPreferences?.platform || '');
-    const [playlistUrl, setPlaylistUrl] = useState(user.musicPreferences?.playlistUrl || '');
+    const [musicPlatform, setMusicPlatform] = useState(user?.musicPreferences?.platform || '');
+    const [playlistUrl, setPlaylistUrl] = useState(user?.musicPreferences?.playlistUrl || '');
     const [isSavingMusic, setIsSavingMusic] = useState(false);
+
+    const { theme, updateTheme, resetToDefaults, dark, toggleDark } = useTheme();
 
     if (!user || !tasks) return <LoadingSpinner />;
 
@@ -33,10 +41,6 @@ export function Profile() {
             const res = await api.put('/users/profile', {
                 [module]: !user[module]
             });
-            // Update auth context directly if possible, or force reload/re-fetch
-            // Assuming useAuth provides a way to update the user object. Let's mutate locally or rely on re-fetch.
-            // If there's no updateContextUser function, reload page is a safe fallback for context sync.
-            // Alternatively, wait if `login(res.data.data, token)` exists.
             if (res.data?.success) {
                 setUser(res.data.data);
                 toast.success('Module preferences updated.');
@@ -68,26 +72,52 @@ export function Profile() {
         }
     };
 
-    const toggleAccountLink = async (platform) => {
+    const saveThemePreference = async (newPrefs) => {
         try {
-            setUpdating(true);
-            const currentLinked = user.linkedAccounts || {};
+            // Update context immediately
+            updateTheme(newPrefs);
+            
+            // Sync with backend
             const res = await api.put('/users/profile', {
-                linkedAccounts: {
-                    ...currentLinked,
-                    [platform]: !currentLinked[platform]
-                }
+                themePreferences: { ...theme, ...newPrefs }
+            });
+            
+            if (res.data?.success) {
+                setUser(res.data.data);
+            }
+        } catch (error) {
+            toast.error('Failed to save theme choice');
+        }
+    };
+
+    const handleToggleMode = async (mode) => {
+        await saveThemePreference({ mode, bg: '', surface: '', surface2: '' });
+    };
+
+    const handleRestoreDefaults = async () => {
+        try {
+            const defaults = resetToDefaults();
+            const res = await api.put('/users/profile', {
+                themePreferences: defaults
             });
             if (res.data?.success) {
                 setUser(res.data.data);
-                toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} account ${!currentLinked[platform] ? 'linked' : 'unlinked'}.`);
+                toast.success('Restored to original colors');
             }
         } catch (error) {
-            toast.error('Failed to update account link');
-        } finally {
-            setUpdating(false);
+            toast.error('Failed to restore defaults');
         }
     };
+
+    const universeThemes = [
+        { name: 'Indigo Core', primary: '#6366f1', accent: '#8b5cf6', bg: '#0b0d12', surface: '#151824' },
+        { name: 'Neon Cyber', primary: '#0ea5e9', accent: '#f43f5e', bg: '#020617', surface: '#0f172a' },
+        { name: 'Emerald Vault', primary: '#10b981', accent: '#059669', bg: '#061a12', surface: '#0d2d21' },
+        { name: 'Sunset Focus', primary: '#f59e0b', accent: '#dc2626', bg: '#1a1005', surface: '#2d1c0d' },
+        { name: 'Deep Space', primary: '#a855f7', accent: '#6366f1', bg: '#000000', surface: '#0a0a0a' },
+        { name: 'Midnight Bloom', primary: '#ec4899', accent: '#8b5cf6', bg: '#0f172a', surface: '#1e293b' },
+        { name: 'Arctic Frost', primary: '#38bdf8', accent: '#0ea5e9', bg: '#0f172a', surface: '#1e293b' },
+    ];
 
     const completedTasks = tasks.filter((t) => t.status === 'completed').length;
     const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
@@ -101,10 +131,9 @@ export function Profile() {
                         <AvatarDisplay avatarConfig={gamData?.avatarConfig} size="xl" />
                     </div>
                     <div className="flex-1">
-                        <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
+                        <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
                         <p className="text-sm text-muted">{user.email}</p>
 
-                        {/* Plan Badge */}
                         <div className="flex items-center gap-2 mt-2">
                             {user.plan === 'premium' ? (
                                 <span style={{
@@ -118,30 +147,19 @@ export function Profile() {
                             ) : (
                                 <Link to="/pricing" style={{
                                     display: 'inline-flex', alignItems: 'center', gap: '4px',
-                                    background: 'rgba(99,102,241,0.12)', color: '#6366f1',
+                                    background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary)',
                                     fontSize: '11px', fontWeight: 700,
                                     padding: '2px 10px', borderRadius: '999px', textDecoration: 'none',
                                 }}>
                                     ✦ Upgrade to Premium
                                 </Link>
                             )}
-                            {user.plan === 'premium' && (
-                                <Link to="/pricing" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', textDecoration: 'underline' }}>Manage</Link>
-                            )}
                         </div>
 
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-2 text-sm text-muted">
-                            <span className="font-semibold text-indigo-500">{user.points || 0} pts</span>
+                            <span className="font-semibold text-primary">{user.points || 0} pts</span>
                             <span className="hidden sm:inline">·</span>
                             <span>{user.streak || 0} day streak 🔥</span>
-                            {user.plan === 'premium' && (
-                                <>
-                                    <span className="hidden sm:inline">·</span>
-                                    <span className="flex items-center gap-1 text-blue-400 font-bold">
-                                        <Snowflake size={14} /> {user.streakFreezes || 0} Freezes
-                                    </span>
-                                </>
-                            )}
                             {gamData && <><span className="hidden sm:inline">·</span><span>🌳 {gamData.trees?.length || 0} trees</span></>}
                             {joined && <><span className="hidden sm:inline">·</span><span className="text-xs">Since {joined}</span></>}
                         </div>
@@ -151,67 +169,82 @@ export function Profile() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
-                <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="indigo" delay={0} />
+                <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="primary" delay={0} />
                 <StatCard label="Total Nodes" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
             </div>
 
-            {/* Streak Consistency Calendar */}
-            <div className="space-y-3">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-lg font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Consistency Calendar</h3>
-                    <Link to="/pricing" className="text-[10px] font-black uppercase tracking-widest text-indigo-500">View Gating</Link>
+            {/* Theme Studio */}
+            <Card className="border-primary/20 bg-white/[0.02]">
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <Palette className="pc-gradient-text" size={22} />
+                        <h2 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Universe Themes</h2>
+                    </div>
+                    <div className="flex bg-white/5 rounded-xl p-1 gap-1">
+                        <button 
+                            onClick={handleRestoreDefaults}
+                            className="p-2 rounded-lg text-pc-muted hover:text-white transition-all"
+                            title="Restore Defaults"
+                        >
+                            <RotateCcw size={14} />
+                        </button>
+                        <div className="w-[1px] h-4 bg-white/10 my-auto mx-1" />
+                        <button 
+                            onClick={() => handleToggleMode('light')}
+                            className={`p-2 rounded-lg transition-all ${!dark && !theme.bg ? 'bg-white text-black shadow-lg shadow-white/20' : 'text-pc-muted hover:text-white'}`}
+                        >
+                            <Sun size={14} />
+                        </button>
+                        <button 
+                            onClick={() => handleToggleMode('dark')}
+                            className={`p-2 rounded-lg transition-all ${dark && !theme.bg ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-pc-muted hover:text-white'}`}
+                        >
+                            <Moon size={14} />
+                        </button>
+                    </div>
                 </div>
-                <StreakCalendar history={user.streakHistory} plan={user.plan} />
-            </div>
 
-            {/* Gamification Quick Access */}
-            <div className="grid grid-cols-3 gap-3">
-                {[
-                    { to: '/farm', icon: Sprout, label: 'My Farm', value: gamData ? `${gamData.trees?.length || 0} trees` : '—', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
-                    { to: '/avatar-shop', icon: ShoppingBag, label: 'Avatar Shop', value: `${user.points || 0} pts`, color: '#6366f1', bg: 'rgba(99,102,241,0.1)' },
-                    { to: '/milestones', icon: Star, label: 'Milestones', value: gamData ? `${gamData.milestones?.filter(m => m.unlocked).length || 0}/${gamData.milestones?.length || 0}` : '—', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-                ].map(card => (
-                    <Link key={card.to} to={card.to} style={{ textDecoration: 'none' }}>
-                        <motion.div
-                            whileHover={{ y: -2, scale: 1.02 }}
-                            className="flex flex-col items-center gap-2 p-3 rounded-2xl text-center transition-all"
-                            style={{ background: card.bg }}
-                        >
-                            <div className="p-2 rounded-xl" style={{ background: `${card.color}22` }}>
-                                <card.icon size={18} style={{ color: card.color }} />
-                            </div>
-                            <p className="text-[11px] font-bold" style={{ color: 'var(--color-text)' }}>{card.label}</p>
-                            <p className="text-[10px] text-muted">{card.value}</p>
-                        </motion.div>
-                    </Link>
-                ))}
-            </div>
+                <div className="space-y-8">
+                    {/* Immersive Presets */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {universeThemes.map((t) => (
+                            <button
+                                key={t.name}
+                                onClick={() => saveThemePreference({ 
+                                    primaryColor: t.primary, 
+                                    accentColor: t.accent,
+                                    bg: t.bg,
+                                    surface: t.surface,
+                                    mode: 'dark'
+                                })}
+                                className={`group relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all overflow-hidden ${
+                                    theme.primaryColor === t.primary ? 'bg-white/[0.07] border-primary/40 ring-1 ring-primary/40' : 'bg-white/5 border-transparent hover:border-white/20'
+                                } border`}
+                            >
+                                <div className="flex gap-2">
+                                    <div className="w-5 h-5 rounded-full shadow-lg" style={{ background: t.primary }} />
+                                    <div className="w-5 h-5 rounded-full shadow-lg" style={{ background: t.accent }} />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-colors">{t.name}</span>
+                                {theme.primaryColor === t.primary && (
+                                    <div className="absolute top-2 right-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
 
-            {/* Activity summary */}
-            <Card>
-                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Activity Summary</h3>
-                <div className="space-y-3">
-                    {[
-                        { label: 'Total Tasks', value: tasks.length },
-                        { label: 'Tasks Completed', value: completedTasks },
-                        { label: 'Pending Nodes', value: tasks.length - completedTasks },
-                    ].map((row, i) => (
-                        <motion.div
-                            key={row.label}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.04 }}
-                            className="flex justify-between items-center py-2.5 px-4 rounded-xl"
-                            style={{ background: 'var(--color-surface-2)' }}
-                        >
-                            <span className="text-sm text-muted">{row.label}</span>
-                            <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>{row.value}</span>
-                        </motion.div>
-                    ))}
+                    <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-3">
+                        <Sparkles className="text-primary/70 shrink-0" size={16} />
+                        <p className="text-[10px] text-pc-muted font-medium leading-relaxed">
+                            Universe Presets are immersive transformations. Selecting one transforms the colors, gradients, and atmospheric lighting of your entire platform.
+                        </p>
+                    </div>
                 </div>
             </Card>
 
-            {/* System Modules - "The Brain" of your app */}
+            {/* System Modules */}
             <Card className="relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
                     <TrendingUp size={80} />
@@ -226,133 +259,23 @@ export function Profile() {
                         { key: 'fitnessEnabled', label: 'Physical Wellness', desc: 'Workout splits and physical body metrics.', icon: 'Activity' },
                         { key: 'nutritionEnabled', label: 'Nutrition & Fuel', desc: 'Monitor daily intake and meal planning.', icon: 'Salad', comingSoon: true },
                     ].map((mod) => (
-                        <div key={mod.key} className="flex justify-between items-center py-3 px-4 rounded-2xl bg-white/5 border border-white/5 hover:border-indigo-500/20 transition-all">
+                        <div key={mod.key} className="flex justify-between items-center py-3 px-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
                             <div className="flex-1">
                                 <div className="flex items-center gap-2">
                                     <p className="font-bold text-sm">{mod.label}</p>
-                                    {mod.comingSoon && <span className="text-[8px] font-black bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded uppercase">Experimental</span>}
+                                    {mod.comingSoon && <span className="text-[8px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">Experimental</span>}
                                 </div>
                                 <p className="text-[11px] text-pc-muted">{mod.desc}</p>
                             </div>
                             <button
                                 disabled={updating || mod.comingSoon}
                                 onClick={() => toggleModule(mod.key)}
-                                className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user[mod.key] ? 'bg-indigo-500' : 'bg-white/10'}`}
+                                className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${user[mod.key] ? 'bg-primary' : 'bg-white/10'}`}
                             >
                                 <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${user[mod.key] ? 'translate-x-5' : 'translate-x-0'}`} />
                             </button>
                         </div>
                     ))}
-                </div>
-            </Card>
-
-            {/* Connected Services */}
-            <Card>
-                <div className="flex items-center gap-2 mb-4">
-                    <Link2 className="text-indigo-500" size={20} />
-                    <h3 className="text-lg font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Connected Services</h3>
-                </div>
-                <p className="text-pc-muted text-xs mb-6">Sign in to your accounts to unlock full track playback & private playlists.</p>
-
-                <div className="space-y-4">
-                    {[
-                        { id: 'spotify', name: 'Spotify', color: '#1DB954', loginUrl: 'https://accounts.spotify.com/en/login' },
-                        { id: 'anghami', name: 'Anghami', color: '#ed1c24', loginUrl: 'https://play.anghami.com/login' },
-                        { id: 'apple', name: 'Apple Music', color: '#fc3c44', loginUrl: 'https://music.apple.com/login' },
-                    ].map((platform) => {
-                        const isLinked = user.linkedAccounts?.[platform.id];
-                        return (
-                            <div key={platform.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 group hover:border-white/10 transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2.5 rounded-xl transition-all" style={{ backgroundColor: isLinked ? platform.color + '22' : 'rgba(255,255,255,0.05)' }}>
-                                        <Music size={18} style={{ color: isLinked ? platform.color : 'rgba(255,255,255,0.3)' }} />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-sm tracking-tight">{platform.name}</p>
-                                        <p className="text-[10px] text-pc-muted font-medium">Session-based auth required</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    {!isLinked ? (
-                                        <>
-                                            <a 
-                                                href={platform.loginUrl} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-wider hover:bg-white/5 transition-all text-pc-muted"
-                                            >
-                                                <ExternalLink size={12} /> Sign In
-                                            </a>
-                                            <button 
-                                                onClick={() => toggleAccountLink(platform.id)}
-                                                className="px-3 py-1.5 rounded-xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider hover:bg-indigo-600 transition-all"
-                                            >
-                                                Confirm Link
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <button 
-                                            onClick={() => toggleAccountLink(platform.id)}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-wider hover:bg-white/5 transition-all text-green-500 font-black"
-                                        >
-                                            <Check size={12} /> Linked
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </Card>
-
-            {/* Deep Work Radio Settings */}
-            <Card className="border-indigo-500/20 bg-indigo-500/5">
-                <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp className="text-indigo-500" size={20} />
-                    <h3 className="text-lg font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Deep Radio Hub</h3>
-                </div>
-                <p className="text-xs text-pc-muted mb-6">Bind your signature playlist to your cockpit for instant focus activation.</p>
-
-                <div className="space-y-4">
-                    <div className="flex gap-2">
-                        {[
-                            { id: 'spotify', name: 'Spotify', color: '#1DB954' },
-                            { id: 'anghami', name: 'Anghami', color: '#ed1c24' },
-                            { id: 'apple', name: 'Apple Music', color: '#fc3c44' },
-                        ].map(p => (
-                            <button
-                                key={p.id}
-                                onClick={() => setMusicPlatform(p.id)}
-                                className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl border transition-all ${
-                                    musicPlatform === p.id 
-                                        ? `bg-white/10 border-white/20 text-white` 
-                                        : 'bg-white/5 border-transparent text-pc-muted hover:bg-white/10'
-                                }`}
-                                style={{ borderBottom: musicPlatform === p.id ? `3px solid ${p.color}` : '' }}
-                            >
-                                <span className="text-[10px] font-black uppercase tracking-wider">{p.name}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Paste your favorite playlist link..."
-                            value={playlistUrl}
-                            onChange={(e) => setPlaylistUrl(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-xs focus:outline-none focus:border-indigo-500/50 transition-all font-medium"
-                        />
-                    </div>
-
-                    <button
-                        onClick={saveMusicPreferences}
-                        disabled={isSavingMusic || (!musicPlatform && !playlistUrl)}
-                        className="w-full py-3 rounded-2xl bg-indigo-500 text-white text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all disabled:opacity-50"
-                    >
-                        {isSavingMusic ? 'Binding Settings...' : 'Save Radio Profile'}
-                    </button>
                 </div>
             </Card>
         </div>
