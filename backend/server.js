@@ -24,6 +24,7 @@ const calendarRoutes = require('./routes/calendarRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const integrationRoutes = require('./routes/integrationRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -96,6 +97,7 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/admin/analytics', analyticsRoutes);
 app.use('/api/integration', integrationRoutes);
+app.use('/api/ai', aiRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

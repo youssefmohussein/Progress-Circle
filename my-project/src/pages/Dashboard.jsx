@@ -14,6 +14,7 @@ import { ProgressBar } from '../components/ProgressBar';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import { WeeklyInsights } from '../components/WeeklyInsights';
 import { ProgressCircle } from '../components/ProgressCircle';
+import { AstraAssistant } from '../components/AstraAssistant';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
 
@@ -215,9 +216,11 @@ export function Dashboard() {
                         </p>
                     </div>
 
-                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary mt-4 hover:gap-3 transition-all">
-                        View Planner <ArrowRight size={12} />
-                    </button>
+                    <Link to="/planner">
+                        <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary mt-4 hover:gap-3 transition-all">
+                            View Planner <ArrowRight size={12} />
+                        </button>
+                    </Link>
                 </Card>
 
                 {/* Next Deadline Card */}
@@ -243,8 +246,10 @@ export function Dashboard() {
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left Column - Activity & More */}
+                {/* Left Column - Intelligence & Activity */}
                 <div className="lg:col-span-4 space-y-6">
+                    <AstraAssistant />
+
                     <Card className="p-4">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
@@ -291,7 +296,9 @@ export function Dashboard() {
                                     <p className="text-[10px] text-pc-muted font-medium">Critical items requiring immediate attention</p>
                                 </div>
                             </div>
-                            <Button variant="ghost" className="h-8 px-3 text-[10px]">View All</Button>
+                            <Link to="/tasks">
+                                <Button variant="ghost" className="h-8 px-3 text-[10px]">View All</Button>
+                            </Link>
                         </div>
 
                         {todaysTasks.length === 0 ? (
