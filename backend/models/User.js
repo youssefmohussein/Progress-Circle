@@ -137,6 +137,23 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ['free', 'premium'],
             default: 'free',
+        },
+        followers: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }],
+        following: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }],
+        socialStats: {
+            battlesWon: { type: Number, default: 0 },
+            orbsSent: { type: Number, default: 0 },
+            synergyPoints: { type: Number, default: 0 },
+            dailyPoints: [{
+                date: { type: Date },
+                points: { type: Number }
+            }]
         }
     },
     { timestamps: true }

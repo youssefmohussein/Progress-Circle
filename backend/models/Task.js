@@ -77,6 +77,14 @@ const taskSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        isSynergyTask: {
+            type: Boolean,
+            default: false,
+        },
+        collaborators: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }],
     },
     { timestamps: true }
 );

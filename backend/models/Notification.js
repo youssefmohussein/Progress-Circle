@@ -1,0 +1,16 @@
+const mongoose = require('mongoose');
+
+const notificationSchema = new mongoose.Schema({
+    recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    type: { 
+        type: String, 
+        enum: ['battle_invite', 'battle_accepted', 'battle_rejected', 'synergy_orb', 'follow_request'],
+        required: true 
+    },
+    status: { type: String, enum: ['pending', 'read', 'accepted', 'rejected'], default: 'pending' },
+    refId: { type: mongoose.Schema.Types.ObjectId }, // Link to Battle or Orb transaction
+    message: { type: String }
+}, { timestamps: true });
+
+module.exports = mongoose.model('Notification', notificationSchema);
