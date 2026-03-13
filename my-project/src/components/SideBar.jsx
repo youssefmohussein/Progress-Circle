@@ -59,7 +59,7 @@ const getSidebarBase = (dark, primary) => ({
     borderRight: dark ? 'none' : '1px solid var(--border)',
 });
 
-function SidebarContent({ onClose }) {
+export function SidebarContent({ onClose }) {
     const location = useLocation();
     const { logout, user } = useAuth();
     const { dark, toggleDark } = useTheme();
