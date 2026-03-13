@@ -1,20 +1,26 @@
 import { createAvatar } from '@dicebear/core';
 import { openPeeps } from '@dicebear/collection';
 
-const heads = [
-    "afro", "bangs", "pomp", "bear", "hatBeanie", "hatHip", "hijab", "turban", "mohawk"
-];
-
-heads.forEach(head => {
-    const avatar = createAvatar(openPeeps, {
-        head: [head],
-    });
+function inspect(facialHair) {
+    const options = {
+        seed: 'test',
+        facialHair: facialHair ? [facialHair] : [],
+        facialHairProbability: facialHair ? 100 : 0
+    };
+    const avatar = createAvatar(openPeeps, options);
     const svg = avatar.toString();
-    console.log(`--- ${head} ---`);
-    const fills = svg.match(/fill="#[a-fA-F0-9]{6}"/g) || [];
-    const strokes = svg.match(/stroke="#[a-fA-F0-9]{6}"/g) || [];
-    const uniqueFills = [...new Set(fills)];
-    const uniqueStrokes = [...new Set(strokes)];
-    console.log("Fills:", uniqueFills);
-    console.log("Strokes:", uniqueStrokes);
-});
+    const groupMatches = [...svg.matchAll(/<g transform="([^"]+)"[^>]*>/g)];
+    
+    console.log(`\n--- ${facialHair} ---`);
+    groupMatches.forEach((m, i) => {
+        const startIdx = m.index;
+        const nextMatch = groupMatches[i+1];
+        const endIdx = nextMatch ? nextMatch.index : svg.length;
+        const content = svg.substring(startIdx, endIdx);
+        if (content.length > 50) {
+           console.log(`${i}: ${m[1]}`);
+        }
+    });
+}
+
+inspect('chin');

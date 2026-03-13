@@ -43,24 +43,54 @@ export function generateAvatarSvg(config) {
         
         const headMatch = svg.match(/<g transform="(?:matrix|translate)[^>]+>/);
         const faceMatch = svg.match(/<g transform="translate\(315 248\)"[^>]*>/);
+        const accMatch = svg.match(/<g transform="translate\(203 303\)"[^>]*>/);
 
         if (headMatch && faceMatch && faceMatch.index > headMatch.index) {
             const headIdx = headMatch.index;
             const faceIdx = faceMatch.index;
+            const accIdx = accMatch ? accMatch.index : svg.length;
 
-            let before = svg.substring(0, headIdx);
+            let beforeHead = svg.substring(0, headIdx);
             let headArea = svg.substring(headIdx, faceIdx);
-            const after = svg.substring(faceIdx);
+            let faceArea = svg.substring(faceIdx, accIdx);
+            const afterAcc = svg.substring(accIdx);
 
-            // ONLY target designated 'fabric' and 'decorative' colors in the head group.
-            // This leaves the black (#000) ink untouched to preserve outlines.
-            const targets = ['#9ddadb', '#c93305'];
+            const targets = ['#9ddadb', '#c93305', '#ae5d29', '#000', '#000000'];
+            
+            // Recolor Head Area
             targets.forEach(t => {
                 const re = new RegExp(`fill="${t}"`, 'g');
                 headArea = headArea.replace(re, `fill="${targetColor}"`);
             });
 
-            svg = before + headArea + after;
+            // Recolor Facial Hair Area (inside faceArea group, after the face features)
+            // The face features themselves are also #000, so we must be CAREFUL.
+            // However, faceArea starts with the face group <g transform="translate(315 248)">.
+            // Facial hair groups like <g transform="translate(279 400)"> come AFTER the face group in our range.
+            
+            // Optimization: Only recolor black in the facial hair groups found within faceArea
+            const hairGroupRegex = /<g transform="translate\((?:279 400|179 343|203 303)\)"[^>]*>[\s\S]*?<\/g>/g;
+            // Wait, 203 303 is accessories. We should exclude it from the hairGroupRegex if we use faceArea.
+            // Actually, faceArea is faceIdx to accIdx. accIdx IS the 203 303 group.
+            // So faceArea contains the Face group + Facial Hair groups.
+            
+            // We only want to target the facial hair groups WITHIN faceArea.
+            const facialHairTargets = ['translate(279 400)', 'translate(179 343)'];
+            facialHairTargets.forEach(transform => {
+                const startToken = `<g transform="${transform}"`;
+                const startPos = faceArea.indexOf(startToken);
+                if (startPos !== -1) {
+                    const endPos = faceArea.indexOf('</g>', startPos) + 4;
+                    let group = faceArea.substring(startPos, endPos);
+                    targets.forEach(t => {
+                        const re = new RegExp(`fill="${t}"`, 'g');
+                        group = group.replace(re, `fill="${targetColor}"`);
+                    });
+                    faceArea = faceArea.substring(0, startPos) + group + faceArea.substring(endPos);
+                }
+            });
+
+            svg = beforeHead + headArea + faceArea + afterAcc;
         }
     }
 
