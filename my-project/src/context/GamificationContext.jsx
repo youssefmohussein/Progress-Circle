@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { gamificationAPI } from '../api/gamificationAPI';
 import { useAuth } from './AuthContext';
+import { useData } from './DataContext';
 
 const GamificationContext = createContext(undefined);
 
 export function GamificationProvider({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, refreshUser } = useAuth();
+    const { refreshData } = useData();
     const [gamData, setGamData] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -27,11 +29,15 @@ export function GamificationProvider({ children }) {
     const saveAvatar = async (config) => {
         await gamificationAPI.saveAvatar(config);
         await refresh();
+        if (refreshUser) await refreshUser();
+        if (refreshData) await refreshData();
     };
 
     const buyItem = async (itemId) => {
         await gamificationAPI.buyItem(itemId);
         await refresh();
+        if (refreshUser) await refreshUser();
+        if (refreshData) await refreshData();
     };
 
     return (

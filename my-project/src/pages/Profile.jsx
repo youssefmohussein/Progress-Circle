@@ -11,7 +11,7 @@ import { useData } from '../context/DataContext';
 import { useGamification } from '../context/GamificationContext';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
-import { AvatarDisplay } from '../components/AvatarDisplay';
+import { AvatarDisplay } from '../avatar/AvatarDisplay';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { StatCard } from '../components/StatCard';
 import { StreakCalendar } from '../components/StreakCalendar';

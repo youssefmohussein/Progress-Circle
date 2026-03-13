@@ -3,7 +3,7 @@ import { Trophy, Medal, Award, Flame, CheckSquare } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/Card';
-import { AvatarDisplay } from '../components/AvatarDisplay';
+import { AvatarDisplay } from '../avatar/AvatarDisplay';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { EmptyState } from '../components/EmptyState';
 

@@ -3,105 +3,55 @@ const Session = require('../models/Session');
 const Workout = require('../models/Workout');
 const Goal = require('../models/Goal');
 
-// ─── Static Shop Catalogue ────────────────────────────────────────────────────
-// Items are referenced by a composite key: "{category}_{index}"
-// The index matches the SVG asset index on the frontend.
-const SHOP_ITEMS = {
-    hair: [
-        { id: 'hair_0', name: 'Default', price: 0 },
-        { id: 'hair_1', name: 'Curly', price: 150 },
-        { id: 'hair_2', name: 'Wavy', price: 150 },
-        { id: 'hair_3', name: 'Spiky', price: 200 },
-        { id: 'hair_4', name: 'Long', price: 200 },
-        { id: 'hair_5', name: 'Mohawk', price: 300 },
-        { id: 'hair_6', name: 'Bob', price: 150 },
-        { id: 'hair_7', name: 'Ponytail', price: 200 },
-        { id: 'hair_8', name: 'Braids', price: 250 },
-        { id: 'hair_9', name: 'Updo', price: 200 },
-        { id: 'hair_10', name: 'Fade', price: 200 },
-        { id: 'hair_11', name: 'Buzz Cut', price: 150 }
+// ─── Dynamic Shop Catalogue for Open Peeps ────────────────────────────────────
+const avatarOptions = {
+    head: [
+        "afro", "bangs", "bangs2", "bantuKnots", "bear", "bun", "bun2", "buns", "cornrows", "cornrows2",
+        "dreads1", "dreads2", "flatTop", "flatTopLong", "grayBun", "grayMedium", "grayShort", "hatBeanie",
+        "hatHip", "hijab", "long", "longAfro", "longBangs", "longCurly", "medium1", "medium2", "medium3",
+        "mediumBangs", "mediumBangs2", "mediumBangs3", "mediumStraight", "mohawk", "mohawk2", "noHair1",
+        "noHair2", "noHair3", "pomp", "shaved1", "shaved2", "shaved3", "short1", "short2", "short3",
+        "short4", "short5", "turban", "twists", "twists2"
     ],
-    shirt: [
-        { id: 'shirt_0', name: 'Basic Tee', price: 0 },
-        { id: 'shirt_1', name: 'Hoodie', price: 200 },
-        { id: 'shirt_2', name: 'Polo', price: 200 },
-        { id: 'shirt_3', name: 'Jacket', price: 350 },
-        { id: 'shirt_4', name: 'Gym Outfit', price: 500, milestone: 'workout_50' },
-        { id: 'shirt_5', name: 'Legendary Hoodie', price: 800, milestone: 'streak_30' },
-        { id: 'shirt_6', name: 'Suit', price: 600 },
-        { id: 'shirt_7', name: 'Dress', price: 600 },
-        { id: 'shirt_8', name: 'Sweater', price: 300 },
-        { id: 'shirt_9', name: 'V-Neck', price: 150 },
-        { id: 'shirt_10', name: 'Crop Top', price: 200 },
-        { id: 'shirt_11', name: 'Tank Top', price: 150 }
+    face: [
+        "angryWithFang", "awe", "blank", "calm", "cheeky", "concerned", "concernedFear", "contempt",
+        "cute", "cyclops", "driven", "eatingHappy", "explaining", "eyesClosed", "fear", "hectic",
+        "lovingGrin1", "lovingGrin2", "monster", "old", "rage", "serious", "smile", "smileBig",
+        "smileLOL", "smileTeethGap", "solemn", "suspicious", "tired", "veryAngry"
     ],
-    eyes: [
-        { id: 'eyes_0', name: 'Default', price: 0 },
-        { id: 'eyes_1', name: 'Happy', price: 100 },
-        { id: 'eyes_2', name: 'Cool', price: 100 },
-        { id: 'eyes_3', name: 'Sleepy', price: 150 },
-        { id: 'eyes_4', name: 'Winking', price: 150 },
-        { id: 'eyes_5', name: 'Surprised', price: 150 },
-        { id: 'eyes_6', name: 'Starry', price: 300 },
-        { id: 'eyes_7', name: 'Cute', price: 200 },
-        { id: 'eyes_8', name: 'Angry', price: 150 }
+    facialHair: [
+        "", "chin", "full", "full2", "full3", "full4", "goatee1", "goatee2", "moustache1", "moustache2",
+        "moustache3", "moustache4", "moustache5", "moustache6", "moustache7", "moustache8", "moustache9"
     ],
-    eyeColor: [
-        { id: 'eyeColor_0', name: 'Dark Brown', price: 0 },
-        { id: 'eyeColor_1', name: 'Hazel', price: 0 },
-        { id: 'eyeColor_2', name: 'Blue', price: 150 },
-        { id: 'eyeColor_3', name: 'Green', price: 150 },
-        { id: 'eyeColor_4', name: 'Gray', price: 200 },
-        { id: 'eyeColor_5', name: 'Amber', price: 200 },
-        { id: 'eyeColor_6', name: 'Violet', price: 350 },
-        { id: 'eyeColor_7', name: 'Red', price: 400 },
-        { id: 'eyeColor_8', name: 'Gold', price: 500 },
+    accessories: [
+        "", "eyepatch", "glasses", "glasses2", "glasses3", "glasses4", "glasses5", "sunglasses", "sunglasses2"
     ],
-    accessory: [
-        { id: 'accessory_0', name: 'None', price: 0 },
-        { id: 'accessory_1', name: 'Glasses', price: 200 },
-        { id: 'accessory_2', name: 'Sunglasses', price: 250 },
-        { id: 'accessory_3', name: 'Headband', price: 200 },
-        { id: 'accessory_4', name: 'Rare Glasses', price: 0, milestone: 'points_5000' },
-        { id: 'accessory_5', name: 'Crown', price: 0, milestone: 'goals_10' },
-        { id: 'accessory_6', name: 'Headphones', price: 400 },
-        { id: 'accessory_7', name: 'Beanie', price: 250 },
-        { id: 'accessory_8', name: 'Mask', price: 150 },
-        { id: 'accessory_9', name: 'Earrings', price: 300 },
-        { id: 'accessory_10', name: 'Necklace', price: 300 },
-        { id: 'accessory_11', name: 'Scarf', price: 200 }
-    ],
-    bg: [
-        { id: 'bg_0', name: 'Gradient Blue', price: 0 },
-        { id: 'bg_1', name: 'Sunset', price: 150 },
-        { id: 'bg_2', name: 'Forest', price: 150 },
-        { id: 'bg_3', name: 'Galaxy', price: 300 },
-        { id: 'bg_4', name: 'Gold', price: 500 },
-        { id: 'bg_5', name: 'Cyberpunk', price: 400 },
-        { id: 'bg_6', name: 'Neon', price: 400 },
-        { id: 'bg_7', name: 'Mint', price: 200 },
-        { id: 'bg_8', name: 'Crimson', price: 300 }
-    ],
-    pants: [
-        { id: 'pants_0', name: 'Basic Jeans', price: 0 },
-        { id: 'pants_1', name: 'Shorts', price: 150 },
-        { id: 'pants_2', name: 'Sweatpants', price: 200 },
-        { id: 'pants_3', name: 'Skirt', price: 150 },
-        { id: 'pants_4', name: 'Suit Pants', price: 400 },
-        { id: 'pants_5', name: 'Cargo Pants', price: 300 }
-    ],
-    shoes: [
-        { id: 'shoes_0', name: 'Basic Sneakers', price: 0 },
-        { id: 'shoes_1', name: 'Running Shoes', price: 200 },
-        { id: 'shoes_2', name: 'Boots', price: 300 },
-        { id: 'shoes_3', name: 'Slippers', price: 100 },
-        { id: 'shoes_4', name: 'Dress Shoes', price: 400 },
-        { id: 'shoes_5', name: 'Sandals', price: 150 }
-    ],
-    powerups: [
-        { id: 'powerup_freeze', name: 'Streak Freeze', price: 500, desc: 'Protects your streak if you miss a day.' }
-    ]
+    clothingColor: ["e78276", "ffcf77", "fdea6b", "78e185", "9ddadb", "8fa7df", "e279c7"],
+    skinColor: ["ffdbb4", "edb98a", "d08b5b", "ae5d29", "694d3d"],
+    headContrastColor: ["2c1b18", "e8e1e1", "ecdcbf", "d6b370", "f59797", "b58143", "a55728", "724133", "4a312c", "c93305"],
+    backgroundColor: ["transparent", "f3f4f6", "fca5a5", "fcd34d", "86efac", "93c5fd", "c4b5fd", "f9a8d4"]
 };
+
+const formatName = (str) => {
+    if (!str) return 'None';
+    return str.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+};
+
+const SHOP_ITEMS = {};
+for (const [cat, items] of Object.entries(avatarOptions)) {
+    SHOP_ITEMS[cat] = items.map((val, idx) => ({
+        id: `${cat}_${val}`,
+        name: formatName(val),
+        price: idx === 0 || val === '' ? 0 : 150, // default/empty is free, rest are 150
+        val: val
+    }));
+}
+
+// Ensure powerups remain available natively
+SHOP_ITEMS.powerups = [
+    { id: 'powerup_freeze', name: 'Streak Freeze', price: 500, desc: 'Protects your streak if you miss a day.' }
+];
+
 
 // Flat list of all items for easy lookup
 const ALL_ITEMS = Object.values(SHOP_ITEMS).flat();
@@ -250,7 +200,7 @@ exports.getGamificationData = async (req, res, next) => {
 // @access Private
 exports.saveAvatarConfig = async (req, res, next) => {
     try {
-        const { hair, shirt, pants, shoes, eyes, eyeColor, accessory, bg } = req.body;
+        const { seed, head, face, facialHair, accessories, clothingColor, skinColor, headContrastColor, backgroundColor } = req.body;
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -258,33 +208,26 @@ exports.saveAvatarConfig = async (req, res, next) => {
 
         // Validate equipped items are owned
         const toCheck = [
-            { cat: 'hair', val: hair },
-            { cat: 'shirt', val: shirt },
-            { cat: 'pants', val: pants },
-            { cat: 'shoes', val: shoes },
-            { cat: 'eyes', val: eyes },
-            { cat: 'eyeColor', val: eyeColor },
-            { cat: 'accessory', val: accessory },
-            { cat: 'bg', val: bg },
+            { cat: 'head', val: head },
+            { cat: 'face', val: face },
+            { cat: 'facialHair', val: facialHair },
+            { cat: 'accessories', val: accessories },
+            { cat: 'clothingColor', val: clothingColor },
+            { cat: 'skinColor', val: skinColor },
+            { cat: 'headContrastColor', val: headContrastColor },
+            { cat: 'backgroundColor', val: backgroundColor },
         ];
         for (const { cat, val } of toCheck) {
-            if (val === undefined) continue;
+            if (val === undefined || val === null) continue;
             const itemId = `${cat}_${val}`;
+            // If an item is free by default, it might be auto-granted or we can safely skip inventory checks
+            // `DEFAULT_FREE_ITEMS` is computed from `ALL_ITEMS.filter(i => i.price === 0)` 
             if (!inventory.includes(itemId)) {
                 return res.status(403).json({ success: false, message: `Item ${itemId} is not in your inventory.` });
             }
         }
 
-        user.avatarConfig = {
-            hair: hair ?? user.avatarConfig?.hair ?? 0,
-            shirt: shirt ?? user.avatarConfig?.shirt ?? 0,
-            pants: pants ?? user.avatarConfig?.pants ?? 0,
-            shoes: shoes ?? user.avatarConfig?.shoes ?? 0,
-            eyes: eyes ?? user.avatarConfig?.eyes ?? 0,
-            eyeColor: eyeColor ?? user.avatarConfig?.eyeColor ?? 0,
-            accessory: accessory ?? user.avatarConfig?.accessory ?? 0,
-            bg: bg ?? user.avatarConfig?.bg ?? 0,
-        };
+        user.avatarConfig = { ...user.avatarConfig, ...req.body };
         await user.save();
 
         res.status(200).json({ success: true, data: { avatarConfig: user.avatarConfig } });

@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar } from './Avatar';
+import { AvatarDisplay } from '../avatar/AvatarDisplay';
 
 
 const moreNavItems = [
@@ -82,15 +83,25 @@ export function SidebarContent({ onClose }) {
                 )}
             </div>
 
-            {/* User card */}
+            {/* User card - Clickable to Profile */}
             {user && (
-                <div style={{ margin: '12px', padding: '10px 14px', background: dark ? 'rgba(255,255,255,0.06)' : 'var(--surface2)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Avatar src={user.avatar} name={user.name} size="sm" />
+                <Link 
+                    to="/profile"
+                    onClick={onClose}
+                    style={{ 
+                        margin: '8px 12px', padding: '8px 12px', 
+                        background: dark ? 'rgba(255,255,255,0.06)' : 'var(--surface2)', 
+                        borderRadius: '0.75rem', display: 'flex', alignItems: 'center', 
+                        gap: 8, textDecoration: 'none', transition: 'all 0.2s'
+                    }}
+                    className="hover:scale-[1.01] active:scale-[0.99]"
+                >
+                    <AvatarDisplay avatarConfig={user.avatarConfig} size="sm" />
                     <div style={{ overflow: 'hidden' }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: dark ? '#fff' : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</p>
-                        <p style={{ fontSize: 11, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>{user.points ?? 0} pts</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: dark ? '#fff' : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</p>
+                        <p style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>{user.points ?? 0} pts</p>
                     </div>
-                </div>
+                </Link>
             )}
 
             {/* Nav links */}
@@ -242,13 +253,21 @@ function MoreDrawer({ onClose }) {
                 <div style={{ width: 36, height: 4, background: dark ? 'rgba(255,255,255,0.2)' : 'var(--border)', borderRadius: 99, margin: '4px auto 12px' }} />
 
                 {user && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px 14px', borderBottom: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--border)' }}>
-                        <Avatar src={user.avatar} name={user.name} size="sm" />
+                    <Link 
+                        to="/profile"
+                        onClick={onClose}
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px 14px', 
+                            borderBottom: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--border)',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        <AvatarDisplay avatarConfig={user.avatarConfig} size="sm" />
                         <div>
                             <p style={{ fontSize: 14, fontWeight: 700, color: dark ? '#fff' : 'var(--text)' }}>{user.name}</p>
                             <p style={{ fontSize: 11, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>{user.points ?? 0} pts</p>
                         </div>
-                    </div>
+                    </Link>
                 )}
 
                 {user?.isAdmin && (

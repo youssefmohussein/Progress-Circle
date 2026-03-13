@@ -16,7 +16,7 @@ import { AdminDashboard } from './pages/Admin/AdminDashboard';
 import { Savings } from './pages/Savings';
 import { Fitness } from './pages/Fitness';
 import { FocusMode } from './pages/FocusMode';
-import { AvatarShop } from './pages/AvatarShop';
+import { AvatarShop } from './avatar/AvatarShop';
 import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
 import { Planner } from './pages/Planner';
