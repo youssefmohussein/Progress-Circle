@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
 import { Confetti } from '../components/Confetti';
-import { Plus, CheckSquare, Pencil, Trash2, Clock, Check, Bell, Tag, Settings, Timer, ChevronDown, ChevronRight, FileText, Layout, Crown } from 'lucide-react';
+import { Plus, CheckSquare, Pencil, Trash2, Clock, Check, Bell, Tag, Settings, Timer, ChevronDown, ChevronRight, FileText, Layout, Crown, Zap } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 
 import { useAuth } from '../context/AuthContext';
 
-const FILTERS = ['All'];
+
 
 const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handleComplete, updateTask, openCreateModal, openEditModal, handleDelete, filter, isSub = false }) => {
     const category = categories?.find(c => c.id === (task.categoryId?._id || task.categoryId));
@@ -169,7 +169,8 @@ export function Tasks() {
     const [form, setForm] = useState({
         title: '', description: '', priority: 'medium', deadline: '',
         categoryId: '', estimatedTime: 0, alertsEnabled: false, timeEnabled: false,
-        isBigTask: false, parentId: null, notes: '', totalWork: 0, completedWork: 0
+        isBigTask: false, parentId: null, notes: '', totalWork: 0, completedWork: 0,
+        collaborators: [], isSynergyTask: false
     });
 
     if (!tasks || !categories) return <LoadingSpinner />;
@@ -205,7 +206,8 @@ export function Tasks() {
         setForm({
             title: '', description: '', priority: 'medium', deadline: '',
             categoryId: '', estimatedTime: 0, alertsEnabled: false, timeEnabled: false,
-            isBigTask: isBig, parentId: parentId, notes: '', totalWork: 0, completedWork: 0
+            isBigTask: isBig, parentId: parentId, notes: '', totalWork: 0, completedWork: 0,
+            collaborators: [], isSynergyTask: false
         });
         setModalOpen(true);
     };
@@ -223,7 +225,9 @@ export function Tasks() {
                 parentId: task.parentId?._id || task.parentId || null,
                 notes: task.notes || '',
                 totalWork: task.totalWork || 0,
-                completedWork: task.completedWork || 0
+                completedWork: task.completedWork || 0,
+                collaborators: task.collaborators?.map(c => c._id || c) || [],
+                isSynergyTask: task.isSynergyTask || false
             });
             setModalOpen(true);
         }
@@ -435,6 +439,46 @@ export function Tasks() {
                             )}
                         </div>
                     )}
+
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <label className="block text-[11px] font-black text-muted uppercase tracking-[0.15em]">Collaborators</label>
+                            {user?.plan !== 'premium' && <Crown size={12} className="text-amber-500" />}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                             {form.collaborators.map(cId => (
+                                 <div key={cId} className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[10px] font-black uppercase flex items-center gap-2">
+                                     {cId.substring(0, 8)}...
+                                     <button onClick={() => setForm({...form, collaborators: form.collaborators.filter(id => id !== cId)})} className="hover:text-rose-500">×</button>
+                                 </div>
+                             ))}
+                        </div>
+                        <input 
+                            className={`pc-input text-sm ${user?.plan !== 'premium' ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                            placeholder="User ID (Collaborator feature in progress...)"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.target.value) {
+                                    setForm({...form, collaborators: [...form.collaborators, e.target.value]});
+                                    e.target.value = '';
+                                }
+                            }}
+                            readOnly={user?.plan !== 'premium'}
+                        />
+                    </div>
+
+                    <label className="flex items-center gap-3 cursor-pointer group bg-indigo-500/5 p-4 rounded-2xl border border-indigo-500/10 hover:border-indigo-500/30 transition-all">
+                        <div className={`w-12 h-6 rounded-full transition-all relative ${form.isSynergyTask ? 'bg-indigo-500 shadow-lg shadow-indigo-500/30' : 'bg-gray-700'}`}>
+                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${form.isSynergyTask ? 'left-7' : 'left-1'}`} />
+                        </div>
+                        <input type="checkbox" className="hidden" checked={form.isSynergyTask} onChange={(e) => setForm({ ...form, isSynergyTask: e.target.checked })} />
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                                <p className="text-xs font-black text-white uppercase tracking-widest">Synergy Protocol</p>
+                                <Zap size={12} className="text-indigo-400" />
+                            </div>
+                            <p className="text-[10px] text-muted">1.5x Multiplier / Shared Progress</p>
+                        </div>
+                    </label>
 
                     <div>
                         <div className="flex items-center gap-2 mb-2">

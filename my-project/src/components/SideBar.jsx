@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Trophy,
     User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal, HelpCircle,
-    Wallet, Activity, Sprout, ShoppingBag, Star, Calendar
+    Wallet, Activity, Sprout, ShoppingBag, Star, Calendar, Users, Zap
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -36,6 +36,7 @@ function getNavItems(user) {
         base.push({ path: '/fitness', icon: Activity, label: 'Fitness' });
     }
 
+    base.push({ path: '/social', icon: Users, label: 'Social' });
     base.push({ path: '/leaderboard', icon: Trophy, label: 'Board' });
     base.push({ path: '/profile', icon: User, label: 'Profile' });
 

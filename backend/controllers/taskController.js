@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
+const Battle = require('../models/Battle');
 
 const TASK_POINTS = 10;
 
@@ -8,7 +9,12 @@ const TASK_POINTS = 10;
 // @access  Private
 const getTasks = async (req, res, next) => {
     try {
-        const query = { userId: req.user._id };
+        const query = { 
+            $or: [
+                { userId: req.user._id },
+                { collaborators: req.user._id }
+            ]
+        };
         // Optionally filter by parent (e.g., if we want sub-tasks for a big task)
         if (req.query.parentId) {
             query.parentId = req.query.parentId;
@@ -19,6 +25,8 @@ const getTasks = async (req, res, next) => {
         const tasks = await Task.find(query)
             .populate('categoryId')
             .populate('parentId', 'title')
+            .populate('userId', 'name avatar avatarConfig')
+            .populate('collaborators', 'name avatar avatarConfig')
             .sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: tasks });
     } catch (error) {
@@ -62,7 +70,9 @@ const createTask = async (req, res, next) => {
             parentId,
             notes,
             totalWork,
-            completedWork
+            completedWork,
+            collaborators: req.body.collaborators || [],
+            isSynergyTask: req.body.isSynergyTask || false
         });
         res.status(201).json({ success: true, data: task });
     } catch (error) {
@@ -94,8 +104,10 @@ const updateTask = async (req, res, next) => {
             const yesterday = new Date(today - 86400000).getTime();
             const lastDate = user.lastTaskCompletionDate ? new Date(user.lastTaskCompletionDate).setHours(0, 0, 0, 0) : null;
 
+            const taskPoints = task.isSynergyTask ? Math.floor(TASK_POINTS * 1.5) : TASK_POINTS;
+
             let update = { 
-                $inc: { points: TASK_POINTS }, 
+                $inc: { points: taskPoints }, 
                 $set: { lastTaskCompletionDate: now },
                 $addToSet: { streakHistory: today } // Track unique dates of completion
             };
@@ -128,6 +140,33 @@ const updateTask = async (req, res, next) => {
         } else if (wasCompleted && !isNowCompleted) {
             // Deduct points if task completion is undone
             await User.findByIdAndUpdate(req.user._id, { $inc: { points: -TASK_POINTS } });
+        }
+
+        // Update Battle Intensity if applicable
+        if (req.body.status === 'completed') {
+            const activeBattle = await Battle.findOne({
+                status: 'active',
+                'participants.user': req.user._id
+            });
+
+            if (activeBattle) {
+                const participant = activeBattle.participants.find(p => p.user.toString() === req.user._id.toString());
+                if (participant) {
+                    participant.tasksCompleted += 1;
+                    participant.pointsEarned += (task.points || 0);
+                    // If it was a tagged battle task
+                    if (participant.battleTasks.includes(task._id)) {
+                        participant.pointsEarned += 50; // Bonus intensity
+                    }
+
+                    activeBattle.logs.push({
+                        message: `${req.user.name} SECURED A MISSION: ${task.title}`,
+                        timestamp: new Date()
+                    });
+
+                    await activeBattle.save();
+                }
+            }
         }
 
         res.status(200).json({ success: true, data: task });

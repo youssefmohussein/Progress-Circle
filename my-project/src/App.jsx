@@ -20,6 +20,8 @@ import { AvatarShop } from './avatar/AvatarShop';
 import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
 import { Planner } from './pages/Planner';
+import { Social } from './pages/Social';
+import FocusBattleArena from './pages/FocusBattleArena';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -45,6 +47,7 @@ function AppRoutes() {
       <Route path="/planner" element={<PrivateRoute><Layout><Planner /></Layout></PrivateRoute>} />
       <Route path="/info" element={<PrivateRoute><Layout><Info /></Layout></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
+      <Route path="/social" element={<PrivateRoute><Layout><Social /></Layout></PrivateRoute>} />
       <Route path="/savings" element={<PrivateRoute><Layout><Savings /></Layout></PrivateRoute>} />
       <Route path="/fitness" element={<PrivateRoute><Layout><Fitness /></Layout></PrivateRoute>} />
       <Route path="/focus" element={<PrivateRoute><Layout><FocusMode /></Layout></PrivateRoute>} />
@@ -55,6 +58,7 @@ function AppRoutes() {
       <Route path="/milestones" element={<PrivateRoute><Layout><Unlockables /></Layout></PrivateRoute>} />
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
+      <Route path="/battle/:id/*" element={<PrivateRoute><FocusBattleArena /></PrivateRoute>} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" />} />
