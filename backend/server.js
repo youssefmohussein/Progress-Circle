@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const hpp = require('hpp');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const maintenanceMiddleware = require('./middleware/maintenanceMiddleware');
@@ -36,6 +39,11 @@ connectDB();
 
 const app = express();
 
+// ─── NEURAL PERIMETER (SECURITY) ─────────────────────────────────────────────
+app.use(helmet()); // Secure HTTP headers
+app.use(mongoSanitize()); // Prevent NoSQL Injection
+app.use(hpp()); // Prevent HTTP Parameter Pollution
+
 // ─── CORS ────────────────────────────────────────────────────────────────────
 const allowedOrigin = process.env.FRONTEND_URL?.replace(/\/$/, '') || 'http://localhost:5173';
 
@@ -44,6 +52,7 @@ app.use(
         origin: allowedOrigin,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         allowedHeaders: ['Content-Type', 'Authorization'],
+        credentials: true
     })
 );
 
@@ -61,10 +70,10 @@ app.use(express.json({ limit: '10kb' }));
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 200,
+    max: 100, // Stricter global limit
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: 'Too many requests, please try again later.' },
+    message: { success: false, message: 'Neural rate limit exceeded. Please stand by.' },
 });
 app.use('/api', limiter);
 app.use(maintenanceMiddleware); // Apply after auth-check or limiters? 
@@ -75,8 +84,8 @@ app.use(maintenanceMiddleware); // Apply after auth-check or limiters?
 // Stricter limiter for auth routes
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 20,
-    message: { success: false, message: 'Too many login attempts, please try again later.' },
+    max: 10, // Stricter auth limit
+    message: { success: false, message: 'Too many authentication attempts. Sequence locked.' },
 });
 app.use('/api/auth', authLimiter);
 

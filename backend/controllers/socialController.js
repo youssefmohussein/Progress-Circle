@@ -11,13 +11,16 @@ exports.searchUsers = async (req, res, next) => {
         const { query } = req.query;
         if (!query) return res.status(200).json({ success: true, data: [] });
 
+        // NEURAL FIREWALL: Sanitize regex input to prevent ReDoS
+        const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
         const isId = /^[0-9a-fA-F]{24}$/.test(query);
 
         const users = await User.find({
             $or: [
                 ...(isId ? [{ _id: query }] : []),
-                { name: { $regex: query, $options: 'i' } },
-                { email: { $regex: query, $options: 'i' } }
+                { name: { $regex: sanitizedQuery, $options: 'i' } },
+                { email: { $regex: sanitizedQuery, $options: 'i' } }
             ],
             _id: { $ne: req.user._id }
         })

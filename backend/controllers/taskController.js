@@ -124,7 +124,19 @@ const updateTask = async (req, res, next) => {
         const wasCompleted = task.status === 'completed';
         const isNowCompleted = req.body.status === 'completed';
 
-        Object.assign(task, req.body);
+        // Neural Firewall: Mass Assignment Lockdown
+        const { title, description, priority, deadline, categoryId, status, notes, totalWork, completedWork } = req.body;
+        
+        if (title !== undefined) task.title = title;
+        if (description !== undefined) task.description = description;
+        if (priority !== undefined) task.priority = priority;
+        if (deadline !== undefined) task.deadline = deadline;
+        if (categoryId !== undefined) task.categoryId = categoryId;
+        if (status !== undefined) task.status = status;
+        if (notes !== undefined) task.notes = notes;
+        if (totalWork !== undefined) task.totalWork = totalWork;
+        if (completedWork !== undefined) task.completedWork = completedWork;
+
         if (isNowCompleted && !task.completedAt) task.completedAt = new Date();
 
         await task.save();

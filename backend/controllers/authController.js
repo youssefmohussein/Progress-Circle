@@ -137,7 +137,6 @@ const getMe = async (req, res) => {
         }
     }
 
-    console.log('Backend getMe user:', { id: user._id, email: user.email, isAdmin: user.isAdmin });
     res.status(200).json({
         success: true,
         data: {

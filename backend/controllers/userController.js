@@ -43,6 +43,7 @@ const updateProfile = async (req, res, next) => {
             musicPreferences, linkedAccounts, avatarConfig, synergyEnabled
         } = req.body;
 
+        // Neural Firewall: Explicit Whitelisting (Mass Assignment Lockdown)
         const updateData = {};
         if (name !== undefined) updateData.name = name;
         if (avatar !== undefined) updateData.avatar = avatar;
@@ -53,10 +54,21 @@ const updateProfile = async (req, res, next) => {
         if (habitsEnabled !== undefined) updateData.habitsEnabled = habitsEnabled;
         if (synergyEnabled !== undefined) updateData.synergyEnabled = synergyEnabled;
         
-        // Deep merge or overwrite for objects
-        if (themePreferences !== undefined) updateData.themePreferences = themePreferences;
-        if (musicPreferences !== undefined) updateData.musicPreferences = musicPreferences;
-        if (linkedAccounts !== undefined) updateData.linkedAccounts = linkedAccounts;
+        // Deep verification for theme/music objects to prevent nested injection
+        if (themePreferences) {
+            updateData.themePreferences = {
+                primaryColor: themePreferences.primaryColor,
+                accentColor: themePreferences.accentColor,
+                mode: themePreferences.mode,
+                glassmorphism: themePreferences.glassmorphism
+            };
+        }
+        if (musicPreferences) {
+            updateData.musicPreferences = {
+                platform: musicPreferences.platform,
+                playlistUrl: musicPreferences.playlistUrl
+            };
+        }
 
         const user = await User.findByIdAndUpdate(
             req.user._id,

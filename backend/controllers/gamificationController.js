@@ -292,8 +292,6 @@ exports.buyItem = async (req, res, next) => {
             return res.status(400).json({ success: false, message: `Not enough points. Need ${item.price}, you have ${user.points}.` });
         }
 
-        console.log(`[BUY_ITEM] User ${user.email} attempting to buy ${itemId} for ${item.price} pts`);
-        console.log(`[BUY_ITEM] Current points: ${user.points}, Current inventory length: ${(user.inventory || []).length}`);
 
         if (itemId === 'powerup_freeze') {
             if (user.plan !== 'premium') {
@@ -302,14 +300,11 @@ exports.buyItem = async (req, res, next) => {
             user.points -= item.price;
             user.streakFreezes += 1;
             await user.save();
-            console.log(`[BUY_ITEM] Powerup Freeze bought successfully`);
         } else {
             user.points -= item.price;
             if (!user.inventory) user.inventory = [];
             user.inventory.push(itemId);
             await user.save();
-            console.log(`[BUY_ITEM] Item bought! New points: ${user.points}, New inv length: ${user.inventory.length}`);
-            console.log(`[BUY_ITEM] Does new inventory include ${itemId}?: ${user.inventory.includes(itemId)}`);
         }
 
         res.status(200).json({ success: true, data: { itemId, pointsSpent: item.price } });
