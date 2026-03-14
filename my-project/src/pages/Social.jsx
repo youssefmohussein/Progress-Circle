@@ -76,7 +76,6 @@ export function Social() {
     const [trajectoryModalOpen, setTrajectoryModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [trajectoryHistory, setTrajectoryHistory] = useState([]);
-    const [notifOpen, setNotifOpen] = useState(false);
     const [configOpen, setConfigOpen] = useState(false);
 
     useEffect(() => {
@@ -204,13 +203,6 @@ export function Social() {
                             <span className="text-[10px] font-black uppercase text-rose-500 tracking-widest">{activeBattles.length} Active Arenas</span>
                         </div>
                     )}
-                    <button 
-                        onClick={() => setNotifOpen(true)}
-                        className="p-3 rounded-2xl bg-white/5 border border-white/10 text-muted hover:text-white transition-all relative"
-                    >
-                        <Bell size={18} />
-                        <div className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0D0D0F]" />
-                    </button>
                     <div className="px-5 py-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-center">
                         <p className="text-[9px] text-indigo-400 font-black uppercase tracking-widest mb-0.5">Synergy Points</p>
                         <p className="text-xl font-black text-white">{user?.socialStats?.synergyPoints || 0}</p>
@@ -445,10 +437,6 @@ export function Social() {
                 onInvite={handleSendInvite}
             />
 
-            <NotificationCenter 
-                open={notifOpen} 
-                onClose={() => setNotifOpen(false)} 
-            />
             
             <TrajectoryModal 
                 open={trajectoryModalOpen} 

@@ -27,6 +27,7 @@ const getProfile = async (req, res) => {
             linkedAccounts: user.linkedAccounts,
             plan: user.plan,
             subscription: user.subscription,
+            synergyEnabled: user.synergyEnabled,
         },
     });
 };
@@ -39,7 +40,7 @@ const updateProfile = async (req, res, next) => {
         const { 
             name, avatar, savingsEnabled, fitnessEnabled, 
             nutritionEnabled, habitsEnabled, themePreferences,
-            musicPreferences, linkedAccounts, avatarConfig
+            musicPreferences, linkedAccounts, avatarConfig, synergyEnabled
         } = req.body;
 
         const updateData = {};
@@ -50,6 +51,7 @@ const updateProfile = async (req, res, next) => {
         if (fitnessEnabled !== undefined) updateData.fitnessEnabled = fitnessEnabled;
         if (nutritionEnabled !== undefined) updateData.nutritionEnabled = nutritionEnabled;
         if (habitsEnabled !== undefined) updateData.habitsEnabled = habitsEnabled;
+        if (synergyEnabled !== undefined) updateData.synergyEnabled = synergyEnabled;
         
         // Deep merge or overwrite for objects
         if (themePreferences !== undefined) updateData.themePreferences = themePreferences;
@@ -84,6 +86,7 @@ const updateProfile = async (req, res, next) => {
                 linkedAccounts: user.linkedAccounts,
                 plan: user.plan,
                 subscription: user.subscription,
+                synergyEnabled: user.synergyEnabled,
             },
         });
     } catch (error) {

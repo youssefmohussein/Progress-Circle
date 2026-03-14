@@ -530,3 +530,47 @@ exports.joinBattle = async (req, res, next) => {
         next(err);
     }
 };
+// @desc    Clear all synergy data for the current user
+// @route   DELETE /api/social/clear-synergy
+// @access  Private
+exports.clearSynergyData = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+
+        // 1. Reset user synergy points and stats
+        await User.findByIdAndUpdate(userId, {
+            $set: { 
+                'socialStats.synergyPoints': 0,
+                'socialStats.orbsSent': 0,
+                'socialStats.battlesWon': 0
+            }
+        });
+
+        // 2. Delete all synergy tasks owned by this user
+        await Task.deleteMany({ userId, isSynergyTask: true });
+
+        // 3. Handle battles
+        // Cancel battles where user is host
+        await Battle.updateMany(
+            { host: userId, status: { $in: ['pending', 'active', 'paused'] } },
+            { $set: { status: 'cancelled' } }
+        );
+
+        // Remove user from battles where they are a participant but not host
+        await Battle.updateMany(
+            { 
+                'participants.user': userId, 
+                host: { $ne: userId },
+                status: { $in: ['pending', 'active', 'paused'] }
+            },
+            { $pull: { participants: { user: userId } } }
+        );
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Synergy data purged. Neural collaborative nodes reset." 
+        });
+    } catch (err) {
+        next(err);
+    }
+};

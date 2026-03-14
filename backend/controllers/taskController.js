@@ -1,6 +1,8 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
 const Battle = require('../models/Battle');
+const { createSystemNotification } = require('./notificationController');
+const Notification = require('../models/Notification');
 
 const TASK_POINTS = 10;
 
@@ -28,6 +30,37 @@ const getTasks = async (req, res, next) => {
             .populate('userId', 'name avatar avatarConfig')
             .populate('collaborators', 'name avatar avatarConfig')
             .sort({ createdAt: -1 });
+
+        // PROACTIVE DEADLINE CHECK
+        const now = new Date();
+        const soon = new Date(now.getTime() + (24 * 60 * 60 * 1000)); // 24 hours from now
+        
+        const urgentTasks = tasks.filter(t => 
+            t.status !== 'completed' && 
+            t.deadline && 
+            new Date(t.deadline) <= soon && 
+            new Date(t.deadline) > now
+        );
+
+        for (const ut of urgentTasks) {
+            // Check if notification already exists to avoid spam
+            const existing = await Notification.findOne({
+                recipient: req.user._id,
+                type: 'task_deadline',
+                refId: ut._id,
+                createdAt: { $gt: new Date(now.getTime() - (12 * 60 * 60 * 1000)) } // Only notify once every 12 hours
+            });
+
+            if (!existing) {
+                await createSystemNotification(
+                    req.user._id,
+                    'task_deadline',
+                    `NEURAL ALERT: Task "${ut.title}" deadline is approaching. Sequence sync required.`,
+                    ut._id
+                );
+            }
+        }
+
         res.status(200).json({ success: true, data: tasks });
     } catch (error) {
         next(error);

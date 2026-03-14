@@ -2,6 +2,7 @@ const Task = require('../models/Task');
 const Habit = require('../models/Habit');
 const Session = require('../models/Session');
 const PDFDocument = require('pdfkit');
+const { Parser } = require('json2csv');
 
 // Helper to draw a rounded rectangle with a gradient-like fill (solid for simplicity in PDFkit)
 const drawCard = (doc, x, y, width, height, radius, color) => {
@@ -183,6 +184,60 @@ exports.exportPDF = async (req, res, next) => {
 
     } catch (error) {
         console.error('PDF Generation Error:', error);
+        next(error);
+    }
+};
+
+// @desc    Export user data to CSV for Data Science
+// @route   GET /api/export/csv
+// @access  Private (Premium Only)
+exports.exportCSV = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const tasks = await Task.find({ userId }).lean();
+        const habits = await Habit.find({ userId }).lean();
+        const sessions = await Session.find({ userId }).lean();
+
+        // Combine data for a comprehensive science export
+        const combinedData = [
+            ...tasks.map(t => ({ dataType: 'TASK', ...t })),
+            ...habits.map(h => ({ dataType: 'HABIT', ...h })),
+            ...sessions.map(s => ({ dataType: 'SESSION', ...s }))
+        ];
+
+        const json2csvParser = new Parser();
+        const csv = json2csvParser.parse(combinedData);
+
+        res.attachment(`Neural_Science_${req.user.name.replace(/\s+/g, '_')}.csv`);
+        res.status(200).send(csv);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Export user data to JSON
+// @route   GET /api/export/json
+// @access  Private (Premium Only)
+exports.exportJSON = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const tasks = await Task.find({ userId });
+        const habits = await Habit.find({ userId });
+        const sessions = await Session.find({ userId });
+
+        const data = {
+            user: { id: req.user.id, name: req.user.name, plan: req.user.plan },
+            timestamp: new Date().toISOString(),
+            dataset: {
+                tasks,
+                habits,
+                sessions
+            }
+        };
+
+        res.attachment(`Neural_Dataset_${req.user.name.replace(/\s+/g, '_')}.json`);
+        res.status(200).json(data);
+    } catch (error) {
         next(error);
     }
 };

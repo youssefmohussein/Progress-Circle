@@ -81,6 +81,10 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        synergyEnabled: {
+            type: Boolean,
+            default: false,
+        },
         habitsEnabled: {
             type: Boolean,
             default: true,

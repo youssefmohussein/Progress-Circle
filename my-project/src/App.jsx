@@ -23,6 +23,8 @@ import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
 import { Planner } from './pages/Planner';
 import { Social } from './pages/Social';
+import { Nutrition } from './pages/Nutrition';
+import { SynergyArena } from './pages/SynergyArena';
 import Pricing from './pages/Pricing';
 import FocusBattleArena from './pages/FocusBattleArena';
 
@@ -82,6 +84,8 @@ function AppRoutes() {
       <Route path="/social" element={<PrivateRoute><Layout><Social /></Layout></PrivateRoute>} />
       <Route path="/savings" element={<PrivateRoute><Layout><Savings /></Layout></PrivateRoute>} />
       <Route path="/fitness" element={<PrivateRoute><Layout><Fitness /></Layout></PrivateRoute>} />
+      <Route path="/nutrition" element={<PrivateRoute><Layout><Nutrition /></Layout></PrivateRoute>} />
+      <Route path="/synergy" element={<PrivateRoute><Layout><SynergyArena /></Layout></PrivateRoute>} />
       <Route path="/focus" element={<PrivateRoute><Layout><FocusMode /></Layout></PrivateRoute>} />
       <Route path="/pricing" element={<PrivateRoute><Layout><Pricing /></Layout></PrivateRoute>} />
 

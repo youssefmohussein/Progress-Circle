@@ -4,17 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, CheckSquare, Trophy,
     User, LogOut, Moon, Sun, X, Shield, Repeat, MoreHorizontal, HelpCircle,
-    Wallet, Activity, Sprout, ShoppingBag, Star, Calendar, Users, Zap
+    Wallet, Activity, Sprout, ShoppingBag, Star, Calendar, Users, Zap, Salad
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar } from './Avatar';
 import { AvatarDisplay } from '../avatar/AvatarDisplay';
-
+import { NotificationCenter } from './NotificationCenter';
 
 const moreNavItems = [
     { path: '/savings', icon: Wallet, label: 'Savings', key: 'savingsEnabled' },
     { path: '/fitness', icon: Activity, label: 'Fitness', key: 'fitnessEnabled' },
+    { path: '/nutrition', icon: Salad, label: 'Fuel', key: 'nutritionEnabled' },
 ];
 
 function getNavItems(user) {
@@ -36,7 +37,14 @@ function getNavItems(user) {
         base.push({ path: '/fitness', icon: Activity, label: 'Fitness' });
     }
 
-    base.push({ path: '/social', icon: Users, label: 'Social' });
+    if (user?.nutritionEnabled) {
+        base.push({ path: '/nutrition', icon: Salad, label: 'Fuel' });
+    }
+
+    if (user?.synergyEnabled) {
+        base.push({ path: '/synergy', icon: Shield, label: 'Synergy' });
+        base.push({ path: '/social', icon: Users, label: 'Social' });
+    }
     base.push({ path: '/leaderboard', icon: Trophy, label: 'Board' });
     base.push({ path: '/profile', icon: User, label: 'Profile' });
 
@@ -77,11 +85,14 @@ export function SidebarContent({ onClose }) {
                     </span>
                     <p style={{ fontSize: '11px', color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)', marginTop: 2 }}>Productivity Suite</p>
                 </div>
-                {onClose && (
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: dark ? 'rgba(255,255,255,0.5)' : 'var(--muted)', cursor: 'pointer', padding: 4 }}>
-                        <X size={20} />
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    <NotificationCenter />
+                    {onClose && (
+                        <button onClick={onClose} style={{ background: 'none', border: 'none', color: dark ? 'rgba(255,255,255,0.5)' : 'var(--muted)', cursor: 'pointer', padding: 4 }}>
+                            <X size={20} />
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* User card - Clickable to Profile */}

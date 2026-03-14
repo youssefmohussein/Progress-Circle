@@ -19,7 +19,8 @@ const {
     getDiscoverableBattles,
     getActiveBattles,
     getBattle,
-    getNotifications
+    getNotifications,
+    clearSynergyData
 } = require('../controllers/socialController');
 
 router.get('/search', protect, searchUsers);
@@ -27,6 +28,7 @@ router.get('/network', protect, getNetwork);
 router.post('/follow/:id', protect, followUser);
 router.post('/unfollow/:id', protect, unfollowUser);
 router.post('/gift-orb', protect, sendSynergyOrb);
+router.delete('/clear-synergy', protect, clearSynergyData);
 router.post('/battle/invite', protect, inviteToBattle);
 router.get('/battle/active', protect, getActiveBattles);
 router.get('/battle/discover', protect, getDiscoverableBattles);

@@ -1,5 +1,6 @@
 const Habit = require('../models/Habit');
 const User = require('../models/User');
+const { createSystemNotification } = require('./notificationController');
 
 const HABIT_POINTS = 5;
 
@@ -9,6 +10,25 @@ const HABIT_POINTS = 5;
 const getHabits = async (req, res, next) => {
     try {
         const habits = await Habit.find({ userId: req.user._id }).sort({ createdAt: -1 });
+
+        // PROACTIVE STREAK WARNING
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(new Date().getTime() - 86400000).toISOString().split('T')[0];
+
+        for (const h of habits) {
+            const completedYesterday = h.completedDates.includes(yesterday);
+            const completedToday = h.completedDates.includes(today);
+
+            if (completedYesterday && !completedToday) {
+                await createSystemNotification(
+                    req.user._id,
+                    'streak_warning',
+                    `NEURAL WARNING: Consistency loop "${h.name}" is at risk. Sync required before local day end.`,
+                    h._id
+                );
+            }
+        }
+
         res.status(200).json({ success: true, data: habits });
     } catch (error) {
         next(error);
@@ -68,6 +88,16 @@ const toggleHabitToday = async (req, res, next) => {
             habit.streak += 1;
             // Award points for completing a habit today
             await User.findByIdAndUpdate(req.user._id, { $inc: { points: HABIT_POINTS } });
+
+            // MILESTONE NOTIFICATION
+            if (habit.streak > 0 && habit.streak % 7 === 0) {
+                await createSystemNotification(
+                    req.user._id,
+                    'streak_warning', // Reusing streak_warning category for consistency-related praise
+                    `MILESTONE REACHED: Neural Stability for "${habit.name}" synchronized for ${habit.streak} days. Massive energy detected.`,
+                    habit._id
+                );
+            }
         }
 
         await habit.save();

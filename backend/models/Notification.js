@@ -2,10 +2,14 @@ const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
     recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // System notifications have no sender
     type: { 
         type: String, 
-        enum: ['battle_invite', 'battle_accepted', 'battle_rejected', 'synergy_orb', 'follow_request'],
+        enum: [
+            'battle_invite', 'battle_accepted', 'battle_rejected', 
+            'synergy_orb', 'follow_request', 'task_deadline', 
+            'streak_warning', 'nutrition_sync'
+        ],
         required: true 
     },
     status: { type: String, enum: ['pending', 'read', 'accepted', 'rejected'], default: 'pending' },

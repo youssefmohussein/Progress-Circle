@@ -12,7 +12,7 @@ const FEATURES = [
     { label: 'Habit Categories', free: false, premium: true },
     { label: 'Progress Statistics', free: 'Basic', premium: 'Detailed charts' },
     { label: 'Reminders', free: false, premium: 'Smart reminders' },
-    { label: 'Data Export (CSV/PDF)', free: false, premium: true },
+    { label: 'Data Export (PDF)', free: false, premium: true },
     { label: 'Themes / Customization', free: false, premium: true },
     { label: 'AI Habit Insights', free: false, premium: true },
     { label: 'Premium Profile Badge', free: false, premium: true },

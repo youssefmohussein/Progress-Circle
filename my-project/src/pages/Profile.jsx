@@ -5,7 +5,8 @@ import {
     Palette, Sun, Moon, Sparkles, ChevronRight,
     Music, Link2, ExternalLink, Check, Star, ShoppingBag, Sprout,
     Flame, Snowflake, Crown, TrendingUp, RotateCcw, Lock,
-    Download, FileText, FileSpreadsheet
+    Download, FileText, FileSpreadsheet, RefreshCw, Database, 
+    Users, Wallet, Activity, Salad, Trash2, AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -33,8 +34,8 @@ export function Profile() {
     const [isSavingMusic, setIsSavingMusic] = useState(false);
 
     const { theme, updateTheme, resetToDefaults, dark, toggleDark } = useTheme();
-
-    if (!user || !tasks) return <LoadingSpinner />;
+    const [isClearingSynergy, setIsClearingSynergy] = useState(false);
+    const [exporting, setExporting] = useState(null);
 
     const toggleModule = async (module) => {
         try {
@@ -110,27 +111,46 @@ export function Profile() {
         }
     };
 
-    const handleExport = async (format) => {
+
+    const handleClearSynergy = async () => {
+        if (!window.confirm("Are you sure? This will purge all your Synergy points, team-specific missions, and active Battles. This action is irreversible.")) return;
+
         try {
-            toast.info(`Preparing your ${format.toUpperCase()} report...`);
+            setIsClearingSynergy(true);
+            const res = await api.delete('/social/clear-synergy');
+            if (res.data?.success) {
+                toast.success('Synergy Archive Purged.');
+                // Refresh user data to show 0 points etc
+                const profileRes = await api.get('/users/profile');
+                if (profileRes.data?.success) setUser(profileRes.data.data);
+            }
+        } catch (error) {
+            toast.error('Purge Failed: Collaborative nodes are locked.');
+        } finally {
+            setIsClearingSynergy(false);
+        }
+    };
+
+    const handleExport = async (format = 'pdf') => {
+        setExporting(format);
+        try {
             const response = await api.get(`/export/${format}`, {
                 responseType: 'blob'
             });
-            
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            const extension = format === 'csv' ? 'csv' : 'pdf';
-            link.setAttribute('download', `progress_circle_export_${new Date().toISOString().split('T')[0]}.${extension}`);
+            const extension = format;
+            link.setAttribute('download', `Neural_Data_${new Date().toISOString().split('T')[0]}.${extension}`);
             document.body.appendChild(link);
             link.click();
-            link.parentNode.removeChild(link);
-            window.URL.revokeObjectURL(url);
-            
-            toast.success(`${format.toUpperCase()} exported successfully!`);
+            link.remove();
+            toast.success(`Neural data synced in .${format.toUpperCase()} format.`);
         } catch (error) {
             console.error('Export failed:', error);
-            toast.error('Failed to export data. Please try again.');
+            toast.error('Data science bridge failed. Verify premium status.');
+        } finally {
+            setExporting(null);
         }
     };
 
@@ -159,16 +179,27 @@ export function Profile() {
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
                         <p className="text-sm text-muted">{user.email}</p>
 
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
                             {user.plan === 'premium' ? (
-                                <span style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: '4px',
-                                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                    color: '#fff', fontSize: '11px', fontWeight: 700,
-                                    padding: '2px 10px', borderRadius: '999px',
-                                }}>
-                                    <Crown size={11} /> Premium
-                                </span>
+                                <>
+                                    <span style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                        color: '#fff', fontSize: '11px', fontWeight: 700,
+                                        padding: '2px 10px', borderRadius: '999px',
+                                    }}>
+                                        <Crown size={11} /> Premium
+                                    </span>
+                                    <Link to="/pricing" style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                        background: 'rgba(255, 255, 255, 0.05)', color: '#9ca3af',
+                                        fontSize: '11px', fontWeight: 700,
+                                        padding: '2px 10px', borderRadius: '999px', textDecoration: 'none',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    }} className="hover:bg-white/10 transition-colors">
+                                        Manage Subscription
+                                    </Link>
+                                </>
                             ) : (
                                 <Link to="/pricing" style={{
                                     display: 'inline-flex', alignItems: 'center', gap: '4px',
@@ -295,10 +326,10 @@ export function Profile() {
 
                 <div className="space-y-3">
                     {[
-                        { key: 'habitsEnabled', label: 'Habit Engine', desc: 'Core routine tracking and consistency loops.', icon: 'Repeat', core: true },
+                        { key: 'synergyEnabled', label: 'Team Synergy', desc: 'Collaborative workforce and squad synchronization.', icon: 'Users' },
                         { key: 'savingsEnabled', label: 'Financial Tracking', desc: 'Track savings, income, and critical expenses.', icon: 'Wallet' },
                         { key: 'fitnessEnabled', label: 'Physical Wellness', desc: 'Workout splits and physical body metrics.', icon: 'Activity' },
-                        { key: 'nutritionEnabled', label: 'Nutrition & Fuel', desc: 'Monitor daily intake and meal planning.', icon: 'Salad', comingSoon: true },
+                        { key: 'nutritionEnabled', label: 'Nutrition & Fuel', desc: 'Monitor daily intake and meal planning.', icon: 'Salad' },
                     ].map((mod) => (
                         <div key={mod.key} className="flex justify-between items-center py-3 px-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
                             <div className="flex-1">
@@ -318,6 +349,29 @@ export function Profile() {
                         </div>
                     ))}
                 </div>
+
+                {user.synergyEnabled && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-6 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 flex items-center justify-between gap-4"
+                    >
+                        <div>
+                            <p className="text-xs font-bold text-red-400 flex items-center gap-1.5 uppercase tracking-wider mb-1">
+                                <AlertTriangle size={14} /> Data Purge Protocol
+                            </p>
+                            <p className="text-[10px] text-pc-muted">Reset synergy progress, points, and active collaborative nodes.</p>
+                        </div>
+                        <button
+                            disabled={isClearingSynergy}
+                            onClick={handleClearSynergy}
+                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 border border-red-500/20"
+                        >
+                            {isClearingSynergy ? <RefreshCw className="animate-spin" size={12} /> : <Trash2 size={12} />}
+                            Reset Synergy
+                        </button>
+                    </motion.div>
+                )}
             </Card>
 
             {/* Neural Data Archeology */}
@@ -329,31 +383,23 @@ export function Profile() {
                     <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
                         <Download size={22} />
                     </div>
-                    <h3 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Neural Archive</h3>
+                    <h3 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Neural Data Science</h3>
                 </div>
                 <p className="text-xs text-pc-muted mb-8 max-w-md">Access your complete neural performance history. Generate a high-fidelity intelligence report containing your consistency loops and node completion analytics.</p>
 
                 {user.plan === 'premium' ? (
-                    <div className="relative z-10">
-                        <button 
-                            onClick={() => handleExport('pdf')}
-                            className="w-full flex items-center justify-between p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-indigo-500/40 hover:bg-white/[0.05] transition-all group shadow-sm"
-                        >
-                            <div className="flex items-center gap-5">
-                                <div className="p-3 rounded-2xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
-                                    <FileText size={24} />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-base font-black text-white uppercase tracking-tight">Professional Performance Report</p>
-                                    <p className="text-[11px] font-medium text-pc-muted uppercase tracking-widest">Neural Data // Format: PDF // Premium Archive</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Launch Data</span>
-                                <ChevronRight size={20} className="text-indigo-500" />
-                            </div>
-                        </button>
-                        <p className="text-center mt-4 text-[9px] text-zinc-600 font-mono uppercase tracking-[0.2em]">Archival Integrity Verified // Progress Circle Intelligence</p>
+                    <div className="space-y-4">
+                        <div className="flex flex-wrap gap-3">
+                            <button
+                                onClick={() => handleExport('pdf')}
+                                disabled={exporting === 'pdf'}
+                                className="flex items-center gap-2 px-5 py-3 bg-indigo-500 hover:bg-indigo-600 active:scale-95 disabled:opacity-50 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 text-xs"
+                            >
+                                {exporting === 'pdf' ? <RefreshCw className="animate-spin" size={14} /> : <FileText size={14} />}
+                                Generate Neural Archive (PDF)
+                            </button>
+                        </div>
+                        <p className="text-center mt-4 text-[9px] text-indigo-400/40 font-mono uppercase tracking-[0.2em]">Archival Integrity Verified // Progress Circle Intelligence</p>
                     </div>
                 ) : (
                     <div className="p-8 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex flex-col items-center text-center">
