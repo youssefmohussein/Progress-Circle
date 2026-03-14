@@ -1,6 +1,10 @@
 const Task = require('../models/Task');
 const Habit = require('../models/Habit');
 const Session = require('../models/Session');
+const Nutrition = require('../models/Nutrition');
+const Battle = require('../models/Battle');
+const Transaction = require('../models/Transaction');
+const BodyMetric = require('../models/BodyMetric');
 const PDFDocument = require('pdfkit');
 const { Parser } = require('json2csv');
 
@@ -22,6 +26,10 @@ exports.exportPDF = async (req, res, next) => {
         const tasks = await Task.find({ userId }).sort('-createdAt');
         const habits = await Habit.find({ userId }).sort('-streak');
         const sessions = await Session.find({ userId }).sort('-createdAt');
+        const nutritionLogs = await Nutrition.find({ userId }).sort('-date').limit(7);
+        const battles = await Battle.find({ 'participants.user': userId }).sort('-createdAt').limit(5);
+        const transactions = await Transaction.find({ user: userId }).sort('-date').limit(10);
+        const metrics = await BodyMetric.find({ user: userId }).sort('-date').limit(3);
 
         // Statistics calculation
         const completedTasks = tasks.filter(t => t.status === 'completed').length;
@@ -158,6 +166,111 @@ exports.exportPDF = async (req, res, next) => {
             
             doc.moveDown(1.5);
         });
+
+        // --- PAGE 4: BIOLOGICAL FUEL & COLLABORATION ---
+        doc.addPage();
+        doc.rect(0, 0, 612, 792).fill(DARK_BG);
+        
+        // Nutrition Section
+        doc.fillColor(PRIMARY).fontSize(16).font('Helvetica-Bold').text('BIOLOGICAL FUEL ANALYSIS', 50, 50);
+        doc.rect(50, 75, 512, 1).fill(BORDER);
+        
+        let nutY = 100;
+        if (nutritionLogs.length > 0) {
+            nutritionLogs.forEach((log, i) => {
+                const dayTotals = log.meals.reduce((acc, m) => ({
+                    cals: acc.cals + m.calories,
+                    prot: acc.prot + m.protein
+                }), { cals: 0, prot: 0 });
+
+                drawCard(doc, 50, nutY, 512, 40, 10, '#151824');
+                doc.fillColor(TEXT_BRIGHT).fontSize(9).font('Helvetica-Bold').text(log.date, 70, nutY + 15);
+                doc.fillColor(TEXT_DIM).fontSize(8).text(`${dayTotals.cals} KCAL // ${dayTotals.prot}g PROT // ${log.waterIntake}ml HYDRATION`, 180, nutY + 15);
+                nutY += 50;
+            });
+        } else {
+            doc.fillColor(TEXT_DIM).fontSize(10).font('Helvetica-Oblique').text('No biometry logs detected for this cycle.', 50, 100);
+            nutY = 130;
+        }
+
+        // Synergy Section
+        doc.moveDown(2);
+        doc.fillColor(SECONDARY).fontSize(16).font('Helvetica-Bold').text('COLLABORATIVE RESONANCE', 50, nutY + 20);
+        doc.rect(50, nutY + 45, 512, 1).fill(BORDER);
+        
+        let synY = nutY + 65;
+        drawCard(doc, 50, synY, 160, 60, 12, '#151824');
+        doc.fillColor(SECONDARY).fontSize(18).text(`${user.socialStats?.synergyPoints || 0}`, 70, synY + 15);
+        doc.fillColor(TEXT_DIM).fontSize(8).text('SYNERGY POINTS', 70, synY + 40);
+
+        drawCard(doc, 226, synY, 160, 60, 12, '#151824');
+        doc.fillColor(TEXT_BRIGHT).fontSize(18).text(`${user.socialStats?.battlesWon || 0}`, 246, synY + 15);
+        doc.fillColor(TEXT_DIM).fontSize(8).text('ARENA VICTORIES', 246, synY + 40);
+
+        drawCard(doc, 402, synY, 160, 60, 12, '#151824');
+        doc.fillColor(TEXT_BRIGHT).fontSize(18).text(`${user.socialStats?.orbsSent || 0}`, 422, synY + 15);
+        doc.fillColor(TEXT_DIM).fontSize(8).text('ORBS DISPATCHED', 422, synY + 40);
+
+        // --- PAGE 5: FINANCIAL INTELLIGENCE ---
+        doc.addPage();
+        doc.rect(0, 0, 612, 792).fill(DARK_BG);
+        doc.fillColor(SUCCESS).fontSize(18).font('Helvetica-Bold').text('FINANCIAL INTELLIGENCE', 50, 50);
+        doc.rect(50, 75, 512, 1).fill(BORDER);
+
+        const finY = 100;
+        drawCard(doc, 50, finY, 250, 80, 15, '#151824');
+        doc.fillColor(TEXT_DIM).fontSize(8).text('CASH BALANCE', 70, finY + 20);
+        doc.fillColor(TEXT_BRIGHT).fontSize(20).text(`$${user.cashBalance?.toLocaleString() || 0}`, 70, finY + 40);
+
+        drawCard(doc, 312, finY, 250, 80, 15, '#151824');
+        doc.fillColor(TEXT_DIM).fontSize(8).text('CREDIT BALANCE', 332, finY + 20);
+        doc.fillColor(TEXT_BRIGHT).fontSize(20).text(`$${user.creditBalance?.toLocaleString() || 0}`, 332, finY + 40);
+
+        doc.moveDown(6);
+        doc.fillColor(TEXT_DIM).fontSize(10).font('Helvetica-Bold').text('RECENT TRANSACTIONS (NEURAL LEDGER)', 50);
+        doc.moveDown(1);
+
+        transactions.forEach((tx, i) => {
+            const currentTxY = doc.y;
+            doc.fillColor(BORDER).rect(50, currentTxY - 5, 512, 25).fill();
+            doc.fillColor(TEXT_BRIGHT).fontSize(9).text(tx.category || 'General', 60, currentTxY);
+            doc.fillColor(tx.type === 'income' ? SUCCESS : '#f87171').fontSize(9).text(`${tx.type === 'income' ? '+' : '-'}$${tx.amount}`, 480, currentTxY, { align: 'right', width: 70 });
+            doc.moveDown(1.5);
+        });
+
+        // --- PAGE 6: PHYSICAL WELLNESS METRICS ---
+        doc.addPage();
+        doc.rect(0, 0, 612, 792).fill(DARK_BG);
+        doc.fillColor(PRIMARY).fontSize(18).font('Helvetica-Bold').text('PHYSICAL WELLNESS METRICS', 50, 50);
+        doc.rect(50, 75, 512, 1).fill(BORDER);
+
+        if (metrics.length > 0) {
+            let metY = 100;
+            metrics.forEach((m, i) => {
+                drawCard(doc, 50, metY, 512, 120, 15, '#151824');
+                doc.fillColor(TEXT_BRIGHT).fontSize(10).font('Helvetica-Bold').text(`SYNC DATE: ${m.date.toLocaleDateString()}`, 70, metY + 15);
+                
+                // Grid of metrics
+                doc.fillColor(TEXT_DIM).fontSize(8).font('Helvetica');
+                doc.text('WEIGHT', 70, metY + 45);
+                doc.fillColor(TEXT_BRIGHT).fontSize(12).text(`${m.weight || '--'} kg`, 70, metY + 60);
+
+                doc.fillColor(TEXT_DIM).text('BODY FAT', 170, metY + 45);
+                doc.fillColor(TEXT_BRIGHT).text(`${m.bodyFat || '--'}%`, 170, metY + 60);
+
+                doc.fillColor(TEXT_DIM).text('MUSCLE MASS', 270, metY + 45);
+                doc.fillColor(TEXT_BRIGHT).text(`${m.muscleMass || '--'}%`, 270, metY + 60);
+
+                doc.fillColor(TEXT_DIM).text('BMR', 370, metY + 45);
+                doc.fillColor(TEXT_BRIGHT).text(`${m.bmr || '--'} kcal`, 370, metY + 60);
+
+                doc.fontSize(7).fillColor(TEXT_DIM).text(`STATURE LOG: S:${m.stomach || '--'}cm // A:${m.arm || '--'}cm // L:${m.leg || '--'}cm`, 70, metY + 95);
+
+                metY += 140;
+            });
+        } else {
+            doc.fillColor(TEXT_DIM).fontSize(10).font('Helvetica-Oblique').text('No physical body metrics synced in the current epoch.', 50, 100);
+        }
 
         // --- GLOBAL FOOTER ---
         const range = doc.bufferedPageRange();

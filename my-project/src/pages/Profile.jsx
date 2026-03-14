@@ -177,7 +177,26 @@ export function Profile() {
                     </div>
                     <div className="flex-1">
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
-                        <p className="text-sm text-muted">{user.email}</p>
+                        
+                        <div className="flex items-center gap-2 mb-1">
+                            <p className="text-[10px] text-muted font-mono bg-white/5 px-2 py-0.5 rounded border border-white/5 flex items-center gap-2">
+                                ID: {user?._id || user?.id || 'ALPHA_SYNC'}
+                                <button 
+                                    onClick={() => {
+                                        const idToCopy = user?._id || user?.id;
+                                        if (idToCopy) {
+                                            navigator.clipboard.writeText(idToCopy);
+                                            toast.success('Neural ID copied to clipboard');
+                                        }
+                                    }}
+                                    className="hover:text-primary transition-colors"
+                                >
+                                    <Link2 size={10} />
+                                </button>
+                            </p>
+                            <p className="text-[10px] text-muted hidden sm:block">·</p>
+                            <p className="text-[10px] text-muted">{user.email}</p>
+                        </div>
 
                         <div className="flex flex-wrap items-center gap-2 mt-2">
                             {user.plan === 'premium' ? (

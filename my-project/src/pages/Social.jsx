@@ -302,7 +302,7 @@ export function Social() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pc-input w-full pl-12 h-14 text-lg font-bold"
-                                placeholder="Find professional peers..."
+                                placeholder="Search by name, email, or Neural ID..."
                             />
                             <button type="submit" disabled={searching} className="absolute right-2 top-2 h-10 px-6 bg-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-400 transition-all">
                                 {searching ? '...' : 'Scope'}
