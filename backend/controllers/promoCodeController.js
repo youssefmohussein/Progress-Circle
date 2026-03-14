@@ -164,3 +164,25 @@ exports.redeemPromoCode = async (req, res, next) => {
         next(error);
     }
 };
+// @desc    Remove an applied promo code (e.g., clear price override)
+// @route   DELETE /api/users/remove-promo
+// @access  Private
+exports.removePromoCode = async (req, res, next) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id, 
+            { $unset: { subscriptionPriceOverrideCents: 1 } }, 
+            { new: true }
+        );
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Promo code removed.',
+            user: {
+                subscriptionPriceOverrideCents: null
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

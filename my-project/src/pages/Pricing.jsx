@@ -33,12 +33,11 @@ export default function Pricing() {
     const [promoCode, setPromoCode] = useState('');
     const [loadingPromo, setLoadingPromo] = useState(false);
     const [promoMessage, setPromoMessage] = useState('');
-    const { user } = useAuth();
-    const token = localStorage.getItem('token'); // or from auth context if provided there
-    const navigate = useNavigate();
-
     const [monthlyPrice, setMonthlyPrice] = useState(149);
     const [yearlyPrice, setYearlyPrice] = useState(1299);
+    const { user, refreshUser } = useAuth();
+    const token = localStorage.getItem('token');
+    const navigate = useNavigate();
 
     useEffect(() => {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -92,8 +91,7 @@ export default function Pricing() {
             if (!data.success) throw new Error(data.message || 'Failed to cancel subscription.');
             
             toast.success(data.message);
-            // Optionally reload page to refresh user object from backend
-            setTimeout(() => window.location.reload(), 1500);
+            await refreshUser();
         } catch (err) {
             toast.error(err.message);
         }
@@ -114,9 +112,29 @@ export default function Pricing() {
             if (!data.success) throw new Error(data.message || 'Failed to redeem promo code');
             setPromoMessage(data.message);
             toast.success(data.message);
-            setTimeout(() => window.location.reload(), 1500); 
+            await refreshUser();
         } catch (err) {
             setPromoMessage(err.message);
+            toast.error(err.message);
+        } finally {
+            setLoadingPromo(false);
+        }
+    };
+
+    const handleRemovePromo = async () => {
+        if (loadingPromo) return;
+        setLoadingPromo(true);
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const res = await fetch(`${apiUrl}/users/remove-promo`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Failed to remove promo');
+            toast.success('Promo discount removed.');
+            await refreshUser();
+        } catch (err) {
             toast.error(err.message);
         } finally {
             setLoadingPromo(false);
@@ -232,17 +250,38 @@ export default function Pricing() {
                                     borderRadius: '12px',
                                     padding: '12px 16px',
                                     marginBottom: '12px',
+                                    position: 'relative',
                                     textAlign: 'center'
                                 }}>
-                                    <p style={{ color: '#4ade80', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                                    <button 
+                                        onClick={handleRemovePromo}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            background: 'rgba(255,255,255,0.1)',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '20px',
+                                            height: '20px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#ef4444',
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            cursor: 'pointer'
+                                        }}
+                                        title="Remove promo"
+                                    >
+                                        ×
+                                    </button>
+                                    <p style={{ color: '#4ade80', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
                                         🎉 Promo Applied!
                                     </p>
-                                    <p style={{ color: 'white', fontSize: '22px', fontWeight: 900 }}>
+                                    <p style={{ color: 'white', fontSize: '20px', fontWeight: 900 }}>
                                         {Math.round(user.subscriptionPriceOverrideCents / 100)} EGP
-                                        <span style={{ color: '#9ca3af', fontSize: '13px', fontWeight: 500, marginLeft: '6px' }}>one-time payment</span>
-                                    </p>
-                                    <p style={{ color: '#9ca3af', fontSize: '11px' }}>
-                                        <s>{cycle === 'monthly' ? monthlyPrice : yearlyPrice} EGP</s> regular price
+                                        <span style={{ color: '#9ca3af', fontSize: '12px', fontWeight: 500, marginLeft: '6px' }}>one-time</span>
                                     </p>
                                 </div>
                             )}
