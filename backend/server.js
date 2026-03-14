@@ -26,6 +26,7 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const integrationRoutes = require('./routes/integrationRoutes');
 const socialRoutes = require('./routes/socialRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const promoCodeRoutes = require('./routes/promoCodeRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -100,6 +101,7 @@ app.use('/api/admin/analytics', analyticsRoutes);
 app.use('/api/integration', integrationRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/promocodes', promoCodeRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

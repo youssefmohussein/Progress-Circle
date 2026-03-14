@@ -26,6 +26,7 @@ const getProfile = async (req, res) => {
             musicPreferences: user.musicPreferences,
             linkedAccounts: user.linkedAccounts,
             plan: user.plan,
+            subscription: user.subscription,
         },
     });
 };
@@ -82,6 +83,7 @@ const updateProfile = async (req, res, next) => {
                 musicPreferences: user.musicPreferences,
                 linkedAccounts: user.linkedAccounts,
                 plan: user.plan,
+                subscription: user.subscription,
             },
         });
     } catch (error) {

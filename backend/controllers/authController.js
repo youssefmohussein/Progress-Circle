@@ -51,6 +51,7 @@ const register = async (req, res, next) => {
                     musicPreferences: user.musicPreferences,
                     linkedAccounts: user.linkedAccounts,
                     plan: user.plan,
+                    subscription: user.subscription,
                     gender: user.gender || '',
                 },
             },
@@ -103,6 +104,7 @@ const login = async (req, res, next) => {
                     musicPreferences: user.musicPreferences,
                     linkedAccounts: user.linkedAccounts,
                     plan: user.plan,
+                    subscription: user.subscription,
                     gender: user.gender || '',
                 },
             },
@@ -116,7 +118,21 @@ const login = async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res) => {
-    const user = req.user;
+    let user = req.user;
+
+    // Verify expiration and auto-downgrade or fix bug
+    if (user.plan === 'premium' && !user.isAdmin) {
+        const periodEnd = user.subscription?.currentPeriodEnd;
+        if (periodEnd && new Date(periodEnd) < new Date()) {
+            user.plan = 'free';
+            if (user.subscription) user.subscription.status = 'expired';
+            await user.save();
+        } else if (!periodEnd) {
+            user.subscription = { status: 'active', currentPeriodEnd: new Date(Date.now() + 24 * 60 * 60 * 1000) };
+            await user.save();
+        }
+    }
+
     console.log('Backend getMe user:', { id: user._id, email: user.email, isAdmin: user.isAdmin });
     res.status(200).json({
         success: true,
@@ -140,6 +156,7 @@ const getMe = async (req, res) => {
             musicPreferences: user.musicPreferences,
             linkedAccounts: user.linkedAccounts,
             plan: user.plan,
+            subscription: user.subscription,
             gender: user.gender || '',
         },
     });

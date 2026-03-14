@@ -43,7 +43,23 @@ export function AvatarShop() {
     // Initialize preview with current saved avatar or defaults
     useEffect(() => {
         if (gamData && gamData.avatarConfig && !previewConfig) {
-            setPreviewConfig({ ...avatarDefaults, ...gamData.avatarConfig });
+            const cleanConfig = { ...avatarDefaults };
+            const shopItems = gamData.shopItems || {};
+            
+            for (const key of Object.keys(avatarDefaults)) {
+                const userVal = gamData.avatarConfig[key];
+                if (userVal !== undefined) {
+                    if (key === 'seed') {
+                        cleanConfig[key] = userVal;
+                    } else if (shopItems[key]) {
+                        const isValid = shopItems[key].some(item => item.val === userVal);
+                        if (isValid) {
+                            cleanConfig[key] = userVal;
+                        }
+                    }
+                }
+            }
+            setPreviewConfig(cleanConfig);
         } else if (gamData && !previewConfig) {
             setPreviewConfig({ ...avatarDefaults, seed: gamData.username || 'default' });
         }

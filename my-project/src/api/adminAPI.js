@@ -9,4 +9,10 @@ export const adminAPI = {
     rewardAll: (data) => client.post('/admin/reward-all', data),
     resetPoints: (id) => client.put(`/admin/users/${id}/reset-points`),
     deleteUser: (id) => client.delete(`/admin/users/${id}`),
+
+    // Promo Codes
+    getPromoCodes: () => client.get('/promocodes'),
+    createPromoCode: (data) => client.post('/promocodes', data),
+    updatePromoCode: (id, data) => client.put(`/promocodes/${id}`, data),
+    deletePromoCode: (id) => client.delete(`/promocodes/${id}`),
 };

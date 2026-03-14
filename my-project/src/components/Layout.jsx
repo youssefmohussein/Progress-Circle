@@ -1,17 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar, SidebarContent } from './SideBar';
 import { QuickAddModal } from './QuickAddModal';
-import { Plus, Menu, X } from 'lucide-react';
+import { Plus, Menu, X, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 export function Layout({ children }) {
     const [quickAddOpen, setQuickAddOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [warningMessage, setWarningMessage] = useState(null);
     const { dark } = useTheme();
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user && user.plan === 'premium' && user.subscription?.currentPeriodEnd) {
+            const endDate = new Date(user.subscription.currentPeriodEnd);
+            const now = new Date();
+            const timeDiff = endDate.getTime() - now.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if (user.subscription.status === 'cancelled') {
+                setWarningMessage(`Your Premium subscription is cancelled and will end on ${endDate.toLocaleDateString()}.`);
+            } else if (daysDiff <= 3 && daysDiff >= 0) {
+                setWarningMessage(`Your Premium subscription will renew in ${daysDiff} day${daysDiff !== 1 ? 's' : ''}. Make sure your payment method is up to date.`);
+            } else if (daysDiff < 0) {
+                setWarningMessage('Your Premium subscription has expired.');
+            } else {
+                setWarningMessage(null);
+            }
+        } else {
+            setWarningMessage(null);
+        }
+    }, [user]);
 
     return (
         <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden', flexDirection: 'column' }}>
+            {warningMessage && (
+                <div style={{
+                    background: 'rgba(234, 179, 8, 0.1)',
+                    borderBottom: '1px solid rgba(234, 179, 8, 0.2)',
+                    padding: '8px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    color: '#eab308',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    zIndex: 100
+                }}>
+                    <AlertTriangle size={16} className="animate-pulse" />
+                    <span>{warningMessage}</span>
+                    <Link to="/pricing" style={{ color: '#fef08a', textDecoration: 'underline', marginLeft: '8px' }}>Manage</Link>
+                </div>
+            )}
+            
             {/* Mobile Header */}
             <header 
                 className="flex lg:hidden items-center justify-between px-4"

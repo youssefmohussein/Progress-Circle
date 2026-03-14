@@ -140,6 +140,13 @@ const userSchema = new mongoose.Schema(
             enum: ['free', 'premium'],
             default: 'free',
         },
+        subscription: {
+            status: { type: String, enum: ['active', 'inactive', 'cancelled'], default: 'inactive' },
+            billingCycle: { type: String, enum: ['monthly', 'yearly', ''], default: '' },
+            currentPeriodEnd: { type: Date, default: null },
+            paymobOrderId: { type: String, default: '' },
+            paymobTransactionId: { type: String, default: '' }
+        },
         followers: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
@@ -156,6 +163,10 @@ const userSchema = new mongoose.Schema(
                 date: { type: Date },
                 points: { type: Number }
             }]
+        },
+        redeemedPromoCodes: {
+            type: [String],
+            default: []
         }
     },
     { timestamps: true }

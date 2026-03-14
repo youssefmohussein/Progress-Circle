@@ -5,7 +5,7 @@ import {
     Search, Filter, Edit3, Shield, Star, Zap, Settings, 
     TrendingUp, BarChart3, Mail, Calendar, Crown, X, Save, 
     AlertTriangle, Activity, Database, Key, Server, Terminal,
-    Globe, Lock, Unlock, Gift, ArrowUpRight, Cpu
+    Globe, Lock, Unlock, Gift, ArrowUpRight, Cpu, Tag, Plus
 } from 'lucide-react';
 import { adminAPI } from '../../api/adminAPI';
 import { StatCard } from '../../components/StatCard';
@@ -28,18 +28,30 @@ export function AdminDashboard() {
     const [isSaving, setIsSaving] = useState(false);
     const [rewardAmount, setRewardAmount] = useState(50);
     const [pulseData, setPulseData] = useState([]);
+
+    // Promo codes state
+    const [promoCodes, setPromoCodes] = useState([]);
+    const [isCreatingPromo, setIsCreatingPromo] = useState(false);
+    const [newPromo, setNewPromo] = useState({
+        code: '',
+        rewardType: 'premium_days',
+        rewardValue: 30,
+        maxUses: 100
+    });
     
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [statsRes, usersRes, settingsRes] = await Promise.all([
+            const [statsRes, usersRes, settingsRes, promoRes] = await Promise.all([
                 adminAPI.getStats(), 
                 adminAPI.getUsers(),
-                adminAPI.getSettings()
+                adminAPI.getSettings(),
+                adminAPI.getPromoCodes()
             ]);
             setStats(statsRes.data.data);
             setUsers(usersRes.data.data);
             setSettings(settingsRes.data.data);
+            setPromoCodes(promoRes.data.data);
         } catch { toast.error('Shield Interface Failure: Link compromised.'); }
         finally { setLoading(false); }
     };
@@ -95,6 +107,36 @@ export function AdminDashboard() {
         } catch { toast.error('PURGE INTERRUPTED'); }
     };
 
+    // Promo Code Handlers
+    const handleCreatePromo = async () => {
+        try {
+            await adminAPI.createPromoCode(newPromo);
+            toast.success('Promo Code Generated');
+            setIsCreatingPromo(false);
+            setNewPromo({ code: '', rewardType: 'premium_days', rewardValue: 30, maxUses: 100 });
+            fetchData();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to generate promo code');
+        }
+    };
+
+    const handleTogglePromo = async (promo) => {
+        try {
+            await adminAPI.updatePromoCode(promo._id, { isActive: !promo.isActive });
+            toast.success(`Code ${promo.code} status updated`);
+            fetchData();
+        } catch { toast.error('Status update failed'); }
+    };
+
+    const handleDeletePromo = async (id) => {
+        if (!confirm('Delete this promo code permanently?')) return;
+        try {
+            await adminAPI.deletePromoCode(id);
+            toast.success('Promo Code Deleted');
+            fetchData();
+        } catch { toast.error('Deletion failed'); }
+    };
+
     const filteredUsers = users.filter(u => 
         u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
         u.email?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -145,6 +187,7 @@ export function AdminDashboard() {
                     { id: 'overview', label: 'Overview', icon: BarChart3, color: 'indigo' },
                     { id: 'users', label: 'User Matrix', icon: Server, color: 'sky' },
                     { id: 'system', label: 'SysControl', icon: Cpu, color: 'amber' },
+                    { id: 'promos', label: 'Promo Codes', icon: Tag, color: 'green' },
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -411,6 +454,122 @@ export function AdminDashboard() {
                                 </div>
                             </div>
                         </Card>
+                    </motion.div>
+                )}
+
+                {activeTab === 'promos' && (
+                    <motion.div
+                        key="promos"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="space-y-8"
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-black flex items-center gap-3">
+                                <Tag className="text-green-500" /> Active Promotions
+                            </h2>
+                            <Button onClick={() => setIsCreatingPromo(true)} className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-black">
+                                <Plus size={18} /> Generate Code
+                            </Button>
+                        </div>
+
+                        {isCreatingPromo && (
+                            <Card className="p-8 mb-8 border-green-500/20 bg-green-500/5">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                    <div>
+                                        <label className="text-xs font-black uppercase tracking-widest text-pc-muted mb-2 block">Code String</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g. SUMMER2024"
+                                            value={newPromo.code}
+                                            onChange={(e) => setNewPromo({...newPromo, code: e.target.value})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 uppercase focus:border-green-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-black uppercase tracking-widest text-pc-muted mb-2 block">Reward Type</label>
+                                        <select
+                                            value={newPromo.rewardType}
+                                            onChange={(e) => setNewPromo({...newPromo, rewardType: e.target.value})}
+                                            className="w-full bg-[#1A1E26] border border-white/10 rounded-xl px-4 py-3 focus:border-green-500 transition-colors text-white"
+                                        >
+                                            <option value="premium_days">Premium Days</option>
+                                            <option value="points">Points (XP)</option>
+                                            <option value="cash">Cash Value</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-black uppercase tracking-widest text-pc-muted mb-2 block">Reward Value</label>
+                                        <input 
+                                            type="number" 
+                                            value={newPromo.rewardValue}
+                                            onChange={(e) => setNewPromo({...newPromo, rewardValue: parseInt(e.target.value)})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-green-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-black uppercase tracking-widest text-pc-muted mb-2 block">Max Uses</label>
+                                        <input 
+                                            type="number" 
+                                            value={newPromo.maxUses}
+                                            onChange={(e) => setNewPromo({...newPromo, maxUses: parseInt(e.target.value)})}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-green-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 mt-6 justify-end">
+                                    <Button variant="outline" onClick={() => setIsCreatingPromo(false)}>Cancel</Button>
+                                    <Button onClick={handleCreatePromo} className="bg-green-500 hover:bg-green-600 text-black">Save Code</Button>
+                                </div>
+                            </Card>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {promoCodes.length === 0 ? (
+                                <div className="col-span-fulltext-center text-pc-muted p-10 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                    No active promo codes found in the system.
+                                </div>
+                            ) : promoCodes.map(promo => (
+                                <Card key={promo._id} className="p-6 border-white/5 bg-white/[0.02] flex flex-col justify-between h-full">
+                                    <div>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="px-3 py-1.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-lg font-mono font-black text-xl tracking-widest">
+                                                {promo.code}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => handleTogglePromo(promo)} className={`p-2 rounded-lg ${promo.isActive ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                                                    {promo.isActive ? <Unlock size={16} /> : <Lock size={16} />}
+                                                </button>
+                                                <button onClick={() => handleDeletePromo(promo._id)} className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="space-y-2 mb-6">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-pc-muted">Reward</span>
+                                                <span className="font-bold text-white">
+                                                    {promo.rewardValue} {promo.rewardType.replace('_', ' ').toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-pc-muted">Uses</span>
+                                                <span className="font-bold text-white shadow-xl">
+                                                    {promo.usedCount} / {promo.maxUses === null ? '∞' : promo.maxUses}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="pt-4 border-t border-white/10 flex justify-between items-center text-xs text-pc-muted font-mono">
+                                        <span>Status: <span className={promo.isActive ? "text-green-500" : "text-red-500"}>{promo.isActive ? 'ACTIVE' : 'INACTIVE'}</span></span>
+                                        <span>Created: {new Date(promo.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

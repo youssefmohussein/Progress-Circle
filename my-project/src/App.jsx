@@ -21,6 +21,7 @@ import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
 import { Planner } from './pages/Planner';
 import { Social } from './pages/Social';
+import Pricing from './pages/Pricing';
 import FocusBattleArena from './pages/FocusBattleArena';
 
 function PrivateRoute({ children }) {
@@ -51,6 +52,7 @@ function AppRoutes() {
       <Route path="/savings" element={<PrivateRoute><Layout><Savings /></Layout></PrivateRoute>} />
       <Route path="/fitness" element={<PrivateRoute><Layout><Fitness /></Layout></PrivateRoute>} />
       <Route path="/focus" element={<PrivateRoute><Layout><FocusMode /></Layout></PrivateRoute>} />
+      <Route path="/pricing" element={<PrivateRoute><Layout><Pricing /></Layout></PrivateRoute>} />
 
       {/* Gamification */}
       <Route path="/avatar-shop" element={<PrivateRoute><Layout><AvatarShop /></Layout></PrivateRoute>} />
