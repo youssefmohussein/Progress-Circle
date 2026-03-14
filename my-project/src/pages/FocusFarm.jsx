@@ -16,7 +16,6 @@ export function FocusFarm() {
     const getMetadata = (type) => getTreeMetadata(farmTheme, type);
 
     const [communityTrees, setCommunityTrees] = useState(null);
-    const [testing, setTesting] = useState(false);
 
     // Pagination logic: chronological order (oldest planted first inside a farm)
     const allTrees = gamData?.trees || [];
@@ -38,19 +37,6 @@ export function FocusFarm() {
             .catch(() => { });
     }, []);
 
-    // Testing auto-plant: Plant a tree 3 seconds after load if empty, to visualize the field
-    useEffect(() => {
-        let timer;
-        if (gamData && gamData.trees && gamData.trees.length === 0) {
-            timer = setTimeout(() => {
-                gamificationAPI.testTree().then(() => {
-                    toast.success('Auto-planted a test tree!');
-                    refresh();
-                }).catch(() => { });
-            }, 3000);
-        }
-        return () => clearTimeout(timer);
-    }, [gamData?.trees?.length]);
 
     if (loading || !gamData) return <LoadingSpinner />;
 
@@ -66,18 +52,6 @@ export function FocusFarm() {
     const rarestTree = ['golden', 'pine_rare', 'oak', 'pine', 'sapling']
         .find(t => typeCount[t] > 0);
 
-    const handleTestPlant = async () => {
-        setTesting(true);
-        try {
-            const res = await gamificationAPI.testTree();
-            toast.success(res.data.message || 'Tree planted!');
-            await refresh(); // Refresh gamification context to show the new tree
-        } catch (e) {
-            toast.error('Failed to plant test tree');
-        } finally {
-            setTesting(false);
-        }
-    };
 
     return (
         <div className="space-y-6">
@@ -91,14 +65,6 @@ export function FocusFarm() {
                         Every focus session grows a tree. The longer you focus, the bigger the tree.
                     </p>
                 </div>
-                <button
-                    onClick={handleTestPlant}
-                    disabled={testing}
-                    className="px-3 py-1.5 text-xs font-bold rounded-lg text-white disabled:opacity-50"
-                    style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
-                >
-                    {testing ? 'Planting...' : '🧪 Plant Test Tree'}
-                </button>
             </div>
 
             {/* Stats row */}
