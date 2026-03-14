@@ -4,7 +4,7 @@ import {
     User, Mail, Calendar, Trophy, Zap, Shield, 
     Palette, Sun, Moon, Sparkles, ChevronRight,
     Music, Link2, ExternalLink, Check, Star, ShoppingBag, Sprout,
-    Flame, Snowflake, Crown, TrendingUp, RotateCcw
+    Flame, Snowflake, Crown, TrendingUp, RotateCcw, Lock
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
