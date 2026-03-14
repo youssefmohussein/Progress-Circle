@@ -4,7 +4,8 @@ import {
     User, Mail, Calendar, Trophy, Zap, Shield, 
     Palette, Sun, Moon, Sparkles, ChevronRight,
     Music, Link2, ExternalLink, Check, Star, ShoppingBag, Sprout,
-    Flame, Snowflake, Crown, TrendingUp, RotateCcw, Lock
+    Flame, Snowflake, Crown, TrendingUp, RotateCcw, Lock,
+    Download, FileText, FileSpreadsheet
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -106,6 +107,30 @@ export function Profile() {
             }
         } catch (error) {
             toast.error('Failed to restore defaults');
+        }
+    };
+
+    const handleExport = async (format) => {
+        try {
+            toast.info(`Preparing your ${format.toUpperCase()} report...`);
+            const response = await api.get(`/export/${format}`, {
+                responseType: 'blob'
+            });
+            
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            const extension = format === 'csv' ? 'csv' : 'pdf';
+            link.setAttribute('download', `progress_circle_export_${new Date().toISOString().split('T')[0]}.${extension}`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            toast.success(`${format.toUpperCase()} exported successfully!`);
+        } catch (error) {
+            console.error('Export failed:', error);
+            toast.error('Failed to export data. Please try again.');
         }
     };
 
@@ -293,6 +318,55 @@ export function Profile() {
                         </div>
                     ))}
                 </div>
+            </Card>
+
+            {/* Neural Data Archeology */}
+            <Card className="relative overflow-hidden border-indigo-500/20 bg-indigo-500/[0.01]">
+                <div className="absolute top-0 right-0 p-6 opacity-[0.05] text-indigo-500">
+                    <FileText size={100} />
+                </div>
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
+                        <Download size={22} />
+                    </div>
+                    <h3 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Neural Archive</h3>
+                </div>
+                <p className="text-xs text-pc-muted mb-8 max-w-md">Access your complete neural performance history. Generate a high-fidelity intelligence report containing your consistency loops and node completion analytics.</p>
+
+                {user.plan === 'premium' ? (
+                    <div className="relative z-10">
+                        <button 
+                            onClick={() => handleExport('pdf')}
+                            className="w-full flex items-center justify-between p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-indigo-500/40 hover:bg-white/[0.05] transition-all group shadow-sm"
+                        >
+                            <div className="flex items-center gap-5">
+                                <div className="p-3 rounded-2xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
+                                    <FileText size={24} />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-base font-black text-white uppercase tracking-tight">Professional Performance Report</p>
+                                    <p className="text-[11px] font-medium text-pc-muted uppercase tracking-widest">Neural Data // Format: PDF // Premium Archive</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Launch Data</span>
+                                <ChevronRight size={20} className="text-indigo-500" />
+                            </div>
+                        </button>
+                        <p className="text-center mt-4 text-[9px] text-zinc-600 font-mono uppercase tracking-[0.2em]">Archival Integrity Verified // Progress Circle Intelligence</p>
+                    </div>
+                ) : (
+                    <div className="p-8 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex flex-col items-center text-center">
+                        <Lock className="text-indigo-500/30 mb-4" size={32} />
+                        <h4 className="text-base font-black text-white mb-2 uppercase tracking-tight">Archive Vault Locked</h4>
+                        <p className="text-xs text-pc-muted mb-6 max-w-xs">Neural data archiving and professional reporting require a verified Premium biological sync.</p>
+                        <Link to="/pricing">
+                            <button className="pc-btn pc-btn-primary px-10 py-3 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20">
+                                <Crown size={14} className="mr-2 inline" /> Synchronize for Archive
+                            </button>
+                        </Link>
+                    </div>
+                )}
             </Card>
         </div>
     );
