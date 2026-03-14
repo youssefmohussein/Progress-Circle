@@ -7,6 +7,7 @@ import { AvatarDisplay } from './AvatarDisplay';
 import { avatarOptions } from './avatarOptions';
 import { avatarDefaults } from './avatarDefaults';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { FarmScene } from '../components/FarmScene';
 
 const CATEGORIES = [
     { key: 'head', label: 'Hair / Head', icon: '💇' },
@@ -16,8 +17,19 @@ const CATEGORIES = [
     { key: 'accessories', label: 'Accessories', icon: '🕶️' },
     { key: 'skinColor', label: 'Skin Tone', icon: '🎨' },
     { key: 'headContrastColor', label: 'Hair Color', icon: '🖌️' },
-    { key: 'backgroundColor', label: 'Background', icon: '🌅' }
+    { key: 'backgroundColor', label: 'Background', icon: '🌅' },
+    { key: 'farmTheme', label: 'Farm Themes', icon: '🚜' }
 ];
+
+const FARM_THEME_PREVIEWS = {
+    classic: { bg: '#a3e635', icon: '🌿' },
+    winter: { bg: '#e0f2fe', icon: '❄️' },
+    cyberpunk: { bg: '#1e1b4b', icon: '⚡' },
+    desert: { bg: '#fef3c7', icon: '🌵' },
+    volcanic: { bg: '#450a0a', icon: '🌋' },
+    oceanic: { bg: '#083344', icon: '🌊' },
+    galactic: { bg: '#020617', icon: '🌌' }
+};
 
 export function AvatarShop() {
     const { gamData, loading, saveAvatar, buyItem } = useGamification();
@@ -43,6 +55,21 @@ export function AvatarShop() {
 
     function handlePreview(key, value) {
         setPreviewConfig(prev => ({ ...prev, [key]: value }));
+    }
+
+    async function handleEquip(key, value) {
+        if (saving) return;
+        setSaving(true);
+        const newConfig = { ...previewConfig, [key]: value };
+        setPreviewConfig(newConfig);
+        
+        try {
+            await saveAvatar(newConfig);
+        } catch (e) {
+            toast.error(e.response?.data?.message || 'Auto-save failed');
+        } finally {
+            setSaving(false);
+        }
     }
 
     async function handleSave() {
@@ -89,24 +116,40 @@ export function AvatarShop() {
             </div>
 
             {/* Avatar live preview */}
-            <div className="flex flex-col items-center gap-4 p-6 rounded-2xl" style={{ background: 'var(--color-surface-2)' }}>
-                <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}>
-                    <AvatarDisplay avatarConfig={liveConfig} size="xl" previewMode={true} />
-                </motion.div>
+            <div className="flex flex-col items-center gap-4 p-6 rounded-2xl min-h-[220px] justify-center" style={{ background: 'var(--color-surface-2)' }}>
+                <AnimatePresence mode="wait">
+                    {activeTab === 'farmTheme' ? (
+                        <motion.div 
+                            key="farm-preview"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full max-w-md"
+                        >
+                            <FarmScene 
+                                farmTheme={liveConfig.farmTheme} 
+                                trees={[
+                                    { type: 'oak' }, { type: 'pine' }, { type: 'sapling' },
+                                    { type: 'pine_rare' }, { type: 'golden' }, { type: 'pine' }
+                                ]} 
+                            />
+                            <p className="text-center text-[10px] text-muted mt-2 uppercase tracking-widest font-bold">Farm Theme Preview</p>
+                        </motion.div>
+                    ) : (
+                        <motion.div 
+                            key="avatar-preview"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                        >
+                            <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}>
+                                <AvatarDisplay avatarConfig={liveConfig} size="xl" previewMode={true} />
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
                 
-                {hasChanges && (
-                    <motion.button
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="px-5 py-2 rounded-xl font-semibold text-sm text-white flex items-center gap-2"
-                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
-                    >
-                        <Sparkles size={14} />
-                        {saving ? 'Saving…' : 'Save Avatar'}
-                    </motion.button>
-                )}
+                {/* Auto-save on equip is active, manual save button is no longer needed */}
             </div>
 
             {/* Category tabs */}
@@ -140,29 +183,41 @@ export function AvatarShop() {
                 >
                     {items.map((item, i) => {
                         const optValue = item.val;
-                        const isEquipped = liveConfig[activeTab] === optValue;
+                        const isPreviewing = previewConfig[activeTab] === optValue;
+                        const isSaved = gamData.avatarConfig?.[activeTab] === optValue;
                         const isOwned = item.price === 0 || inventory.includes(item.id);
 
                         // Create a temporary config to preview this single option
-                        const previewOptConfig = { ...liveConfig, [activeTab]: optValue };
+                        const previewOptConfig = { ...previewConfig, [activeTab]: optValue };
 
                         return (
                             <motion.div
                                 key={`${item.id}`}
                                 whileHover={{ y: -2 }}
-                                onClick={() => isOwned && handlePreview(activeTab, optValue)}
+                                onClick={() => handlePreview(activeTab, optValue)}
                                 className="relative flex flex-col items-center gap-2 p-3 rounded-2xl cursor-pointer transition-all"
                                 style={{
-                                    background: isEquipped ? 'rgba(99,102,241,0.15)' : 'var(--color-surface-2)',
-                                    border: isEquipped ? '2px solid #6366f1' : '2px solid transparent',
+                                    background: isPreviewing ? 'rgba(99,102,241,0.15)' : 'var(--color-surface-2)',
+                                    border: isPreviewing ? '2px solid #6366f1' : '2px solid transparent',
                                     opacity: isOwned ? 1 : 0.9,
                                 }}
                             >
                                 {/* Mini inline preview for colors or the character itself */}
-                                {(activeTab === 'skinColor' || activeTab === 'headContrastColor' || activeTab === 'clothingColor' || activeTab === 'backgroundColor') ? (
+                                {activeTab === 'farmTheme' ? (
+                                    <div 
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner"
+                                        style={{ background: FARM_THEME_PREVIEWS[optValue]?.bg || 'var(--color-surface-3)' }}
+                                    >
+                                        {FARM_THEME_PREVIEWS[optValue]?.icon || '❓'}
+                                    </div>
+                                ) : (activeTab === 'skinColor' || activeTab === 'headContrastColor' || activeTab === 'clothingColor' || activeTab === 'backgroundColor') ? (
                                     <div 
                                         className="w-10 h-10 rounded-full border-2 border-white/10" 
-                                        style={{ backgroundColor: optValue === 'transparent' ? 'transparent' : `#${optValue}` }} 
+                                        style={{ 
+                                            background: (optValue === 'transparent' || optValue.includes('gradient')) 
+                                                ? optValue 
+                                                : `#${optValue}` 
+                                        }} 
                                     />
                                 ) : (
                                     <AvatarDisplay avatarConfig={previewOptConfig} size="sm" showBg={false} />
@@ -172,28 +227,42 @@ export function AvatarShop() {
                                     {item.name}
                                 </p>
 
-                                {isEquipped ? (
-                                    <span className="text-[10px] font-bold text-indigo-400 flex items-center gap-0.5 mt-1">
-                                        <Check size={10} /> Equipped
-                                    </span>
-                                ) : isOwned ? (
+                                <div className="flex flex-col gap-1.5 w-full mt-1">
+                                    {/* Preview Button */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handlePreview(activeTab, optValue); }}
-                                        className="text-[10px] font-semibold px-2 py-0.5 rounded-lg text-white mt-1"
-                                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${
+                                            isPreviewing 
+                                            ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200' 
+                                            : 'border-white/10 text-muted hover:bg-white/5'
+                                        }`}
                                     >
-                                        Equip
+                                        Preview
                                     </button>
-                                ) : (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleBuy(item.id, item.price); }}
-                                        disabled={buying === item.id || gamData.points < item.price}
-                                        className="text-[10px] font-semibold px-2 py-0.5 rounded-lg text-white mt-1 disabled:opacity-50"
-                                        style={{ background: gamData.points >= item.price ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : '#6b7280' }}
-                                    >
-                                        {buying === item.id ? '...' : `${item.price} pts`}
-                                    </button>
-                                )}
+
+                                    {isSaved ? (
+                                        <span className="text-[10px] font-bold text-emerald-400 flex items-center justify-center gap-0.5 py-0.5">
+                                            <Check size={10} /> Saved
+                                        </span>
+                                    ) : isOwned ? (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleEquip(activeTab, optValue); }}
+                                            className="text-[10px] font-semibold px-2 py-0.5 rounded-lg text-white"
+                                            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                                        >
+                                            Equip
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleBuy(item.id, item.price); }}
+                                            disabled={buying === item.id || gamData.points < item.price}
+                                            className="text-[10px] font-semibold px-2 py-0.5 rounded-lg text-white disabled:opacity-50"
+                                            style={{ background: gamData.points >= item.price ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : '#6b7280' }}
+                                        >
+                                            {buying === item.id ? '...' : `${item.price} pts`}
+                                        </button>
+                                    )}
+                                </div>
                             </motion.div>
                         );
                     })}

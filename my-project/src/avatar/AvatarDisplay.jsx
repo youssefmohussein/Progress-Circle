@@ -17,14 +17,26 @@ export function AvatarDisplay({ avatarConfig, size = 'md', className = '', showB
     const sizeMap = { xs: 36, sm: 48, md: 72, lg: 90, xl: 120 };
     const px = sizeMap[size] ?? sizeMap.md;
 
-    // We rely on DiceBear's built-in background color property, but ensure it scales smoothly
+    const getBackgroundStyle = () => {
+        if (!showBg || !configToRender.backgroundColor || configToRender.backgroundColor === 'transparent') {
+            return 'transparent';
+        }
+        const bg = configToRender.backgroundColor;
+        // If it's a CSS gradient or already has a #, use it as is
+        if (bg.includes('gradient') || bg.startsWith('#') || bg.startsWith('url')) {
+            return bg;
+        }
+        // Otherwise assume it's a raw hex
+        return `#${bg}`;
+    };
+
     return (
         <div 
             className={`rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center ${className}`}
             style={{ 
                 width: px, 
                 height: px,
-                background: showBg ? `#${configToRender.backgroundColor}` : 'transparent'
+                background: getBackgroundStyle()
             }}
             dangerouslySetInnerHTML={{ __html: svgString }}
         />

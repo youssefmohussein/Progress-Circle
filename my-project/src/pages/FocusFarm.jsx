@@ -176,7 +176,10 @@ export function FocusFarm() {
                         description="Finish a focus session, or wait 3 seconds for a test tree! 🌱"
                     />
                 ) : (
-                    <FarmScene trees={currentFarmTrees} />
+                    <FarmScene 
+                        trees={currentFarmTrees} 
+                        farmTheme={gamData.avatarConfig?.farmTheme || 'classic'} 
+                    />
                 )}
             </Card>
 

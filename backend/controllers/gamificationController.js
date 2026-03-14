@@ -29,11 +29,33 @@ const avatarOptions = {
     clothingColor: ["9ddadb", "e78276", "ffcf77", "fdea6b", "78e185", "8fa7df", "e279c7"],
     skinColor: ["ffdbb4", "edb98a", "d08b5b", "ae5d29", "694d3d"],
     headContrastColor: ["2c1b18", "e8e1e1", "ecdcbf", "d6b370", "f59797", "b58143", "a55728", "724133", "4a312c", "c93305"],
-    backgroundColor: ["f3f4f6", "transparent", "fca5a5", "fcd34d", "86efac", "93c5fd", "c4b5fd", "f9a8d4"]
+    backgroundColor: [
+        "f3f4f6", "transparent", "fca5a5", "fcd34d", "86efac", "93c5fd", "c4b5fd", "f9a8d4",
+        "1e293b", "0f172a", "4c1d95", "1e1b4b", "831843", "064e3b",
+        "linear-gradient(135deg, #ff00ff, #00ffff)", // Cyberpunk
+        "linear-gradient(135deg, #6366f1, #d946ef)", // Neon Nights
+        "linear-gradient(135deg, #f59e0b, #ef4444)", // Tropical Heat
+        "linear-gradient(135deg, #34d399, #3b82f6)", // Aurora Mix
+        "linear-gradient(135deg, #0f172a, #334155, #1e293b)", // Deep Space
+        "linear-gradient(135deg, #fbbf24, #d97706)", // Sunset Gold
+        "linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4)" // Rainbow Vapor
+    ],
+    farmTheme: ["classic", "winter", "cyberpunk", "desert", "volcanic", "oceanic", "galactic"]
+};
+
+const GRADIENT_NAMES = {
+    "linear-gradient(135deg, #ff00ff, #00ffff)": "Cyberpunk Mix",
+    "linear-gradient(135deg, #6366f1, #d946ef)": "Neon Nights Mix",
+    "linear-gradient(135deg, #f59e0b, #ef4444)": "Tropical Heat Mix",
+    "linear-gradient(135deg, #34d399, #3b82f6)": "Aurora Mix",
+    "linear-gradient(135deg, #0f172a, #334155, #1e293b)": "Deep Space Mix",
+    "linear-gradient(135deg, #fbbf24, #d97706)": "Sunset Gold Mix",
+    "linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4)": "Rainbow Vapor Mix"
 };
 
 const formatName = (str) => {
     if (!str) return 'None';
+    if (GRADIENT_NAMES[str]) return GRADIENT_NAMES[str];
     return str.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
 };
 
@@ -41,12 +63,15 @@ const FREE_CATEGORIES = ['skinColor', 'clothingColor', 'headContrastColor', 'bac
 
 const SHOP_ITEMS = {};
 for (const [cat, items] of Object.entries(avatarOptions)) {
-    SHOP_ITEMS[cat] = items.map((val, idx) => ({
-        id: `${cat}_${val}`,
-        name: formatName(val),
-        price: (idx === 0 || val === '' || FREE_CATEGORIES.includes(cat)) ? 0 : 150, // default/empty/colors are free
-        val: val
-    }));
+    SHOP_ITEMS[cat] = items.map((val, idx) => {
+        const isGradient = cat === 'backgroundColor' && val.includes('gradient');
+        return {
+            id: isGradient ? `backgroundColor_mix_${idx}` : `${cat}_${val}`,
+            name: formatName(val),
+            price: (idx === 0 || val === '' || (FREE_CATEGORIES.includes(cat) && !isGradient)) ? 0 : 150, // default/empty/colors are free, gradients are 150
+            val: val
+        };
+    });
 }
 
 // Ensure powerups remain available natively
@@ -202,7 +227,12 @@ exports.getGamificationData = async (req, res, next) => {
 // @access Private
 exports.saveAvatarConfig = async (req, res, next) => {
     try {
-        const { seed, head, face, facialHair, accessories, clothingColor, skinColor, headContrastColor, backgroundColor } = req.body;
+        const { 
+            seed, head, face, facialHair, accessories, 
+            clothingColor, skinColor, headContrastColor, 
+            backgroundColor, farmTheme 
+        } = req.body;
+        
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -218,12 +248,16 @@ exports.saveAvatarConfig = async (req, res, next) => {
             { cat: 'skinColor', val: skinColor },
             { cat: 'headContrastColor', val: headContrastColor },
             { cat: 'backgroundColor', val: backgroundColor },
+            { cat: 'farmTheme', val: farmTheme }
         ];
+
         for (const { cat, val } of toCheck) {
             if (val === undefined || val === null) continue;
-            const itemId = `${cat}_${val}`;
-            // If an item is free by default, it might be auto-granted or we can safely skip inventory checks
-            // `DEFAULT_FREE_ITEMS` is computed from `ALL_ITEMS.filter(i => i.price === 0)` 
+            
+            // Resolve the actual ID from SHOP_ITEMS to handle custom IDs like gradients
+            const shopItem = SHOP_ITEMS[cat]?.find(i => i.val === val);
+            const itemId = shopItem ? shopItem.id : `${cat}_${val}`;
+
             if (!inventory.includes(itemId)) {
                 return res.status(403).json({ success: false, message: `Item ${itemId} is not in your inventory.` });
             }

@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema(
             skinColor: { type: String, default: 'edb98a' },
             headContrastColor: { type: String, default: '2c1b18' },
             backgroundColor: { type: String, default: 'transparent' },
+            farmTheme: { type: String, default: 'classic' },
         },
         inventory: {
             type: [String],
