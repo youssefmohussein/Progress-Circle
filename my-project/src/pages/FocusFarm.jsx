@@ -8,17 +8,13 @@ import { Card } from '../components/Card';
 import { EmptyState } from '../components/EmptyState';
 import { toast } from 'sonner';
 import { FarmScene, TREES_PER_FARM } from '../components/FarmScene';
-
-const TREE_ICONS = {
-    sapling: { emoji: '🌱', label: 'Sapling', color: '#86efac' },
-    pine: { emoji: '🌲', label: 'Pine', color: '#4ade80' },
-    oak: { emoji: '🌳', label: 'Oak', color: '#16a34a' },
-    pine_rare: { emoji: '🌟', label: 'Rare Pine', color: '#fbbf24' },
-    golden: { emoji: '✨', label: 'Golden Tree', color: '#f59e0b' },
-};
+import { getTreeMetadata } from '../utils/themeTreeMetadata';
 
 export function FocusFarm() {
     const { gamData, loading, refresh } = useGamification();
+    const farmTheme = gamData?.avatarConfig?.farmTheme || 'classic';
+    const getMetadata = (type) => getTreeMetadata(farmTheme, type);
+
     const [communityTrees, setCommunityTrees] = useState(null);
     const [testing, setTesting] = useState(false);
 
@@ -108,9 +104,9 @@ export function FocusFarm() {
             {/* Stats row */}
             <div className="grid grid-cols-3 gap-3">
                 {[
-                    { label: 'Total Trees', value: allTrees.length, icon: '🌳' },
-                    { label: 'Rarest', value: rarestTree ? TREE_ICONS[rarestTree]?.emoji : '—', icon: '⭐' },
-                    { label: 'Oak Trees', value: typeCount['oak'] || 0, icon: '🌿' },
+                    { label: 'Total Items', value: allTrees.length, icon: '📦' },
+                    { label: 'Rarest', value: rarestTree ? getMetadata(rarestTree).icon : '—', icon: '⭐' },
+                    { label: `${getMetadata('oak').name}s`, value: typeCount['oak'] || 0, icon: getMetadata('oak').icon },
                 ].map(stat => (
                     <div key={stat.label} className="flex flex-col items-center gap-1 p-3 rounded-2xl" style={{ background: 'var(--color-surface-2)' }}>
                         <span className="text-2xl">{stat.icon}</span>
@@ -130,11 +126,11 @@ export function FocusFarm() {
                         { type: 'oak', range: '≥ 120 min', pts: '+40 pts' },
                         { type: 'golden', range: '100 sessions', pts: 'Milestone' },
                     ].map(g => {
-                        const info = TREE_ICONS[g.type];
+                        const meta = getMetadata(g.type);
                         return (
                             <div key={g.type} className="flex flex-col items-center gap-1 p-2 rounded-xl text-center" style={{ background: 'rgba(0,0,0,0.06)' }}>
-                                <span className="text-2xl">{info.emoji}</span>
-                                <p className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{info.label}</p>
+                                <span className="text-2xl">{meta.icon}</span>
+                                <p className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{meta.name}</p>
                                 <p className="text-[10px] text-muted">{g.range}</p>
                                 <p className="text-[10px] font-bold text-indigo-400">{g.pts}</p>
                             </div>

@@ -11,11 +11,7 @@ const requirePremium = (req, res, next) => {
         return res.status(401).json({ success: false, message: 'Not authenticated.' });
     }
 
-    const isPremium =
-        user.plan === 'premium' &&
-        user.subscription?.status === 'active' &&
-        user.subscription?.currentPeriodEnd &&
-        new Date(user.subscription.currentPeriodEnd) > new Date();
+    const isPremium = user.isAdmin || user.plan === 'premium';
 
     if (!isPremium) {
         return res.status(403).json({

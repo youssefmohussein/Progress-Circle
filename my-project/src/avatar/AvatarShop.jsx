@@ -26,9 +26,9 @@ const FARM_THEME_PREVIEWS = {
     winter: { bg: '#e0f2fe', icon: '❄️' },
     cyberpunk: { bg: '#1e1b4b', icon: '⚡' },
     desert: { bg: '#fef3c7', icon: '🌵' },
-    volcanic: { bg: '#450a0a', icon: '🌋' },
-    oceanic: { bg: '#083344', icon: '🌊' },
-    galactic: { bg: '#020617', icon: '🌌' }
+    newyork: { bg: '#94a3b8', icon: '🏙️' },
+    kyoto: { bg: '#fecdd3', icon: '🌸' },
+    oasis: { bg: '#7dd3fc', icon: '🌴' }
 };
 
 export function AvatarShop() {

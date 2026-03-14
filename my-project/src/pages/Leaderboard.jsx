@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/Card';
 import { AvatarDisplay } from '../avatar/AvatarDisplay';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { getTreeMetadata } from '../utils/themeTreeMetadata';
 import { EmptyState } from '../components/EmptyState';
 
 const MEDALS = [
@@ -61,7 +62,9 @@ export function Leaderboard() {
                                     <p className="text-xs font-bold truncate" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
                                     <p className="text-[10px] text-[var(--primary)] font-semibold">{entry.user?.points} pts</p>
                                     {entry.user?.treesCount > 0 && (
-                                        <p className="text-[10px] text-emerald-400">🌳 {entry.user.treesCount}</p>
+                                        <p className="text-[10px] text-emerald-400">
+                                            {getTreeMetadata(entry.user.avatarConfig?.farmTheme, 'oak').icon} {entry.user.treesCount}
+                                        </p>
                                     )}
                                 </div>
                                 <div className={`w-full rounded-t-xl bg-gradient-to-t ${m.bg} border border-solid ${m.border} ${heights[entry.rank]} flex items-end justify-center pb-2`}>
@@ -101,7 +104,11 @@ export function Leaderboard() {
                                     <p className="text-xs text-muted flex items-center gap-2 mt-1">
                                         <span className="flex items-center gap-1"><Flame size={10} className="text-orange-400" />{entry.user?.streak} days</span>
                                         <span className="flex items-center gap-1"><CheckSquare size={10} className="text-[var(--primary)]" />{entry.user?.points} total</span>
-                                        {entry.user?.treesCount > 0 && <span className="text-emerald-400">🌳 {entry.user.treesCount}</span>}
+                                        {entry.user?.treesCount > 0 && (
+                                            <span className="text-emerald-400">
+                                                {getTreeMetadata(entry.user.avatarConfig?.farmTheme, 'oak').icon} {entry.user.treesCount}
+                                            </span>
+                                        )}
                                     </p>
                                 </div>
                                 <div className="text-right">

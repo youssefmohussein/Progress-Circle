@@ -40,7 +40,7 @@ const avatarOptions = {
         "linear-gradient(135deg, #fbbf24, #d97706)", // Sunset Gold
         "linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4)" // Rainbow Vapor
     ],
-    farmTheme: ["classic", "winter", "cyberpunk", "desert", "volcanic", "oceanic", "galactic"]
+    farmTheme: ["classic", "winter", "cyberpunk", "desert", "newyork", "kyoto", "oasis"]
 };
 
 const GRADIENT_NAMES = {
