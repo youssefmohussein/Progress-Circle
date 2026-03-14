@@ -20,6 +20,15 @@ client.interceptors.response.use(
             localStorage.removeItem('token');
             window.location.href = '/login';
         }
+        
+        // Handle Maintenance Mode (503 Service Unavailable)
+        if (error.response?.status === 503 || error.response?.data?.maintenance) {
+            // Only redirect if not already on maintenance page to avoid loops
+            if (!window.location.pathname.includes('/maintenance')) {
+                window.location.href = '/maintenance';
+            }
+        }
+        
         return Promise.reject(error);
     }
 );

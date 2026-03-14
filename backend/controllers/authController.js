@@ -52,6 +52,7 @@ const register = async (req, res, next) => {
                     linkedAccounts: user.linkedAccounts,
                     plan: user.plan,
                     subscription: user.subscription,
+                    subscriptionPriceOverrideCents: user.subscriptionPriceOverrideCents || null,
                     gender: user.gender || '',
                 },
             },
@@ -105,6 +106,7 @@ const login = async (req, res, next) => {
                     linkedAccounts: user.linkedAccounts,
                     plan: user.plan,
                     subscription: user.subscription,
+                    subscriptionPriceOverrideCents: user.subscriptionPriceOverrideCents || null,
                     gender: user.gender || '',
                 },
             },
@@ -157,6 +159,7 @@ const getMe = async (req, res) => {
             linkedAccounts: user.linkedAccounts,
             plan: user.plan,
             subscription: user.subscription,
+            subscriptionPriceOverrideCents: user.subscriptionPriceOverrideCents || null,
             gender: user.gender || '',
         },
     });

@@ -1,6 +1,7 @@
 import client from './client';
 
 export const adminAPI = {
+    getStatus: () => client.get('/admin/status'),
     getStats: () => client.get('/admin/stats'),
     getUsers: () => client.get('/admin/users'),
     updateUser: (id, data) => client.put(`/admin/users/${id}`, data),
@@ -9,6 +10,9 @@ export const adminAPI = {
     rewardAll: (data) => client.post('/admin/reward-all', data),
     resetPoints: (id) => client.put(`/admin/users/${id}/reset-points`),
     deleteUser: (id) => client.delete(`/admin/users/${id}`),
+    grantSubscription: (id, days) => client.post(`/admin/users/${id}/grant-subscription`, { days }),
+    getPricing: () => client.get('/admin/pricing'),
+    updatePricing: (data) => client.put('/admin/pricing', data),
 
     // Promo Codes
     getPromoCodes: () => client.get('/promocodes'),

@@ -23,7 +23,12 @@ const maintenanceMiddleware = async (req, res, next) => {
 
             if (isAdmin) return next();
 
-            // Allow the settings fetch itself and admin login
+            // Allow essential endpoints: settings/stats (admin only usually), login, getMe, and public pricing
+            const publicGetRoutes = ['/api/auth/me', '/api/subscription/pricing'];
+            if (req.method === 'GET' && publicGetRoutes.some(route => req.path.startsWith(route))) {
+                return next();
+            }
+
             if (req.path.startsWith('/api/admin') || req.path.startsWith('/api/auth/login')) {
                 return next();
             }

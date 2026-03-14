@@ -115,49 +115,50 @@ exports.redeemPromoCode = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'You have already redeemed this promo code' });
         }
 
-        // Apply reward
+        // Build the DB update object based on reward type
+        let dbUpdate = { $push: { redeemedPromoCodes: promoCode.code } };
         let rewardMessage = '';
+
         if (promoCode.rewardType === 'premium_days') {
             const daysToAdd = promoCode.rewardValue;
-            
-            // Calculate new period end
             let currentEnd = user.subscription?.currentPeriodEnd ? new Date(user.subscription.currentPeriodEnd) : new Date();
-            if (currentEnd < new Date()) currentEnd = new Date(); // If expired, start from today
-            
+            if (currentEnd < new Date()) currentEnd = new Date();
             currentEnd.setDate(currentEnd.getDate() + daysToAdd);
 
-            user.plan = 'premium';
-            if (!user.subscription) user.subscription = {};
-            user.subscription.status = 'active';
-            user.subscription.currentPeriodEnd = currentEnd;
+            dbUpdate.$set = {
+                plan: 'premium',
+                'subscription.status': 'active',
+                'subscription.currentPeriodEnd': currentEnd,
+            };
             rewardMessage = `${daysToAdd} days of Premium access added!`;
-            
+
         } else if (promoCode.rewardType === 'points') {
-            user.points += promoCode.rewardValue;
+            // Use $inc so encrypted fields are NOT touched
+            dbUpdate.$inc = { points: promoCode.rewardValue };
             rewardMessage = `${promoCode.rewardValue} Neural XP added!`;
-            
+
         } else if (promoCode.rewardType === 'cash') {
-            // Decrypt fields necessary if modifying encrypted data, but User.js handles it typically
-            user.cashBalance += promoCode.rewardValue;
-            user.totalMoney += promoCode.rewardValue;
-            rewardMessage = `${promoCode.rewardValue} Cash added!`;
+            // Override the next subscription payment price (in cents)
+            const overrideCents = promoCode.rewardValue * 100; // e.g. 30 → 3000 cents
+            dbUpdate.$set = { subscriptionPriceOverrideCents: overrideCents };
+            rewardMessage = `Your next subscription payment is now ${promoCode.rewardValue} EGP!`;
         }
 
-        // Mark code as redeemed for this user
-        if (!user.redeemedPromoCodes) {
-            user.redeemedPromoCodes = [];
-        }
-        user.redeemedPromoCodes.push(promoCode.code);
-        await user.save();
+        // Apply reward and mark code as redeemed atomically
+        const updatedUser = await User.findByIdAndUpdate(user._id, dbUpdate, { new: true });
 
         // Increment usage count on the promo code
-        promoCode.usedCount += 1;
-        await promoCode.save();
+        await PromoCode.findByIdAndUpdate(promoCode._id, { $inc: { usedCount: 1 } });
 
         res.status(200).json({ 
             success: true, 
             message: `Promo code applied successfully. ${rewardMessage}`,
-            user: { plan: user.plan, points: user.points, cashBalance: user.cashBalance, subscription: user.subscription }
+            user: {
+                plan: updatedUser.plan,
+                points: updatedUser.points,
+                subscription: updatedUser.subscription,
+                subscriptionPriceOverrideCents: updatedUser.subscriptionPriceOverrideCents,
+            }
         });
     } catch (error) {
         next(error);

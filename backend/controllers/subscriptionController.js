@@ -13,6 +13,8 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const PaymentLog = require('../models/PaymentLog');
 
+const GlobalSettings = require('../models/GlobalSettings');
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const PAYMOB_API_URL = 'https://accept.paymob.com/api';
@@ -27,10 +29,17 @@ const getPeriodEnd = (billingCycle) => {
     return now;
 };
 
-const getAmount = (billingCycle) => {
-    return billingCycle === 'yearly'
-        ? parseInt(process.env.PREMIUM_PRICE_YEARLY_CENTS || '129900')
-        : parseInt(process.env.PREMIUM_PRICE_MONTHLY_CENTS || '14900');
+const getAmount = async (billingCycle) => {
+    try {
+        const settings = await GlobalSettings.getSettings();
+        return billingCycle === 'yearly'
+            ? settings.yearlyPriceCents || parseInt(process.env.PREMIUM_PRICE_YEARLY_CENTS || '129900')
+            : settings.monthlyPriceCents || parseInt(process.env.PREMIUM_PRICE_MONTHLY_CENTS || '14900');
+    } catch {
+        return billingCycle === 'yearly'
+            ? parseInt(process.env.PREMIUM_PRICE_YEARLY_CENTS || '129900')
+            : parseInt(process.env.PREMIUM_PRICE_MONTHLY_CENTS || '14900');
+    }
 };
 
 // ─── 1. Create PayMob Order ───────────────────────────────────────────────────
@@ -44,7 +53,9 @@ exports.createOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid billing cycle.' });
         }
 
-        const amountCents = getAmount(billingCycle);
+        // Use promo price override if set, otherwise use standard pricing
+        let amountCents = user.subscriptionPriceOverrideCents || await getAmount(billingCycle);
+        const usedOverride = !!user.subscriptionPriceOverrideCents;
 
         // Step 1: Auth token
         const authRes = await axios.post(`${PAYMOB_API_URL}/auth/tokens`, {
@@ -108,11 +119,14 @@ exports.createOrder = async (req, res) => {
             ipAddress: req.ip,
         });
 
-        // Update user's pending order id
-        await User.findByIdAndUpdate(user._id, {
+        // Update user's pending order id; clear promo price override once used
+        const updatePayload = {
             'subscription.paymobOrderId': String(orderId),
             'subscription.billingCycle': billingCycle,
-        });
+        };
+        if (usedOverride) updatePayload.subscriptionPriceOverrideCents = null;
+
+        await User.findByIdAndUpdate(user._id, updatePayload);
 
         const iframeId = process.env.PAYMOB_IFRAME_ID;
         const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentToken}`;
@@ -326,5 +340,20 @@ exports.cancelSubscription = async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to cancel subscription.' });
+    }
+};
+
+// ─── 6. Public Pricing ────────────────────────────────────────────────────────
+
+exports.getPublicPricing = async (req, res) => {
+    try {
+        const settings = await GlobalSettings.getSettings();
+        res.json({
+            success: true,
+            monthlyPriceCents: settings.monthlyPriceCents,
+            yearlyPriceCents: settings.yearlyPriceCents,
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to get pricing.' });
     }
 };

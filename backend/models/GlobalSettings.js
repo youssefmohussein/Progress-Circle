@@ -16,6 +16,14 @@ const globalSettingsSchema = new mongoose.Schema({
     lastBackup: {
         type: Date,
         default: Date.now
+    },
+    monthlyPriceCents: {
+        type: Number,
+        default: 14900  // 149 EGP
+    },
+    yearlyPriceCents: {
+        type: Number,
+        default: 129900  // 1299 EGP
     }
 }, { timestamps: true });
 

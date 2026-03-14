@@ -167,6 +167,10 @@ const userSchema = new mongoose.Schema(
         redeemedPromoCodes: {
             type: [String],
             default: []
+        },
+        subscriptionPriceOverrideCents: {
+            type: Number,
+            default: null  // When set, next subscription payment uses this price (in cents)
         }
     },
     { timestamps: true }

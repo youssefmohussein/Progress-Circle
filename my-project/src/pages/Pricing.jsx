@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
@@ -37,8 +37,22 @@ export default function Pricing() {
     const token = localStorage.getItem('token'); // or from auth context if provided there
     const navigate = useNavigate();
 
-    const monthlyPrice = 149;
-    const yearlyPrice = 1299;
+    const [monthlyPrice, setMonthlyPrice] = useState(149);
+    const [yearlyPrice, setYearlyPrice] = useState(1299);
+
+    useEffect(() => {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        fetch(`${apiUrl}/subscription/pricing`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    setMonthlyPrice(Math.round(data.monthlyPriceCents / 100));
+                    setYearlyPrice(Math.round(data.yearlyPriceCents / 100));
+                }
+            })
+            .catch(() => {});
+    }, []);
+
     const yearlyPerMonth = (yearlyPrice / 12).toFixed(0);
     const savings = Math.round(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100);
 
@@ -211,12 +225,35 @@ export default function Pricing() {
                         </div>
                     ) : (
                         <>
+                            {user?.subscriptionPriceOverrideCents && (
+                                <div style={{
+                                    background: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(16,185,129,0.1))',
+                                    border: '1px solid rgba(34,197,94,0.3)',
+                                    borderRadius: '12px',
+                                    padding: '12px 16px',
+                                    marginBottom: '12px',
+                                    textAlign: 'center'
+                                }}>
+                                    <p style={{ color: '#4ade80', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                                        🎉 Promo Applied!
+                                    </p>
+                                    <p style={{ color: 'white', fontSize: '22px', fontWeight: 900 }}>
+                                        {Math.round(user.subscriptionPriceOverrideCents / 100)} EGP
+                                        <span style={{ color: '#9ca3af', fontSize: '13px', fontWeight: 500, marginLeft: '6px' }}>one-time payment</span>
+                                    </p>
+                                    <p style={{ color: '#9ca3af', fontSize: '11px' }}>
+                                        <s>{cycle === 'monthly' ? monthlyPrice : yearlyPrice} EGP</s> regular price
+                                    </p>
+                                </div>
+                            )}
                             <button
                                 className="cta-btn premium-btn"
                                 onClick={handleUpgrade}
                                 disabled={loading}
                             >
-                                {loading ? 'Redirecting…' : `Upgrade via PayMob`}
+                                {loading ? 'Redirecting…' : user?.subscriptionPriceOverrideCents
+                                    ? `Pay ${Math.round(user.subscriptionPriceOverrideCents / 100)} EGP via PayMob`
+                                    : `Upgrade via PayMob`}
                             </button>
                             <p className="payment-note">🔒 Secure payment via PayMob · Cancel anytime</p>
                         </>

@@ -131,7 +131,7 @@ const getSettings = async (req, res, next) => {
 // @access  Admin
 const updateSettings = async (req, res, next) => {
     try {
-        const settings = await GlobalSettings.findOneAndUpdate({}, req.body, { 
+        const settings = await GlobalSettings.findOneAndUpdate({}, { $set: req.body }, { 
             new: true, 
             upsert: true 
         });
@@ -139,4 +139,84 @@ const updateSettings = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-module.exports = { requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings };
+// @desc    Grant a user premium access for X days (admin only)
+// @route   POST /api/admin/users/:id/grant-subscription
+// @access  Admin
+const grantSubscription = async (req, res, next) => {
+    try {
+        const { days } = req.body;
+        if (!days || days <= 0) {
+            return res.status(400).json({ success: false, message: 'Please provide a valid number of days.' });
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+        // If already premium and not expired, extend from current end; otherwise from today
+        let base = (user.subscription?.currentPeriodEnd && new Date(user.subscription.currentPeriodEnd) > new Date())
+            ? new Date(user.subscription.currentPeriodEnd)
+            : new Date();
+
+        base.setDate(base.getDate() + parseInt(days));
+
+        await User.findByIdAndUpdate(req.params.id, {
+            plan: 'premium',
+            'subscription.status': 'active',
+            'subscription.currentPeriodEnd': base,
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Granted ${days} days of Premium to ${user.name}. Access until ${base.toLocaleDateString()}.`,
+        });
+    } catch (error) { next(error); }
+};
+
+// @desc    Get subscription pricing
+// @route   GET /api/admin/pricing
+// @access  Admin
+const getSubscriptionPricing = async (req, res, next) => {
+    try {
+        const settings = await GlobalSettings.getSettings();
+        res.status(200).json({
+            success: true,
+            data: {
+                monthlyPriceCents: settings.monthlyPriceCents,
+                yearlyPriceCents: settings.yearlyPriceCents,
+            }
+        });
+    } catch (error) { next(error); }
+};
+
+// @desc    Update subscription pricing
+// @route   PUT /api/admin/pricing
+// @access  Admin
+const updateSubscriptionPricing = async (req, res, next) => {
+    try {
+        const { monthlyPriceCents, yearlyPriceCents } = req.body;
+        const update = {};
+        if (monthlyPriceCents !== undefined) update.monthlyPriceCents = monthlyPriceCents;
+        if (yearlyPriceCents !== undefined) update.yearlyPriceCents = yearlyPriceCents;
+
+        const settings = await GlobalSettings.findOneAndUpdate({}, { $set: update }, { new: true, upsert: true });
+        res.status(200).json({ success: true, message: 'Pricing updated.', data: settings });
+    } catch (error) { next(error); }
+};
+
+// @desc    Get public system status
+// @route   GET /api/admin/status
+// @access  Public
+const getStatus = async (req, res, next) => {
+    try {
+        const settings = await GlobalSettings.getSettings();
+        res.status(200).json({ 
+            success: true, 
+            data: { 
+                maintenanceMode: settings.maintenanceMode,
+                broadcastMessage: settings.broadcastMessage
+            } 
+        });
+    } catch (error) { next(error); }
+};
+
+module.exports = { getStatus, requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings, grantSubscription, getSubscriptionPricing, updateSubscriptionPricing };

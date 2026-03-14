@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -13,6 +14,7 @@ import { Habits } from './pages/Habits';
 import { Info } from './pages/Info';
 import { Profile } from './pages/Profile';
 import { AdminDashboard } from './pages/Admin/AdminDashboard';
+import { Maintenance } from './pages/Maintenance';
 import { Savings } from './pages/Savings';
 import { Fitness } from './pages/Fitness';
 import { FocusMode } from './pages/FocusMode';
@@ -37,9 +39,38 @@ function AdminRoute({ children }) {
 }
 
 function AppRoutes() {
+  const { user, isAuthenticated } = useAuth();
+  const [publicMaintenance, setPublicMaintenance] = useState(false);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await adminAPI.getStatus();
+        if (res.data.data.maintenanceMode) setPublicMaintenance(true);
+        else setPublicMaintenance(false);
+      } catch (e) { /* Ignore */ }
+    };
+    checkStatus();
+    const interval = setInterval(checkStatus, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, []);
+  
+  // If system is in maintenance and user is not an admin, restrict all views except login
+  const isMaintenanceMode = (user?.isMaintenance === true && !user?.isAdmin) || (publicMaintenance && !user?.isAdmin);
+
+  if (isMaintenanceMode) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Maintenance />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/maintenance" element={<Maintenance />} />
 
       <Route path="/" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
       <Route path="/tasks" element={<PrivateRoute><Layout><Tasks /></Layout></PrivateRoute>} />

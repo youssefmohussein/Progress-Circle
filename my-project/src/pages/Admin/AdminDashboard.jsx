@@ -38,20 +38,30 @@ export function AdminDashboard() {
         rewardValue: 30,
         maxUses: 100
     });
-    
+
+    // Subscription grant
+    const [grantDays, setGrantDays] = useState(30);
+    const [isGranting, setIsGranting] = useState(false);
+
+    // Pricing
+    const [pricing, setPricing] = useState({ monthlyPriceCents: 14900, yearlyPriceCents: 129900 });
+    const [isSavingPricing, setIsSavingPricing] = useState(false);
+
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [statsRes, usersRes, settingsRes, promoRes] = await Promise.all([
+            const [statsRes, usersRes, settingsRes, promoRes, pricingRes] = await Promise.all([
                 adminAPI.getStats(), 
                 adminAPI.getUsers(),
                 adminAPI.getSettings(),
-                adminAPI.getPromoCodes()
+                adminAPI.getPromoCodes(),
+                adminAPI.getPricing(),
             ]);
             setStats(statsRes.data.data);
             setUsers(usersRes.data.data);
             setSettings(settingsRes.data.data);
             setPromoCodes(promoRes.data.data);
+            setPricing(pricingRes.data.data);
         } catch { toast.error('Shield Interface Failure: Link compromised.'); }
         finally { setLoading(false); }
     };
@@ -135,6 +145,31 @@ export function AdminDashboard() {
             toast.success('Promo Code Deleted');
             fetchData();
         } catch { toast.error('Deletion failed'); }
+    };
+
+    const handleGrantSubscription = async (userId) => {
+        if (!grantDays || grantDays <= 0) { toast.error('Enter valid number of days'); return; }
+        setIsGranting(true);
+        try {
+            const res = await adminAPI.grantSubscription(userId, grantDays);
+            toast.success(res.data.message);
+            setEditingUser(null);
+            fetchData();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to grant subscription');
+        } finally { setIsGranting(false); }
+    };
+
+    const handleSavePricing = async () => {
+        setIsSavingPricing(true);
+        try {
+            await adminAPI.updatePricing({
+                monthlyPriceCents: Math.round(pricing.monthlyPriceCents),
+                yearlyPriceCents: Math.round(pricing.yearlyPriceCents),
+            });
+            toast.success('Pricing updated successfully!');
+        } catch { toast.error('Failed to update pricing'); }
+        finally { setIsSavingPricing(false); }
     };
 
     const filteredUsers = users.filter(u => 
@@ -454,6 +489,46 @@ export function AdminDashboard() {
                                 </div>
                             </div>
                         </Card>
+
+                        {/* Subscription Pricing */}
+                        <Card className="p-10 space-y-8 border-indigo-500/10 bg-indigo-500/[0.02] rounded-[3rem] md:col-span-2">
+                            <div className="flex items-center gap-4">
+                                <div className="p-4 bg-indigo-500/10 rounded-2xl text-indigo-500"><Star size={28} /></div>
+                                <div>
+                                    <h2 className="text-2xl font-black">Subscription Pricing</h2>
+                                    <p className="text-xs text-pc-muted">Control what users pay for Premium access</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-pc-muted block">Monthly Price (EGP)</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={Math.round(pricing.monthlyPriceCents / 100)}
+                                        onChange={(e) => setPricing(p => ({ ...p, monthlyPriceCents: parseInt(e.target.value) * 100 }))}
+                                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold focus:border-indigo-500 outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-pc-muted block">Yearly Price (EGP)</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={Math.round(pricing.yearlyPriceCents / 100)}
+                                        onChange={(e) => setPricing(p => ({ ...p, yearlyPriceCents: parseInt(e.target.value) * 100 }))}
+                                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold focus:border-indigo-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleSavePricing}
+                                disabled={isSavingPricing}
+                                className="w-full py-5 rounded-[2rem] bg-indigo-500 text-white font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-indigo-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                            >
+                                <Save size={16} /> {isSavingPricing ? 'Saving...' : 'Save Pricing'}
+                            </button>
+                        </Card>
                     </motion.div>
                 )}
 
@@ -496,7 +571,7 @@ export function AdminDashboard() {
                                         >
                                             <option value="premium_days">Premium Days</option>
                                             <option value="points">Points (XP)</option>
-                                            <option value="cash">Cash Value</option>
+                                            <option value="cash">Discounted Price (EGP)</option>
                                         </select>
                                     </div>
                                     <div>
@@ -641,6 +716,39 @@ export function AdminDashboard() {
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Grant Premium Subscription */}
+                                <div className="p-6 rounded-[2rem] bg-green-500/5 border border-green-500/20 space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Crown size={16} className="text-green-400" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-green-400">Grant Premium Subscription</p>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="flex-1 space-y-1">
+                                            <label className="text-[9px] font-black text-pc-muted uppercase tracking-widest">Days to Grant</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={grantDays}
+                                                onChange={(e) => setGrantDays(parseInt(e.target.value))}
+                                                className="w-full bg-white/[0.05] border border-green-500/20 rounded-2xl px-4 py-3 text-sm font-bold focus:border-green-500 outline-none"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={() => handleGrantSubscription(editingUser._id)}
+                                            disabled={isGranting}
+                                            className="self-end px-6 py-3 bg-green-500 text-black font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-green-400 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            <Crown size={14} />
+                                            {isGranting ? '...' : 'Grant'}
+                                        </button>
+                                    </div>
+                                    {editingUser.subscription?.currentPeriodEnd && (
+                                        <p className="text-[10px] text-pc-muted">
+                                            Current expiry: <span className="text-green-400 font-bold">{new Date(editingUser.subscription.currentPeriodEnd).toLocaleDateString()}</span>
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="flex gap-4 pt-4">

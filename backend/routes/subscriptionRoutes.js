@@ -9,6 +9,7 @@ const {
     verifyPayment,
     getStatus,
     cancelSubscription,
+    getPublicPricing,
 } = require('../controllers/subscriptionController');
 
 // Anti-fraud: strict rate limit on payment creation
@@ -22,6 +23,9 @@ const paymentLimiter = rateLimit({
 
 // PayMob webhook — no auth (PayMob calls this), HMAC verified inside controller
 router.post('/webhook', handleWebhook);
+
+// Public pricing — no auth needed
+router.get('/pricing', getPublicPricing);
 
 // Authenticated routes
 router.use(protect);
