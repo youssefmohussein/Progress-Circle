@@ -28,6 +28,7 @@ import { Nutrition } from './pages/Nutrition';
 import { SynergyArena } from './pages/SynergyArena';
 import Pricing from './pages/Pricing';
 import FocusBattleArena from './pages/FocusBattleArena';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -94,6 +95,7 @@ function AppRoutes() {
       <Route path="/synergy" element={<PrivateRoute><Layout><SynergyArena /></Layout></PrivateRoute>} />
       <Route path="/focus" element={<PrivateRoute><Layout><FocusMode /></Layout></PrivateRoute>} />
       <Route path="/pricing" element={<PrivateRoute><Layout><Pricing /></Layout></PrivateRoute>} />
+      <Route path="/payment-success" element={<PrivateRoute><Layout><PaymentSuccess /></Layout></PrivateRoute>} />
 
       {/* Gamification */}
       <Route path="/avatar-shop" element={<PrivateRoute><Layout><AvatarShop /></Layout></PrivateRoute>} />

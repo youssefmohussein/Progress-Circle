@@ -6,7 +6,7 @@ import {
     Music, Link2, ExternalLink, Check, Star, ShoppingBag, Sprout,
     Flame, Snowflake, Crown, TrendingUp, RotateCcw, Lock,
     Download, FileText, FileSpreadsheet, RefreshCw, Database, 
-    Users, Wallet, Activity, Salad, Trash2, AlertTriangle
+    Users, Wallet, Activity, Salad, Trash2, AlertTriangle, Gift, Share2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';

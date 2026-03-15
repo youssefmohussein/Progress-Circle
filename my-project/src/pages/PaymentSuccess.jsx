@@ -20,7 +20,8 @@ export default function PaymentSuccess() {
 
         const verify = async () => {
             try {
-                const res = await fetch(`/api/subscription/verify/${orderId}`, {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                const res = await fetch(`${apiUrl}/subscription/verify/${orderId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await res.json();
