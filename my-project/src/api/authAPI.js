@@ -1,8 +1,8 @@
 import client from './client';
 
 export const authAPI = {
-    register: (name, email, password, gender = '') =>
-        client.post('/auth/register', { name, email, password, gender }),
+    register: (name, email, password, gender = '', ref = '') =>
+        client.post('/auth/register', { name, email, password, gender, ref }),
 
     login: (email, password) =>
         client.post('/auth/login', { email, password }),

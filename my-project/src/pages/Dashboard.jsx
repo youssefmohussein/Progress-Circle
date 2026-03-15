@@ -16,6 +16,7 @@ import { WeeklyInsights } from '../components/WeeklyInsights';
 import { ProgressCircle } from '../components/ProgressCircle';
 import { AstraAssistant } from '../components/AstraAssistant';
 import { toast } from 'sonner';
+import { subscribeUserToPush } from '../utils/pushNotifications';
 import dayjs from 'dayjs';
 
 const QUOTES = [
@@ -58,6 +59,26 @@ export function Dashboard() {
     const {
         tasks, categories, leaderboard, sessions
     } = useData();
+    const [pushPromptVisible, setPushPromptVisible] = useState(false);
+
+    useEffect(() => {
+        const checkPush = async () => {
+            if ('Notification' in window && Notification.permission === 'default' && !localStorage.getItem('push_dismissed')) {
+                setPushPromptVisible(true);
+            }
+        };
+        checkPush();
+    }, []);
+
+    const handleEnablePush = async () => {
+        const sub = await subscribeUserToPush();
+        if (sub) {
+            toast.success('Neural push bridge active! 🚀');
+            setPushPromptVisible(false);
+        } else {
+            toast.error('Failed to establish push bridge.');
+        }
+    };
 
     if (!tasks || !categories || !leaderboard || !sessions) return <LoadingSpinner />;
 
@@ -123,6 +144,42 @@ export function Dashboard() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-6 pb-12">
+            {/* Push Notification Prompt */}
+            {pushPromptVisible && (
+                <motion.div 
+                    initial={{ opacity: 0, height: 0 }} 
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="overflow-hidden"
+                >
+                    <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-[2rem] p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-indigo-500 text-white rounded-2xl shadow-lg shadow-indigo-500/20">
+                                <BellRing size={20} className="animate-bounce" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black uppercase tracking-tight">Stay synchronized</h3>
+                                <p className="text-[10px] text-pc-muted font-bold">Enable push notifications for real-time streak and habit alerts.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Button 
+                                onClick={handleEnablePush}
+                                className="flex-1 sm:flex-none h-9 px-6 bg-indigo-600 text-white border-none text-[10px] font-black uppercase tracking-widest"
+                            >
+                                Enable Push
+                            </Button>
+                            <Button 
+                                variant="ghost" 
+                                onClick={() => { setPushPromptVisible(false); localStorage.setItem('push_dismissed', 'true'); }}
+                                className="h-9 px-4 text-[10px] font-black uppercase tracking-widest"
+                            >
+                                Later
+                            </Button>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
             {/* Header Section */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>

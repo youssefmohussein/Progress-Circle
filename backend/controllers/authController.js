@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const { createSystemNotification } = require('./notificationController');
 
 // Generate JWT
 const generateToken = (id) =>
@@ -16,14 +17,67 @@ const register = async (req, res, next) => {
             return res.status(400).json({ success: false, message: errors.array()[0].msg });
         }
 
-        const { name, email, password, gender } = req.body;
+        const { name, email, password, gender, ref } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(409).json({ success: false, message: 'Email already registered' });
         }
 
-        const user = await User.create({ name, email, password, gender: gender || '' });
+        // Handle referral logic
+        let referredBy = null;
+        if (ref) {
+            const referrer = await User.findOne({ referralToken: ref });
+            if (referrer) {
+                referredBy = referrer._id;
+            }
+        }
+
+        const user = await User.create({ 
+            name, email, password, 
+            gender: gender || '',
+            referredBy
+        });
+
+        // Trigger referral rewards if applicable
+        if (referredBy) {
+            const referrer = await User.findById(referredBy);
+            if (referrer) {
+                referrer.referralsCount += 1;
+                
+                // Notify Referrer
+                await createSystemNotification(
+                    referrer._id, 
+                    'referral_success', 
+                    `Neural Link Established! ${user.name} joined via your link. (+1 point)`
+                );
+                
+                // Reward: Every 3 referrals = +30 days premium
+                if (referrer.referralsCount % 3 === 0) {
+                    const currentEnd = (referrer.plan === 'premium' && referrer.subscription?.currentPeriodEnd) 
+                        ? new Date(referrer.subscription.currentPeriodEnd) 
+                        : new Date();
+                    
+                    const newEnd = new Date(currentEnd);
+                    newEnd.setDate(newEnd.getDate() + 30);
+                    
+                    referrer.plan = 'premium';
+                    referrer.subscription = {
+                        status: 'active',
+                        currentPeriodEnd: newEnd,
+                        billingCycle: 'monthly'
+                    };
+
+                    await createSystemNotification(
+                        referrer._id,
+                        'premium_reward',
+                        `Premium Bridge Extended! You've successfully recruited 3 operatives. +30 days added.`,
+                        null
+                    );
+                }
+                await referrer.save();
+            }
+        }
 
         const token = generateToken(user._id);
         res.status(201).json({
@@ -55,6 +109,8 @@ const register = async (req, res, next) => {
                     synergyEnabled: user.synergyEnabled,
                     subscriptionPriceOverrideCents: user.subscriptionPriceOverrideCents || null,
                     gender: user.gender || '',
+                    referralToken: user.referralToken,
+                    referralsCount: user.referralsCount,
                 },
             },
         });
@@ -110,6 +166,8 @@ const login = async (req, res, next) => {
                     synergyEnabled: user.synergyEnabled,
                     subscriptionPriceOverrideCents: user.subscriptionPriceOverrideCents || null,
                     gender: user.gender || '',
+                    referralToken: user.referralToken,
+                    referralsCount: user.referralsCount,
                 },
             },
         });
@@ -163,6 +221,8 @@ const getMe = async (req, res) => {
             synergyEnabled: user.synergyEnabled,
             subscriptionPriceOverrideCents: user.subscriptionPriceOverrideCents || null,
             gender: user.gender || '',
+            referralToken: user.referralToken,
+            referralsCount: user.referralsCount,
         },
     });
 };

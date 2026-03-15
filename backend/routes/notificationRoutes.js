@@ -4,7 +4,9 @@ const {
     getNotifications, 
     markAsRead, 
     markAllRead, 
-    deleteNotification 
+    deleteNotification,
+    subscribePush,
+    unsubscribePush
 } = require('../controllers/notificationController');
 const { protect } = require('../middleware/auth');
 
@@ -15,5 +17,9 @@ router.get('/', getNotifications);
 router.put('/read-all', markAllRead);
 router.put('/:id/read', markAsRead);
 router.delete('/:id', deleteNotification);
+
+// Web Push
+router.post('/subscribe', subscribePush);
+router.post('/unsubscribe', unsubscribePush);
 
 module.exports = router;

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Sidebar, SidebarContent } from './SideBar';
 import { QuickAddModal } from './QuickAddModal';
-import { Plus, Menu, X, AlertTriangle, Zap } from 'lucide-react';
+import { MobileNav } from './MobileNav';
+import { Plus, Menu, X, AlertTriangle, Zap, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -102,7 +103,7 @@ export function Layout({ children }) {
                       Desktop: px-8 pt-8 pb-16
                     */}
                     <div
-                        className="pt-5 px-4 pb-8 lg:pt-8 lg:px-8 lg:pb-16"
+                        className="pt-5 px-4 pb-24 lg:pt-8 lg:px-8 lg:pb-16"
                         style={{
                             maxWidth: '1100px',
                             margin: '0 auto',
@@ -113,6 +114,8 @@ export function Layout({ children }) {
                     </div>
                 </main>
             </div>
+
+            <MobileNav onQuickAdd={() => setQuickAddOpen(true)} />
 
             {/* Mobile Sidebar Drawer */}
             <AnimatePresence>

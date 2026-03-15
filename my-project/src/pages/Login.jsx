@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -20,14 +20,26 @@ export function Login() {
     const [loading, setLoading] = useState(false);
     const { login, register } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [ref, setRef] = useState('');
     const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+
+    useEffect(() => {
+        const query = new URLSearchParams(location.search);
+        const refToken = query.get('ref');
+        if (refToken) {
+            setRef(refToken);
+            setIsLogin(false); // Default to register if ref is present
+            toast.info(`Joining via referral: ${refToken}`);
+        }
+    }, [location]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
             if (isLogin) { await login(email, password); toast.success('Welcome back!'); }
-            else { await register(name, email, password, gender); toast.success('Account created! 🎉'); }
+            else { await register(name, email, password, gender, ref); toast.success('Account created! 🎉'); }
             navigate('/');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Something went wrong');
@@ -203,6 +215,18 @@ export function Login() {
                                     </button>
                                 </div>
                             </div>
+                            {ref && (
+                                <div style={{ 
+                                    padding: '8px 12px', background: 'rgba(99,102,241,0.1)', 
+                                    borderRadius: '0.5rem', border: '1px solid rgba(99,102,241,0.2)',
+                                    display: 'flex', alignItems: 'center', gap: 8, marginTop: 4
+                                }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    </svg>
+                                    <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>Referred by Operative: {ref}</span>
+                                </div>
+                            )}
                             </>
                         )}
                         <div>

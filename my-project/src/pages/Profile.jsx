@@ -248,6 +248,65 @@ export function Profile() {
                 <StatCard label="Total Nodes" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
             </div>
 
+            {/* Referral System */}
+            <motion.div 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ delay: 0.1 }}
+                className="pc-card relative overflow-hidden bg-gradient-to-br from-primary/10 to-transparent border-primary/20"
+            >
+                <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                    <Users size={80} />
+                </div>
+                
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-primary/20 rounded-lg text-primary">
+                        <Gift size={20} />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-bold text-white">Neural Growth Program</h3>
+                        <p className="text-[11px] text-muted">Invite friends and earn Premium access</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                        <div className="flex justify-between text-[11px] mb-1">
+                            <span className="text-muted">Progress to 1 month Premium</span>
+                            <span className="text-primary font-bold">{user.referralsCount || 0}/3 referrals</span>
+                        </div>
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.min(((user.referralsCount || 0) / 3) * 100, 100)}%` }}
+                                className="h-full bg-primary"
+                            />
+                        </div>
+                    </div>
+                    {user.referralsCount >= 3 && user.plan !== 'premium' && (
+                        <div className="text-[10px] text-primary animate-pulse font-bold"> Reward Ready! </div>
+                    )}
+                </div>
+
+                <div className="p-3 bg-black/40 rounded-xl border border-white/5 flex items-center justify-between gap-3">
+                    <div className="flex-1 overflow-hidden">
+                        <p className="text-[10px] text-muted mb-0.5">Your Neural Referral Link</p>
+                        <p className="text-xs font-mono text-white truncate">
+                            {`${window.location.origin}/register?ref=${user.referralToken || 'ALPHA'}`}
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/register?ref=${user.referralToken}`);
+                            toast.success('Referral link copied to neural buffer');
+                        }}
+                        className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all scale-press"
+                    >
+                        <Share2 size={16} />
+                    </button>
+                </div>
+            </motion.div>
+
             {/* Theme Studio */}
             <Card className="border-primary/20 bg-white/[0.02]">
                 <div className="flex items-center justify-between mb-6">

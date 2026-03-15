@@ -6,6 +6,7 @@ import { DataProvider } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { GamificationProvider } from './context/GamificationContext';
 import { Layout } from './components/Layout';
+import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
@@ -71,10 +72,15 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/landing" element={isAuthenticated ? <Navigate to="/" /> : <Landing />} />
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
       <Route path="/maintenance" element={<Maintenance />} />
 
-      <Route path="/" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
+      <Route path="/" element={
+        isAuthenticated 
+          ? <PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>
+          : <Landing />
+      } />
       <Route path="/tasks" element={<PrivateRoute><Layout><Tasks /></Layout></PrivateRoute>} />
       <Route path="/habits" element={<PrivateRoute><Layout><Habits /></Layout></PrivateRoute>} />
       <Route path="/leaderboard" element={<PrivateRoute><Layout><Leaderboard /></Layout></PrivateRoute>} />

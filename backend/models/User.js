@@ -175,15 +175,45 @@ const userSchema = new mongoose.Schema(
         subscriptionPriceOverrideCents: {
             type: Number,
             default: null  // When set, next subscription payment uses this price (in cents)
-        }
+        },
+        referralToken: {
+            type: String,
+            unique: true,
+            sparse: true // Only index if present
+        },
+        referredBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: null
+        },
+        referralsCount: {
+            type: Number,
+            default: 0
+        },
+        pushSubscriptions: [
+            {
+                endpoint: { type: String, required: true },
+                keys: {
+                    p256dh: { type: String, required: true },
+                    auth: { type: String, required: true }
+                }
+            }
+        ]
     },
     { timestamps: true }
 );
 
-// Hash password before saving
+// Hash password before saving and generate referral token
 userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 12);
+    if (this.isModified('password')) {
+        this.password = await bcrypt.hash(this.password, 12);
+    }
+
+    // Neural Logic: Generate unique referral token if not exists
+    if (!this.referralToken) {
+        this.referralToken = Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+    
     next();
 });
 

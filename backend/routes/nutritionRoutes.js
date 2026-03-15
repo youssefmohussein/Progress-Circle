@@ -1,3 +1,5 @@
+const express = require('express');
+const router = express.Router();
 const { nutritionValidation, mealValidation } = require('../middleware/validation');
 const { 
     getDailyNutrition, 
