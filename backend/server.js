@@ -70,7 +70,7 @@ app.use(express.json({ limit: '10kb' }));
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100, // Stricter global limit
+    max: 1000, // Increased global limit for smoother development
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, message: 'Neural rate limit exceeded. Please stand by.' },

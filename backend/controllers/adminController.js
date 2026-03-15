@@ -4,6 +4,7 @@ const Task = require('../models/Task');
 const Habit = require('../models/Habit');
 const Goal = require('../models/Goal');
 const GlobalSettings = require('../models/GlobalSettings');
+const AuditLog = require('../models/AuditLog');
 
 // Middleware to check admin access
 const requireAdmin = (req, res, next) => {
@@ -58,6 +59,15 @@ const updateUser = async (req, res, next) => {
             runValidators: true 
         });
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'UPDATE_USER',
+            targetUserId: user._id,
+            details: { updatedFields: Object.keys(req.body) },
+            ipAddress: req.ip
+        });
+
         res.status(200).json({ success: true, message: 'User updated successfully', data: user });
     } catch (error) { next(error); }
 };
@@ -79,6 +89,15 @@ const resetPoints = async (req, res, next) => {
     try {
         const user = await User.findByIdAndUpdate(req.params.id, { points: 0 }, { new: true });
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'RESET_POINTS',
+            targetUserId: user._id,
+            details: { reason: 'Admin reset' },
+            ipAddress: req.ip
+        });
+
         res.status(200).json({ success: true, message: 'Points reset', data: user });
     } catch (error) { next(error); }
 };
@@ -89,12 +108,24 @@ const resetPoints = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
         await Promise.all([
             User.findByIdAndDelete(id),
             Task.deleteMany({ userId: id }),
             Habit.deleteMany({ userId: id }),
             Goal.deleteMany({ userId: id }),
         ]);
+
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'DELETE_USER',
+            targetUserId: id,
+            details: { deletedUserEmail: user.email },
+            ipAddress: req.ip
+        });
+
         res.status(200).json({ success: true, message: 'User and all associated data deleted' });
     } catch (error) { next(error); }
 };
@@ -109,6 +140,13 @@ const rewardAll = async (req, res, next) => {
 
         await User.updateMany({}, { $inc: { points } });
         
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'REWARD_ALL',
+            details: { points, reason: reason || 'System Bonus' },
+            ipAddress: req.ip
+        });
+
         res.status(200).json({ 
             success: true, 
             message: `Global Injection Success: ${points} points granted to all biologicals for: ${reason || 'System Bonus'}.` 
@@ -135,6 +173,14 @@ const updateSettings = async (req, res, next) => {
             new: true, 
             upsert: true 
         });
+
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'UPDATE_SETTINGS',
+            details: { updatedFields: Object.keys(req.body) },
+            ipAddress: req.ip
+        });
+
         res.status(200).json({ success: true, message: 'Global protocols updated', data: settings });
     } catch (error) { next(error); }
 };
@@ -163,6 +209,14 @@ const grantSubscription = async (req, res, next) => {
             plan: 'premium',
             'subscription.status': 'active',
             'subscription.currentPeriodEnd': base,
+        });
+
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'GRANT_SUBSCRIPTION',
+            targetUserId: user._id,
+            details: { daysGranted: days, newExpiry: base },
+            ipAddress: req.ip
         });
 
         res.status(200).json({
@@ -199,8 +253,62 @@ const updateSubscriptionPricing = async (req, res, next) => {
         if (yearlyPriceCents !== undefined) update.yearlyPriceCents = yearlyPriceCents;
 
         const settings = await GlobalSettings.findOneAndUpdate({}, { $set: update }, { new: true, upsert: true });
+
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'UPDATE_PRICING',
+            details: { monthlyPriceCents, yearlyPriceCents },
+            ipAddress: req.ip
+        });
+
         res.status(200).json({ success: true, message: 'Pricing updated.', data: settings });
     } catch (error) { next(error); }
+};
+
+// @desc    Get user deep dive data
+// @route   GET /api/admin/users/:id/deep-dive
+// @access  Admin
+const getDeepDiveUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const PaymentLog = require('../models/PaymentLog'); // requiring here to avoid circular dep issues if any
+
+        const [user, tasks, habits, payments] = await Promise.all([
+            User.findById(id).lean(),
+            Task.find({ userId: id }).sort({ createdAt: -1 }).limit(50).lean(),
+            Habit.find({ userId: id }).sort({ createdAt: -1 }).limit(50).lean(),
+            PaymentLog.find({ userId: id }).sort({ createdAt: -1 }).limit(20).lean()
+        ]);
+
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        res.status(200).json({
+            success: true,
+            data: { user, tasks, habits, payments }
+        });
+    } catch (error) { next(error); }
+};
+
+// @desc    Get audit logs
+// @route   GET /api/admin/audit-logs
+// @access  Admin
+const getAuditLogs = async (req, res, next) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+        const page = parseInt(req.query.page) || 1;
+
+        const [logs, total] = await Promise.all([
+            AuditLog.find()
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .populate('adminId', 'name email')
+                .populate('targetUserId', 'name email'),
+            AuditLog.countDocuments()
+        ]);
+
+        res.json({ success: true, total, page, limit, data: logs });
+    } catch (err) { next(err); }
 };
 
 // @desc    Get public system status
@@ -219,4 +327,4 @@ const getStatus = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-module.exports = { getStatus, requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings, grantSubscription, getSubscriptionPricing, updateSubscriptionPricing };
+module.exports = { getStatus, requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings, grantSubscription, getSubscriptionPricing, updateSubscriptionPricing, getDeepDiveUser, getAuditLogs };

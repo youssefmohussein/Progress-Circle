@@ -19,4 +19,10 @@ export const adminAPI = {
     createPromoCode: (data) => client.post('/promocodes', data),
     updatePromoCode: (id, data) => client.put(`/promocodes/${id}`, data),
     deletePromoCode: (id) => client.delete(`/promocodes/${id}`),
+
+    // Analytics & Logs
+    getAnalyticsSubscriptions: () => client.get('/admin/analytics/subscriptions'),
+    getPaymentLogs: (page = 1, limit = 50) => client.get(`/admin/analytics/payments?page=${page}&limit=${limit}`),
+    getAuditLogs: (page = 1, limit = 50) => client.get(`/admin/audit-logs?page=${page}&limit=${limit}`),
+    getUserDeepDive: (id) => client.get(`/admin/users/${id}/deep-dive`),
 };
