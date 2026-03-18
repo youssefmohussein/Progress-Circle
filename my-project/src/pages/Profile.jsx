@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     User, Mail, Calendar, Trophy, Zap, Shield, 
@@ -26,6 +28,7 @@ export function Profile() {
     const { user, setUser } = useAuth();
     const { tasks } = useData();
     const { gamData } = useGamification();
+    useSEO('My Profile', 'Manage your ProgressCircle operator profile, toggle modules, choose themes, and export your neural data.');
     const [updating, setUpdating] = useState(false);
     
     // Music Preferences Local States

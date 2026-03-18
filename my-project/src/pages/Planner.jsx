@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -24,6 +26,7 @@ const EVENT_COLORS = {
 
 export function Planner() {
     const { calendarEvents = [], addCalendarBlock, fetchCalendarEvents } = useData();
+    useSEO('Tactical Planner', 'Plan your week with time-blocked focus sessions. ProgressCircle helps you schedule deep work and achieve more.');
     const [currentDate, setCurrentDate] = useState(dayjs());
     const [selectedDate, setSelectedDate] = useState(null);
     const [isDayModalOpen, setIsDayModalOpen] = useState(false);

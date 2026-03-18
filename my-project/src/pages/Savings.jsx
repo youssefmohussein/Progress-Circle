@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, TrendingUp, TrendingDown, Plus, DollarSign, Settings, Receipt, ArrowUpCircle, ArrowDownCircle, Users, BarChart3, CreditCard, Banknote, ShieldCheck, Crown, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -12,6 +14,7 @@ import { toast } from 'sonner';
 
 export function Savings() {
     const { user, setUser } = useAuth();
+    useSEO('Financial Command Center', 'Track income, expenses, savings goals, and net worth with the ProgressCircle financial dashboard.');
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
 

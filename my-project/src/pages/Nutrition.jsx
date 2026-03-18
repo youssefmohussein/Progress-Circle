@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion } from 'framer-motion';
 import { 
     Salad, Plus, Droplets, Trash2, Clock, 
@@ -11,6 +13,7 @@ import { useTheme } from '../context/ThemeContext';
 
 export function Nutrition() {
     const { dark } = useTheme();
+    useSEO('Fuel & Nutrition Tracker', 'Log daily meals, track macros, and monitor hydration with the ProgressCircle nutrition engine.');
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [nutritionData, setNutritionData] = useState(null);

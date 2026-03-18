@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
 import { Confetti } from '../components/Confetti';
@@ -158,6 +160,7 @@ const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handle
 
 export function Tasks() {
     const { user } = useAuth();
+    useSEO('Task Engine', 'Manage tasks, set priorities, track deadlines, and break down goals with the ProgressCircle task engine.');
     const { tasks, categories, addTask, updateTask, deleteTask } = useData();
     const [filter, setFilter] = useState('All');
     const [modalOpen, setModalOpen] = useState(false);

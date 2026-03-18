@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Repeat, Trash2, CheckCircle2, Calendar, Clock, Sparkles } from 'lucide-react';
 import { useData } from '../context/DataContext';
@@ -14,6 +16,7 @@ import { toast } from 'sonner';
 export function Habits() {
     const { habits, addHabit, toggleHabit, deleteHabit } = useData();
     const { user } = useAuth();
+    useSEO('Habit Tracker', 'Build atomic routines and track daily habit completion with ProgressCircle.');
 
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState({

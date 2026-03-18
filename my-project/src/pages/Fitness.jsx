@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Activity, Dumbbell, TrendingUp, Scale, 
@@ -12,6 +14,7 @@ import { toast } from 'sonner';
 
 export function Fitness() {
     const { user } = useAuth();
+    useSEO('Physical Wellness Engine', 'Track workout cycles, log body metrics, and optimize your physical performance with ProgressCircle fitness module.');
     const [cycle, setCycle] = useState(null);
     const [metrics, setMetrics] = useState([]);
     const [loading, setLoading] = useState(true);

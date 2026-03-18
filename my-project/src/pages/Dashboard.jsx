@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSEO } from '../hooks/useSEO';
+
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Flame, Trophy, Target, TrendingUp, Clock, CalendarDays, Brain, BellRing, Sparkles, Timer, PieChart, BarChart3, ArrowRight, Zap, Coffee, Activity } from 'lucide-react';
@@ -56,6 +58,7 @@ function getCountdown(deadline) {
 
 export function Dashboard() {
     const { user } = useAuth();
+    useSEO('Dashboard', 'Your productivity command center. See AI insights, task progress, and focus energy at a glance.');
     const {
         tasks, categories, leaderboard, sessions
     } = useData();

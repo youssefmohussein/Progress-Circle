@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useSEO } from '../hooks/useSEO';
+
 import { Trophy, Medal, Award, Flame, CheckSquare } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +19,7 @@ const MEDALS = [
 export function Leaderboard() {
     const { leaderboard } = useData();
     const { user } = useAuth();
+    useSEO('Global Rankings', 'See who leads the ProgressCircle leaderboard. Compete on tasks, streaks, and focus sessions.');
 
     if (!leaderboard) return <LoadingSpinner />;
 

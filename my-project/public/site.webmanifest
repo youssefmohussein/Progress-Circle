@@ -1,0 +1,30 @@
+{
+  "name": "ProgressCircle",
+  "short_name": "ProgressCircle",
+  "description": "AI-powered productivity system with habit tracking, focus timers, and gamification.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020204",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "lifestyle"],
+  "lang": "en",
+  "orientation": "portrait-primary"
+}
