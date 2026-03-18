@@ -1,30 +1,43 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-export function Confetti({ active, onComplete }) {
+/**
+ * Confetti Component - Optimized for performance and high-quality "Wow" factor.
+ * Uses Framer Motion for smooth, hardware-accelerated animations.
+ * 
+ * @param {boolean} active - Triggers the animation
+ * @param {boolean} isBigTask - If true, launches a larger "Victory" burst
+ * @param {function} onComplete - Callback when animation finishes
+ */
+export function Confetti({ active, isBigTask = false, onComplete }) {
     const [particles, setParticles] = useState([]);
 
     useEffect(() => {
         if (active) {
-            const newParticles = Array.from({ length: 40 }).map((_, i) => ({
-                id: i,
+            const count = isBigTask ? 80 : 40;
+            const newParticles = Array.from({ length: count }).map((_, idx) => ({
+                id: Math.random().toString(36).substr(2, 9),
                 x: Math.random() * 100,
-                y: -10,
-                size: Math.random() * 8 + 4,
+                y: -20,
+                size: isBigTask ? (Math.random() * 12 + 6) : (Math.random() * 8 + 4),
+                // Premium color palette: Indigo, Violet, Emerald, Amber, Rose
                 color: ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#f43f5e'][Math.floor(Math.random() * 5)],
-                delay: Math.random() * 0.5,
-                duration: Math.random() * 2 + 1,
-                rotation: Math.random() * 360,
+                delay: Math.random() * (isBigTask ? 0.8 : 0.4),
+                duration: Math.random() * 2 + (isBigTask ? 1.5 : 1),
+                rotation: Math.random() * 720,
+                shape: Math.floor(Math.random() * 3) // 0: circle, 1: square, 2: rectangle
             }));
+            
             setParticles(newParticles);
 
             const timer = setTimeout(() => {
                 setParticles([]);
                 if (onComplete) onComplete();
-            }, 3000);
+            }, isBigTask ? 5000 : 3000);
+            
             return () => clearTimeout(timer);
         }
-    }, [active, onComplete]);
+    }, [active, isBigTask, onComplete]);
 
     return (
         <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
@@ -32,24 +45,33 @@ export function Confetti({ active, onComplete }) {
                 {particles.map((p) => (
                     <motion.div
                         key={p.id}
-                        initial={{ y: '100vh', x: `${p.x}vw`, opacity: 1, rotate: 0 }}
+                        initial={{ 
+                            y: '110vh', 
+                            x: `${p.x}vw`, 
+                            opacity: 1, 
+                            rotate: 0,
+                            scale: 0 
+                        }}
                         animate={{
-                            y: '-10vh',
-                            x: `${p.x + (Math.random() * 20 - 10)}vw`,
-                            opacity: 0,
-                            rotate: p.rotation + 720
+                            y: '-20vh',
+                            x: `${p.x + (Math.random() * 40 - 20)}vw`,
+                            opacity: [1, 1, 0.5, 0],
+                            rotate: p.rotation + 1440,
+                            scale: [0, 1.2, 1, 0.5]
                         }}
                         transition={{
                             duration: p.duration,
                             delay: p.delay,
-                            ease: "easeOut"
+                            ease: "circOut"
                         }}
                         style={{
                             position: 'absolute',
                             width: p.size,
-                            height: p.size,
+                            height: p.shape === 2 ? p.size * 0.4 : p.size,
                             backgroundColor: p.color,
-                            borderRadius: i % 2 === 0 ? '50%' : '2px',
+                            borderRadius: p.shape === 0 ? '50%' : '2px',
+                            boxShadow: `0 0 10px ${p.color}40`,
+                            filter: isBigTask ? 'blur(0.5px)' : 'none'
                         }}
                     />
                 ))}

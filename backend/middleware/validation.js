@@ -25,9 +25,9 @@ exports.updateProfileValidation = [
 
 // Task Validations
 exports.taskValidation = [
-    body('title').trim().notEmpty().withMessage('Task title is required').isLength({ max: 100 }),
+    body('title').optional().trim().notEmpty().withMessage('Task title is required').isLength({ max: 100 }),
     body('priority').optional().isIn(['low', 'medium', 'high', 'urgent']),
-    body('status').optional().isIn(['pending', 'active', 'completed', 'cancelled']),
+    body('status').optional().isIn(['pending', 'in_progress', 'active', 'completed', 'cancelled']),
     body('deadline').optional().isISO8601().toDate(),
 ];
 

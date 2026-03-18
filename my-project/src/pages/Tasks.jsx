@@ -168,7 +168,7 @@ export function Tasks() {
     const [editTask, setEditTask] = useState(null);
     const [expandedTasks, setExpandedTasks] = useState(new Set());
     const [saving, setSaving] = useState(false);
-    const [showConfetti, setShowConfetti] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(null); // null | 'regular' | 'big'
     const [form, setForm] = useState({
         title: '', description: '', priority: 'medium', deadline: '',
         categoryId: '', estimatedTime: 0, alertsEnabled: false, timeEnabled: false,
@@ -190,8 +190,8 @@ export function Tasks() {
         try {
             await updateTask(task.id, { status: newStatus });
             if (newStatus === 'completed') {
-                setShowConfetti(true);
-                toast.success('Task completed! 🎉');
+                setShowConfetti(task.isBigTask ? 'big' : 'regular');
+                toast.success(task.isBigTask ? 'LEGENDARY ACHIEVEMENT! 🏆' : 'Task completed! 🎉');
             }
         } catch { toast.error('Failed to update task'); }
     };
@@ -242,6 +242,7 @@ export function Tasks() {
         try {
             const payload = { ...form };
             if (!payload.timeEnabled) payload.estimatedTime = 0;
+            if (payload.categoryId === '') payload.categoryId = null;
             delete payload.timeEnabled;
             delete payload.alertsEnabled;
 
@@ -507,7 +508,11 @@ export function Tasks() {
                 </div>
             </Modal>
 
-            <Confetti active={showConfetti} onComplete={() => setShowConfetti(false)} />
+            <Confetti 
+                active={!!showConfetti} 
+                isBigTask={showConfetti === 'big'} 
+                onComplete={() => setShowConfetti(null)} 
+            />
             <CategoryManager open={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} />
         </div>
     );
