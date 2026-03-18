@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { NotificationCenter } from './NotificationCenter';
+import { Tutorial } from './Tutorial';
 
 export function Layout({ children }) {
     const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -39,6 +40,7 @@ export function Layout({ children }) {
 
     return (
         <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden', flexDirection: 'column' }}>
+            <Tutorial />
             {warningMessage && (
                 <div style={{
                     background: 'rgba(234, 179, 8, 0.1)',
@@ -94,7 +96,7 @@ export function Layout({ children }) {
                     {/* Desktop Header */}
                     <div className="hidden lg:flex items-center justify-end px-8 py-4 gap-4 sticky top-0 z-30" 
                         style={{ background: 'var(--bg)', borderBottom: dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid var(--border)' }}>
-                        <Link to="/focus" className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20 hover:bg-indigo-500/20 transition-all">
+                        <Link id="tour-quick-focus" to="/focus" className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20 hover:bg-indigo-500/20 transition-all">
                             <Zap size={14} fill="currentColor" /> Quick Focus
                         </Link>
                     </div>

@@ -98,6 +98,7 @@ export function SidebarContent({ onClose }) {
             {/* User card - Clickable to Profile */}
             {user && (
                 <Link 
+                    id="tour-profile"
                     to="/profile"
                     onClick={onClose}
                     style={{ 
@@ -123,6 +124,7 @@ export function SidebarContent({ onClose }) {
                     return (
                         <Link
                             key={path}
+                            id={`tour-nav-${path === '/' ? 'home' : path.replace('/', '')}`}
                             to={path}
                             onClick={onClose}
                             style={{
@@ -159,7 +161,7 @@ export function SidebarContent({ onClose }) {
                 )}
 
                 {/* Gamification section */}
-                <div style={{ margin: '8px 0 4px', fontSize: 10, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.25)' : 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 14px' }}>
+                <div id="tour-gamification" style={{ margin: '8px 0 4px', fontSize: 10, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.25)' : 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 14px' }}>
                     Gamification
                 </div>
                 {gamificationLinks.map(({ path, icon: Icon, label }) => {
@@ -202,6 +204,20 @@ export function SidebarContent({ onClose }) {
                 }}>
                     <HelpCircle size={17} /> How It Works
                 </Link>
+                <button 
+                    onClick={() => {
+                        window.dispatchEvent(new Event('start-tutorial'));
+                        if (onClose) onClose();
+                    }} 
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                        padding: '9px 14px', borderRadius: '0.75rem', background: dark ? 'rgba(99,102,241,0.1)' : 'var(--primary-light)',
+                        border: 'none', color: dark ? '#a5b4fc' : 'var(--primary)', fontSize: 14, fontWeight: 600,
+                        cursor: 'pointer', transition: 'all 0.18s',
+                    }}
+                >
+                    <HelpCircle size={17} /> Replay Tutorial
+                </button>
                 <button onClick={toggleDark} style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%',
                     padding: '9px 14px', borderRadius: '0.75rem', background: 'none',

@@ -143,7 +143,7 @@ export function Dashboard() {
     const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6 pb-12">
+        <div className="max-w-6xl mx-auto space-y-6 pb-12 relative">
             {/* Push Notification Prompt */}
             {pushPromptVisible && (
                 <motion.div 
@@ -193,7 +193,7 @@ export function Dashboard() {
                     </h1>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Link to="/focus">
+                    <Link to="/focus" id="tour-focus-mode">
                         <Button className="rounded-full px-5 h-11 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25 border-none">
                             <Zap size={16} className="fill-current" /> Focus Mode
                         </Button>
@@ -208,7 +208,7 @@ export function Dashboard() {
             {/* Today Overview Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Main Progress Brain */}
-                <Card className="md:col-span-2 pc-card overflow-hidden group relative">
+                <Card id="tour-progress-brain" className="md:col-span-2 pc-card overflow-hidden group relative">
                     {/* Glowing background effect */}
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
                     <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl group-hover:bg-accent/20 transition-all duration-700" />
@@ -260,7 +260,7 @@ export function Dashboard() {
                 </Card>
 
                 {/* Smart Time Suggestion */}
-                <Card className="flex flex-col justify-between border-l-4 border-l-primary bg-primary/5">
+                <Card id="tour-smart-suggestion" className="flex flex-col justify-between border-l-4 border-l-primary bg-primary/5">
                     <div>
                         <div className="flex items-center gap-2 mb-3">
                             <Sparkles size={16} className="text-primary" />
@@ -281,7 +281,7 @@ export function Dashboard() {
                 </Card>
 
                 {/* Next Deadline Card */}
-                <Card className={`flex flex-col justify-between ${nextDeadlineTask && dayjs(nextDeadlineTask.deadline).diff(dayjs(), 'hour') < 24 ? 'border-l-4 border-l-rose-500 bg-rose-500/5' : ''}`}>
+                <Card id="tour-next-critical" className={`flex flex-col justify-between ${nextDeadlineTask && dayjs(nextDeadlineTask.deadline).diff(dayjs(), 'hour') < 24 ? 'border-l-4 border-l-rose-500 bg-rose-500/5' : ''}`}>
                     <div>
                         <div className="flex items-center gap-2 mb-3 text-pc-muted">
                             <Clock size={16} />
@@ -307,7 +307,7 @@ export function Dashboard() {
                 <div className="lg:col-span-4 space-y-6">
                     <AstraAssistant />
 
-                    <Card className="p-4">
+                    <Card id="tour-activity-timeline" className="p-4">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Activity size={16} className="text-indigo-500" />
@@ -336,7 +336,7 @@ export function Dashboard() {
                 {/* Right Column - Tasks & Visualization */}
                 <div className="lg:col-span-8 space-y-6">
                     {/* Weekly Performance */}
-                    <Card className="p-4">
+                    <Card id="tour-weekly-insights" className="p-4">
                         <WeeklyInsights tasks={tasks} sessions={sessions} />
                     </Card>
 
