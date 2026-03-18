@@ -15,6 +15,7 @@ import { Card } from '../components/Card';
 import { StatCard } from '../components/StatCard';
 import { Button } from '../components/Button';
 import { Confetti } from '../components/Confetti';
+import { PageInsight } from '../components/PageInsight';
 
 // APEX ELITE: Neural Restoration Terminology
 const UI = {
@@ -230,6 +231,16 @@ export function Fitness() {
                         <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.4em]">Physical Wellness Engine</span>
+                                <PageInsight 
+                                    title="Neural Physical Engine"
+                                    intro="Architect and verify your biological frame. Optimize high-intensity exertion and track long-term physiological adaptation."
+                                    operations={[
+                                        { title: 'Exertion Logging', content: 'Archive daily workout parameters, intensity, and recovery states.' },
+                                        { title: 'Biological Snapshots', content: 'Synchronize weight, body fat, and muscle mass to compute trends.' },
+                                        { title: 'Protocol Archive', content: 'Retrieve and analyze previous workout cycles for longitudinal progress.' }
+                                    ]}
+                                    neuralTip="Synchronizing your biological snapshots with exertion nodes reveals the true impact of current protocols on your physical trajectory."
+                                />
                             </div>
                             <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none font-manrope">Neural Physical</h1>
                             <p className="text-[11px] font-bold text-zinc-500 max-w-md font-inter">Advanced exertion tracking and body metric synchronization. Optimize your biological frame for maximum productivity.</p>

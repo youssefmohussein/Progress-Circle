@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import api from '../api/client';
 import { Confetti } from '../components/Confetti';
 import { useTheme } from '../context/ThemeContext';
+import { PageInsight } from '../components/PageInsight';
 
 export function Nutrition() {
     const { dark } = useTheme();
@@ -123,7 +124,19 @@ export function Nutrition() {
                             <Salad size={24} />
                         </div>
                         <div>
-                            <h2 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)' }}>Fuel & Nutrition</h2>
+                            <div className="flex items-center gap-3">
+                                <h2 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text)' }}>Fuel & Nutrition</h2>
+                                <PageInsight 
+                                    title="Bio-Fuel Analytics"
+                                    intro="Regulate your internal chemistry through precise macronutrient monitoring. Optimize energy levels and body composition through data-driven dietary control."
+                                    operations={[
+                                        { title: 'Nutrient Logging', content: 'Record daily caloric intake and macronutrient distribution (Protein, Carbs, Fats).' },
+                                        { title: 'Target Calibration', content: 'Set and monitor specific nutritional goals based on your physical trajectory.' },
+                                        { title: 'Consumption Analysis', content: 'Review real-time intake deltas against daily operational targets.' }
+                                    ]}
+                                    neuralTip="Consuming high-density protein within the 'Anabolic Window' post-exertion maximizes biological repair and hypertrophy efficiency."
+                                />
+                            </div>
                             <div className="flex items-center gap-3 mt-1">
                                 <div className="flex items-center gap-1 text-xs font-bold text-muted bg-surface2 px-2 py-1 rounded-lg border border-border/5">
                                     <CalendarIcon size={12} className="text-indigo-400" />

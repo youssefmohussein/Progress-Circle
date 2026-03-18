@@ -12,6 +12,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Modal } from '../components/Modal';
 import { Confetti } from '../components/Confetti';
 import { toast } from 'sonner';
+import { PageInsight } from '../components/PageInsight';
 
 export function Savings() {
     const { user, setUser } = useAuth();
@@ -182,7 +183,19 @@ export function Savings() {
             
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold font-manrope text-white mb-1">Financial Command Center</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-bold font-manrope text-white mb-1">Financial Command Center</h1>
+                        <PageInsight 
+                            title="Financial Matrix"
+                            intro="Monitor and regulate your capital flow. Achieve fiscal sovereignty by tracking revenue, expenses, and long-term savings trajectories."
+                            operations={[
+                                { title: 'Capital Tracking', content: 'Archive all incoming and outgoing financial transactions with precise categorization.' },
+                                { title: 'Savings Protocol', content: 'Define and monitor specific financial targets to fund your long-term missions.' },
+                                { title: 'Liquidity Analysis', content: 'Review real-time balance deltas to ensure optimal resource preservation and growth.' }
+                            ]}
+                            neuralTip="Automating a 'Freedom Tax'—a fixed percentage of all revenue diverted to savings—creates an unbreakable trajectory toward fiscal independence."
+                        />
+                    </div>
                     <p className="text-muted">Master your wealth across Cash & Credit</p>
                 </div>
                 <Button variant="secondary" onClick={() => setShowConfig(true)}>

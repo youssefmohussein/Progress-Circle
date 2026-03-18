@@ -20,6 +20,7 @@ import { AstraAssistant } from '../components/AstraAssistant';
 import { toast } from 'sonner';
 import { subscribeUserToPush } from '../utils/pushNotifications';
 import dayjs from 'dayjs';
+import { PageInsight } from '../components/PageInsight';
 
 const QUOTES = [
     'Great work today!',
@@ -191,9 +192,24 @@ export function Dashboard() {
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">•</span>
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">{dayjs().format('MMMM D, YYYY')}</span>
                     </div>
-                    <h1 className="font-black pc-gradient-text page-title leading-tight" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: 'clamp(2rem, 6vw, 3rem)' }}>
-                        {getGreeting()}, {user?.name || 'User'}
-                    </h1>
+                    <div className="flex items-center gap-4">
+                        <h1 className="font-black pc-gradient-text page-title leading-tight" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: 'clamp(2rem, 6vw, 3rem)' }}>
+                            {getGreeting()}, {user?.name || 'User'}
+                        </h1>
+                        <div className="mb-2">
+                            <PageInsight 
+                                title="Central Intelligence Hub"
+                                intro="The primary command interface for all tactical operations. Synthesize task energy, focus sessions, and AI-driven growth metrics."
+                                operations={[
+                                    { title: 'Neural Progress Ring', content: 'Monitor real-time daily objective completion and focus-to-task ratios.' },
+                                    { title: 'Strategic Assessor', content: 'Review AI-computed bandwidth for deep-work sessions based on your calendar.' },
+                                    { title: 'Critical Threat Log', content: 'Immediate visibility on overdue missions and high-priority targets.' },
+                                    { title: 'Operational Timeline', content: 'Chronographic audit of all task completions and focus milestones achieved.' }
+                                ]}
+                                neuralTip="A vertical focus split—clearing small tasks early—maximizes cognitive energy for mid-day deep-work operations."
+                            />
+                        </div>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link to="/focus" id="tour-focus-mode">

@@ -14,6 +14,7 @@ import { Button } from '../components/Button';
 import { Modal } from '../components/Modal';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { toast } from 'sonner';
+import { PageInsight } from '../components/PageInsight';
 
 dayjs.extend(isBetween);
 
@@ -121,10 +122,22 @@ export function Planner() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-black pc-gradient-text tracking-tight flex items-center gap-3">
-                        <CalendarIcon className="text-[var(--primary)]" size={32} />
-                        Universe Planner
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-black pc-gradient-text tracking-tight flex items-center gap-3">
+                            <CalendarIcon className="text-[var(--primary)]" size={32} />
+                            Universe Planner
+                        </h1>
+                        <PageInsight 
+                            title="Tactical Scheduler"
+                            intro="Visualize and allocate your cognitive resources across the temporal matrix. Coordinate complex deadlines with daily execution windows."
+                            operations={[
+                                { title: 'Temporal Visualization', content: 'Review your week-at-a-glance to identify high-density operational periods.' },
+                                { title: 'Resource Allocation', content: 'Assign tasks to specific time slots to ensure mission-critical completion.' },
+                                { title: 'Conflict Resolution', content: 'Identify and mitigate overlapping objectives before they compromise your trajectory.' }
+                            ]}
+                            neuralTip="Front-loading your tactical planning (Sundays) reduces 'Decision Fatigue' by up to 60% during active work cycles."
+                        />
+                    </div>
                     <p className="text-muted text-sm font-medium mt-1 uppercase tracking-widest">
                         Syncing your goals, habits & time
                     </p>

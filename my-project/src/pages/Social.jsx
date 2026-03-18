@@ -18,6 +18,7 @@ import { TrajectoryModal } from '../components/TrajectoryModal';
 import { BattleConfigModal } from '../components/BattleConfigModal';
 import { NotificationCenter } from '../components/NotificationCenter';
 import { Confetti } from '../components/Confetti';
+import { PageInsight } from '../components/PageInsight';
 
 const PulseFeed = () => {
     const mockFeed = [
@@ -200,7 +201,19 @@ export function Social() {
         <div className="max-w-6xl mx-auto space-y-8 pb-32">
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 px-2">
                 <div>
-                    <h1 className="text-3xl font-black pc-gradient-text tracking-tight">Social Circle</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-black pc-gradient-text tracking-tight">Social Circle</h1>
+                        <PageInsight 
+                            title="Neural Network"
+                            intro="Synchronize with other operatives and orchestrate collective missions. Build alliances, monitor comrade status, and expand your operational reach."
+                            operations={[
+                                { title: 'Comrade Synchronization', content: 'Connect with other users to monitor real-time focus activities and milestones.' },
+                                { title: 'Alliance Orchestration', content: 'Form and manage groups to tackle high-complexity collective objectives.' },
+                                { title: 'Intel Exchange', content: 'Share tactical insights and status updates via the Global Social Feed.' }
+                            ]}
+                            neuralTip="Collective focus sessions (Synergy) increase individual adherence to deep-work protocols by up to 35%."
+                        />
+                    </div>
                     <p className="text-xs text-muted font-bold uppercase tracking-[0.2em] mt-1">Connect · Collaborate · Conquer</p>
                 </div>
                 <div className="flex gap-4">

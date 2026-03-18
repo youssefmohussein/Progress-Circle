@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { AvatarDisplay } from '../avatar/AvatarDisplay';
+import { PageInsight } from '../components/PageInsight';
 
 export function SynergyArena() {
     const { user } = useAuth();
@@ -79,7 +80,19 @@ export function SynergyArena() {
                             <Shield size={16} />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Strategic Ops Area</span>
                         </div>
-                        <h2 className="text-3xl font-black text-text">Synergy Arena</h2>
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-3xl font-black text-text">Synergy Arena</h2>
+                            <PageInsight 
+                                title="Collective Exertion Arena"
+                                intro="Engage in high-intensity focus synchronization with other operatives. Amplify your cognitive output through shared objective alignment and real-time competition."
+                                operations={[
+                                    { title: 'Arena Initialization', content: 'Set up or join a collective focus session with specific operational parameters.' },
+                                    { title: 'Synchronized Exertion', content: 'Perform deep-work protocols alongside other operatives to maximize collective synergy.' },
+                                    { title: 'Intel Reporting', content: 'Review post-arena analytics to identify individual and collective performance deltas.' }
+                                ]}
+                                neuralTip="Operating in an Arena environment creates a 'Forced Accountability' loop, significantly reducing the probability of protocol deviation."
+                            />
+                        </div>
                         <p className="text-sm text-muted max-w-md mt-1">
                             Collaborative neural grid. Coordinate with your production squad to synchronize objectives and maximize output.
                         </p>

@@ -14,6 +14,7 @@ import { PriorityBadge, StatusBadge } from '../components/Badge';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { toast } from 'sonner';
+import { PageInsight } from '../components/PageInsight';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -277,7 +278,19 @@ export function Tasks() {
         <div className="max-w-4xl mx-auto space-y-6 pb-32">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
-                    <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Master Plan</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Master Plan</h1>
+                        <PageInsight 
+                            title="Central Intelligence Task Engine"
+                            intro="The core operational layer for objective decomposition. Architect complex missions into manageable micro-targets and monitor execution velocity."
+                            operations={[
+                                { title: 'Objective Decomposition', content: 'Fragment large-scale goals into atomic tasks with assigned priorities and urgency.' },
+                                { title: 'Strategic Categorization', content: 'Organize operations into functional sectors like Work, Personal, and Strategy.' },
+                                { title: 'Status Synchronization', content: 'Real-time monitoring of task completion states from Initial to Complete.' }
+                            ]}
+                            neuralTip="Defining a 'Target Outcome' for each task before execution increases focus density by up to 40%."
+                        />
+                    </div>
                     <p className="text-xs text-muted font-medium mt-1 uppercase tracking-[0.2em]">{tasks.length} total · {tasks.filter(t => t.status === 'completed').length} done</p>
                 </div>
                 <div className="flex gap-3">

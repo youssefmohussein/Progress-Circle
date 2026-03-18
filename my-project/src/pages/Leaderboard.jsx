@@ -9,6 +9,7 @@ import { AvatarDisplay } from '../avatar/AvatarDisplay';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { getTreeMetadata } from '../utils/themeTreeMetadata';
 import { EmptyState } from '../components/EmptyState';
+import { PageInsight } from '../components/PageInsight';
 
 const MEDALS = [
     { rank: 1, icon: Trophy, color: 'text-yellow-500', bg: 'from-yellow-400/20 to-amber-400/10', border: 'border-yellow-400/30', emoji: '🥇' },
@@ -36,7 +37,19 @@ export function Leaderboard() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.5rem, 6vw, 1.875rem)' }}>Leaderboard</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.5rem, 6vw, 1.875rem)' }}>Leaderboard</h1>
+                    <PageInsight 
+                        title="Global Hierarchy"
+                        intro="Measure your operational density against the global elite. Review real-time rankings based on focus minutes, task completion, and behavioral consistency."
+                        operations={[
+                            { title: 'Rank Synchronization', content: 'Comparative analysis of your focus energy against other top-tier operators.' },
+                            { title: 'Trajectory Monitoring', content: 'Track your movement within the global hierarchy across different timeframes.' },
+                            { title: 'Achievement Verification', content: 'Validate your milestones and earned status within the ProgressCircle ecosystem.' }
+                        ]}
+                        neuralTip="Observing the trajectories of top-tier operators can provide strategic insights into optimal focus-to-rest ratios."
+                    />
+                </div>
                 <p className="text-xs text-muted mt-1">Compete with your peers and rise to the top.</p>
             </div>
 

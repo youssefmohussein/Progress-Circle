@@ -13,6 +13,7 @@ import { EmptyState } from '../components/EmptyState';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Confetti } from '../components/Confetti';
 import { toast } from 'sonner';
+import { PageInsight } from '../components/PageInsight';
 
 export function Habits() {
     const { habits, addHabit, toggleHabit, deleteHabit } = useData();
@@ -76,7 +77,19 @@ export function Habits() {
         <div className="max-w-4xl mx-auto space-y-6 pb-32">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
-                    <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Habit Loops</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Habit Loops</h1>
+                        <PageInsight 
+                            title="Behavioral Architecture"
+                            intro="Re-engineer your fundamental routines using atomic habit protocols. Cultivate unbreakable momentum through consistent daily execution."
+                            operations={[
+                                { title: 'Protocol Tracking', content: 'Log daily completion of core behavioral nodes to maintain your streak.' },
+                                { title: 'Momentum Scaling', content: 'Monitor your streak progression and analyze overall consistency deltas over time.' },
+                                { title: 'Neural Rewiring', content: 'Build a long-term behavioral foundation through automated, high-frequency repetition.' }
+                            ]}
+                            neuralTip="Focus on the first 10% of the habit—the ignition phase—to bypass cognitive resistance and ensure baseline completion."
+                        />
+                    </div>
                     <p className="text-xs text-muted font-medium mt-1 uppercase tracking-[0.2em]">{habits.length} active loops</p>
                 </div>
                 {user?.plan === 'free' && habits.length >= 5 ? (
