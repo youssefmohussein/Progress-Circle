@@ -17,6 +17,10 @@ exports.startSession = async (req, res) => {
         const session = await Session.create({
             userId: req.user.id,
             startTime: new Date(),
+            technique: req.body.technique || 'Flow',
+            taskId: req.body.taskId || null,
+            totalCycles: req.body.totalCycles || 1,
+            completedCycles: 0,
             ...req.body,
             isActive: true
         });
@@ -38,6 +42,7 @@ exports.endSession = async (req, res) => {
         session.endTime = endTime;
         session.duration = duration;
         session.notes = req.body.notes || session.notes;
+        session.completedCycles = req.body.completedCycles || session.completedCycles || 1;
         await session.save();
 
         // Award points + grow a tree (only for focus sessions of 25+ min)
@@ -81,6 +86,8 @@ exports.createManualSession = async (req, res) => {
     try {
         const session = await Session.create({
             userId: req.user.id,
+            technique: req.body.technique || 'Manual',
+            taskId: req.body.taskId || null,
             ...req.body,
             isActive: false // Manual sessions are always completed
         });

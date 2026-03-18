@@ -10,12 +10,30 @@ const sessionSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ['focus', 'break', 'sleep'],
+            enum: ['focus', 'break', 'sleep', 'technique'],
             default: 'focus',
         },
         classification: {
             type: String,
-            required: true, // User must specify or create a sector (e.g., Uni, Bus, Sleep)
+            required: false, // Made optional for V2
+            default: 'Universal',
+        },
+        taskId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Task',
+            default: null,
+        },
+        technique: {
+            type: String, // Pomodoro, 50/10, etc.
+            default: 'Flow',
+        },
+        totalCycles: {
+            type: Number,
+            default: 1,
+        },
+        completedCycles: {
+            type: Number,
+            default: 0,
         },
         startTime: {
             type: Date,
@@ -43,7 +61,7 @@ const sessionSchema = new mongoose.Schema(
 
 // Apply encryption
 sessionSchema.plugin(fieldEncryption, {
-    fields: ['classification', 'notes'],
+    fields: ['notes'], // Removed classification from encryption as it's often a system default now
     secret: process.env.DATABASE_ENCRYPTION_KEY,
     saltGenerator: (secret) => secret.slice(0, 16),
 });
