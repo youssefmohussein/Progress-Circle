@@ -1,5 +1,8 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useSEO } from '../hooks/useSEO';
+
 import { 
     Zap, Shield, Users, Activity, Trophy, 
     ChevronRight, ArrowDown, ArrowRight, Star, Globe, 
@@ -13,6 +16,8 @@ import {
 
 export function Landing() {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    useSEO('ProgressCircle | AI-Powered Productivity & Habit Tracking System', 'The ultimate high-fidelity productivity ecosystem. Track tasks, build habits, manage focus sessions, and gamify your goals with ProgressCircle.');
     const [scrollProgress, setScrollProgress] = useState(0);
 
     useEffect(() => {
