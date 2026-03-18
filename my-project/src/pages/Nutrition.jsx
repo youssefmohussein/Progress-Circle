@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../api/client';
+import { Confetti } from '../components/Confetti';
 import { useTheme } from '../context/ThemeContext';
 
 export function Nutrition() {
@@ -17,6 +18,8 @@ export function Nutrition() {
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [nutritionData, setNutritionData] = useState(null);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [confettiVariant, setConfettiVariant] = useState('rain');
     const [showAddMeal, setShowAddMeal] = useState(false);
     const [newMeal, setNewMeal] = useState({
         name: '',
@@ -63,6 +66,8 @@ export function Nutrition() {
             };
             const res = await api.post(`/nutrition/${selectedDate}/meal`, mealToSubmit);
             setNutritionData(res.data.data);
+            setConfettiVariant('rain');
+            setShowConfetti(true);
             setNewMeal({ name: '', calories: '', protein: '', carbs: '', fats: '', time: '12:00' });
             setShowAddMeal(false);
             toast.success('Fuel node integrated.');
@@ -75,6 +80,8 @@ export function Nutrition() {
         try {
             const res = await api.put(`/nutrition/${selectedDate}/water`, { amount });
             setNutritionData(res.data.data);
+            setConfettiVariant('rain');
+            setShowConfetti(true);
             toast.success(`+${amount}ml Hydration synced.`);
         } catch (error) {
             toast.error('Water sync failed.');
@@ -372,6 +379,8 @@ export function Nutrition() {
                     </motion.div>
                 </div>
             )}
+
+            <Confetti active={showConfetti} theme="nutrition" variant={confettiVariant} onComplete={() => setShowConfetti(false)} />
         </div>
     );
 }

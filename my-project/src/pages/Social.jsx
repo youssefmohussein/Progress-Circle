@@ -17,6 +17,7 @@ import { FocusBattleModal } from '../components/FocusBattleModal';
 import { TrajectoryModal } from '../components/TrajectoryModal';
 import { BattleConfigModal } from '../components/BattleConfigModal';
 import { NotificationCenter } from '../components/NotificationCenter';
+import { Confetti } from '../components/Confetti';
 
 const PulseFeed = () => {
     const mockFeed = [
@@ -77,6 +78,8 @@ export function Social() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [trajectoryHistory, setTrajectoryHistory] = useState([]);
     const [configOpen, setConfigOpen] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [confettiVariant, setConfettiVariant] = useState('burst');
 
     useEffect(() => {
         fetchNetwork();
@@ -137,6 +140,8 @@ export function Social() {
         try {
             const res = await api.post(`/social/follow/${userId}`);
             if (res.data.success) {
+                setConfettiVariant('fountain');
+                setShowConfetti(true);
                 toast.success(res.data.message);
                 fetchNetwork();
                 setSearchResults(prev => prev.map(u => u._id === userId ? { ...u, isFollowing: true } : u));
@@ -150,6 +155,8 @@ export function Social() {
         try {
             const res = await api.post('/social/gift-orb', { recipientId });
             if (res.data.success) {
+                setConfettiVariant('burst');
+                setShowConfetti(true);
                 toast.success(res.data.message);
                 // Points updated on next user fetch or refresh
             }
@@ -444,6 +451,8 @@ export function Social() {
                 user={selectedUser}
                 history={trajectoryHistory}
             />
+
+            <Confetti active={showConfetti} theme="synergy" variant={confettiVariant} onComplete={() => setShowConfetti(false)} />
         </div>
     );
 }

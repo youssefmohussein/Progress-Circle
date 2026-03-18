@@ -10,6 +10,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Modal } from '../components/Modal';
+import { Confetti } from '../components/Confetti';
 import { toast } from 'sonner';
 
 export function Savings() {
@@ -17,6 +18,8 @@ export function Savings() {
     useSEO('Financial Command Center', 'Track income, expenses, savings goals, and net worth with the ProgressCircle financial dashboard.');
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [confettiConfig, setConfettiConfig] = useState({ theme: 'finance', variant: 'burst' });
 
     // Config state
     const [showConfig, setShowConfig] = useState(false);
@@ -80,6 +83,8 @@ export function Savings() {
                 savingsGoal: Number(configData.savingsGoal)
             });
             setUser(updateRes.data.data);
+            setConfettiConfig({ theme: 'finance', variant: 'fountain' });
+            setShowConfetti(true);
             toast.success('Financial configuration saved!');
             setShowConfig(false);
         } catch (error) {
@@ -95,6 +100,16 @@ export function Savings() {
                 amount: Number(txData.amount)
             });
             setUser(res.data.user);
+            
+            // Differentiated Celebrations
+            let config = { theme: 'finance', variant: 'burst' };
+            if (txData.type === 'income') config = { theme: 'income', variant: 'rain' };
+            else if (txData.type === 'expense') config = { theme: 'expense', variant: 'spiral' };
+            else if (txData.type === 'investment') config = { theme: 'investment', variant: 'fountain' };
+            
+            setConfettiConfig(config);
+            setShowConfetti(true);
+            
             toast.success('Transaction logged!');
             setShowTxModal(false);
             setTxData({ type: 'expense', amount: '', category: '', description: '', fromWho: '', account: 'cash' });
@@ -578,6 +593,13 @@ export function Savings() {
                     </div>
                 </form>
             </Modal>
+
+            <Confetti 
+                active={showConfetti} 
+                theme={confettiConfig.theme} 
+                variant={confettiConfig.variant} 
+                onComplete={() => setShowConfetti(false)} 
+            />
         </div>
     );
 }

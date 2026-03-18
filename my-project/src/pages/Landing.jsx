@@ -32,7 +32,7 @@ export function Landing() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#020204] text-[#f8fafc] selection:bg-indigo-500/30 selection:text-white font-inter antialiased overflow-x-hidden scroll-smooth transition-all duration-700 pc-noise">
+        <div className="min-h-screen bg-[#020204] text-[#f8fafc] selection:bg-indigo-500/30 selection:text-white font-inter antialiased overflow-x-hidden scroll-smooth transition-all duration-700">
             {/* Elite Progress HUD */}
             <div className="fixed top-0 left-0 w-full h-[2px] bg-white/[0.03] z-[100]">
                 <div 

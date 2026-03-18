@@ -34,6 +34,15 @@ const getCycle = async (req, res, next) => {
     }
 };
 
+const getCycleHistory = async (req, res, next) => {
+    try {
+        const cycles = await FitnessCycle.find({ user: req.user._id }).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: cycles });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const logDailyFitness = async (req, res, next) => {
     try {
         const { date, isRestDay, workoutCompleted, routineDone, weight, meals, notes } = req.body;
@@ -117,4 +126,4 @@ const deleteBodyMetric = async (req, res, next) => {
     }
 };
 
-module.exports = { setupCycle, getCycle, logDailyFitness, addBodyMetric, getBodyMetrics, deleteFitnessLog, deleteBodyMetric };
+module.exports = { setupCycle, getCycle, getCycleHistory, logDailyFitness, addBodyMetric, getBodyMetrics, deleteFitnessLog, deleteBodyMetric };
