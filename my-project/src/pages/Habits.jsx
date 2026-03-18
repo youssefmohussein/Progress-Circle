@@ -11,6 +11,7 @@ import { Button } from '../components/Button';
 import { Modal } from '../components/Modal';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { Confetti } from '../components/Confetti';
 import { toast } from 'sonner';
 
 export function Habits() {
@@ -23,6 +24,7 @@ export function Habits() {
         name: '', description: '', frequency: 1, duration: 4 // default 4 weeks
     });
     const [saving, setSaving] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
 
     if (!habits) return <LoadingSpinner />;
 
@@ -49,6 +51,24 @@ export function Habits() {
             toast.success('Habit deleted');
         } catch {
             toast.error('Failed to delete habit');
+        }
+    };
+
+    const handleToggle = async (habit) => {
+        const today = new Date().toISOString().split('T')[0];
+        const wasDone = habit.completedDates?.includes(today);
+        
+        try {
+            const updated = await toggleHabit(habit.id);
+            if (!wasDone && updated.completedDates?.includes(today)) {
+                setShowConfetti(true);
+                toast.success(`NEURAL SYNC COMPLETE! ⚡`, {
+                    description: `${habit.name}: Day ${updated.streak} of mastery.`,
+                    duration: 4000
+                });
+            }
+        } catch {
+            toast.error('Failed to sync habit loop');
         }
     };
 
@@ -130,7 +150,7 @@ export function Habits() {
                                     </div>
 
                                     <button
-                                        onClick={() => toggleHabit(habit.id)}
+                                        onClick={() => handleToggle(habit)}
                                         className={`flex-1 sm:flex-none px-4 py-2 rounded-xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all ${habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'pc-btn-primary shadow-lg shadow-indigo-500/20'}`}
                                     >
                                         <CheckCircle2 size={14} />
@@ -210,6 +230,8 @@ export function Habits() {
                     </button>
                 </form>
             </Modal>
+
+            <Confetti active={showConfetti} onComplete={() => setShowConfetti(false)} />
         </div>
     );
 }

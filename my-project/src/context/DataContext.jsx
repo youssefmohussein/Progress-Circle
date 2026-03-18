@@ -86,7 +86,9 @@ export function DataProvider({ children }) {
 
     const toggleHabit = async (id) => {
         const res = await habitsAPI.toggle(id);
-        setHabits((prev) => prev.map((h) => (h.id === id ? normalizeId(res.data.data) : h)));
+        const updated = normalizeId(res.data.data);
+        setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+        return updated;
     };
 
     const deleteHabit = async (id) => {
