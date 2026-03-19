@@ -8,6 +8,7 @@ const battleSchema = new mongoose.Schema({
         battleTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }]
     }],
     host: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'SquadRoom' },
     status: {
         type: String,
         enum: ['pending', 'active', 'completed', 'cancelled', 'paused'],

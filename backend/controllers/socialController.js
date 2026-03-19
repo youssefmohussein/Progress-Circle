@@ -372,10 +372,16 @@ exports.getRoom = async (req, res, next) => {
             .populate('messages.sender', 'name avatar avatarConfig')
             .populate({
                 path: 'activeBattle',
-                populate: {
-                    path: 'participants.battleTasks',
-                    model: 'Task'
-                }
+                populate: [
+                    {
+                        path: 'participants.user',
+                        select: 'name avatar'
+                    },
+                    {
+                        path: 'participants.battleTasks',
+                        model: 'Task'
+                    }
+                ]
             });
             
         if (!room) return res.status(404).json({ success: false, message: "Room not found." });
@@ -419,6 +425,7 @@ exports.startRoomSession = async (req, res, next) => {
         const battle = await Battle.create({
             participants: room.members.map(m => ({ user: m.user, pointsEarned: 0 })),
             host: req.user._id,
+            roomId: room._id,
             status: 'active',
             startTime: new Date(),
             durationMinutes: duration,
@@ -907,12 +914,19 @@ exports.toggleTaskStatus = async (req, res, next) => {
         const participant = battle.participants.find(p => p.user.toString() === req.user._id.toString());
         if (!participant) return res.status(403).json({ success: false, message: "Not a participant." });
 
-        if (!participant.battleTasks.includes(taskId)) {
-            return res.status(400).json({ success: false, message: "Task not staked in this arena." });
-        }
-
         const task = await Task.findById(taskId);
         if (!task) return res.status(404).json({ success: false, message: "Task not found." });
+
+        // Verify task ownership
+        if (task.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Unauthorized task access." });
+        }
+
+        // Auto-add to battleTasks if not already present
+        const isStaked = participant.battleTasks.some(btId => btId.toString() === taskId.toString());
+        if (!isStaked) {
+            participant.battleTasks.push(taskId);
+        }
 
         const oldStatus = task.status;
         const newStatus = oldStatus === 'completed' ? 'pending' : 'completed';
@@ -922,17 +936,19 @@ exports.toggleTaskStatus = async (req, res, next) => {
         await task.save();
 
         // Update stats
+        const pointsAwarded = isStaked ? 50 : 10;
+        
         if (newStatus === 'completed') {
             participant.tasksCompleted += 1;
-            participant.pointsEarned += 50; // Arena bonus
+            participant.pointsEarned += pointsAwarded; 
 
             battle.logs.push({
-                message: `Target Neutralized: ${req.user.name} finished [${task.title}]`,
+                message: `Target Neutralized: ${req.user.name} finished [${task.title}] - +${pointsAwarded} XP`,
                 timestamp: new Date()
             });
         } else {
             participant.tasksCompleted = Math.max(0, participant.tasksCompleted - 1);
-            participant.pointsEarned = Math.max(0, participant.pointsEarned - 50);
+            participant.pointsEarned = Math.max(0, participant.pointsEarned - pointsAwarded);
         }
 
         await battle.save();

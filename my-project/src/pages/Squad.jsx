@@ -700,13 +700,13 @@ export function Squad() {
                                 <div className="flex-1 flex flex-col min-w-0 border-r border-border/5">
                                     {/* Session Status Banner */}
                                     <div className="px-8 py-6 bg-surface/30 border-b border-border/5 flex items-center justify-between">
-                                        <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                        <div className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                                             {activeRoom.activeSession?.isActive ? (
                                                 <><div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> <span className="text-rose-500">Protocol Active in Arena</span></>
                                             ) : (
                                                 <><span className="text-muted">Waiting for host to deploy session...</span></>
                                             )}
-                                        </p>
+                                        </div>
                                     </div>
 
                                     {/* Chat Area */}

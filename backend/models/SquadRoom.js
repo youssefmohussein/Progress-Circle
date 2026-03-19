@@ -38,7 +38,9 @@ const squadRoomSchema = new mongoose.Schema({
     isPrivate: {
         type: Boolean,
         default: true
-    }
+    },
+    squadPoints: { type: Number, default: 0 },
+    squadLevel: { type: Number, default: 1 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('SquadRoom', squadRoomSchema);

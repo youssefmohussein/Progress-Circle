@@ -218,6 +218,15 @@ const updateTask = async (req, res, next) => {
                     });
 
                     await activeBattle.save();
+
+                    // Update SquadRoom total points if roomId exists
+                    if (activeBattle.roomId) {
+                        const SquadRoom = require('../models/SquadRoom');
+                        const pointsAwarded = participant.battleTasks.includes(task._id) ? 50 : 10;
+                        await SquadRoom.findByIdAndUpdate(activeBattle.roomId, {
+                            $inc: { squadPoints: pointsAwarded }
+                        });
+                    }
                 }
             }
         }

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Zap, Timer, Trophy, X, Shield, Swords, 
+import {
+    Zap, Timer, Trophy, X, Shield, Swords,
     Flame, Target, Pause, Play, LogOut,
     CheckSquare, Activity, MessageSquare, Plus
 } from 'lucide-react';
@@ -37,13 +37,16 @@ export default function SquadFocusArena() {
     const [isLoaded, setIsLoaded] = useState(false);
     const [extending, setExtending] = useState(false);
     const [targetUserId, setTargetUserId] = useState(null);
+    const [showConfigModal, setShowConfigModal] = useState(false);
+    const [sessionDuration, setSessionDuration] = useState(25);
+    const [pointsPop, setPointsPop] = useState({ show: false, points: 0 });
 
     useEffect(() => {
         if (!currentUser) return;
         fetchRoom();
         fetchMyTasks();
         fetchCategories();
-        
+
         // Load persistent state
         const savedState = localStorage.getItem(`squad_focus_${id}_${currentUser?._id || currentUser?.id}`);
         console.log("Loading state for", id, savedState);
@@ -58,14 +61,14 @@ export default function SquadFocusArena() {
         }
         setIsLoaded(true);
 
-        const interval = setInterval(fetchRoom, 3000); 
+        const interval = setInterval(fetchRoom, 3000);
         return () => clearInterval(interval);
     }, [id, currentUser]);
 
     // Save persistent state
     useEffect(() => {
         if (!currentUser || !isLoaded) return;
-        
+
         const state = {
             selectedIds: selectedTaskIds,
             finished: finishedTasks
@@ -86,7 +89,6 @@ export default function SquadFocusArena() {
             toast.error('Message failed to send');
         }
     };
-
     const fetchCategories = async () => {
         try {
             const res = await api.get('/categories');
@@ -154,7 +156,7 @@ export default function SquadFocusArena() {
             const isSelecting = !prev.includes(taskId);
             const task = myTasks.find(t => t._id === taskId);
             let newSelection = [...prev];
-            
+
             if (isSelecting) {
                 newSelection.push(taskId);
                 // If Big Task, select all children
@@ -183,29 +185,8 @@ export default function SquadFocusArena() {
         });
     };
 
-    const handleToggleTaskStatus = async (taskId) => {
-        try {
-            const task = myTasks.find(t => t._id === taskId);
-            const newStatus = task.status === 'completed' ? 'pending' : 'completed';
-            const res = await api.put(`/tasks/${taskId}`, { status: newStatus });
-            if (res.data.success) {
-                if (newStatus === 'completed') {
-                    toast.success('Task Secured! +10 XP');
-                    setFinishedTasks(prev => [task, ...prev]);
-                    setMyTasks(prev => prev.filter(t => t._id !== taskId));
-                    setSelectedTaskIds(prev => prev.filter(id => id !== taskId));
-                    setShowSummaryModal(true);
-                } else {
-                    fetchMyTasks();
-                }
-            }
-        } catch (err) {
-            toast.error('Sync failed');
-        }
-    };
-
     const fetchRoom = async () => {
-        if (!currentUser) return; 
+        if (!currentUser) return;
         try {
             const res = await api.get(`/social/rooms/${id}`);
             if (res.data.success) {
@@ -214,13 +195,13 @@ export default function SquadFocusArena() {
                 const hostId = r.host?._id || r.host?.id || r.host;
                 const currentId = currentUser?._id || currentUser?.id;
                 setIsHost(String(hostId) === String(currentId));
-                
+
                 if (r.activeSession?.isActive && r.activeSession?.startTime) {
                     const start = new Date(r.activeSession.startTime);
                     const end = new Date(start.getTime() + (r.activeSession.durationMinutes * 60000));
                     const remaining = Math.max(0, Math.floor((end - new Date()) / 1000));
                     setTimeLeft(remaining);
-                    
+
                     if (remaining === 0 && String(hostId) === String(currentId)) {
                         handleCompleteSession();
                     }
@@ -235,27 +216,90 @@ export default function SquadFocusArena() {
         }
     };
 
-    const handleStartSession = async (duration) => {
-        try {
-            const res = await api.post(`/social/rooms/${id}/start`, { duration });
-            if (res.data.success) {
-                setRoom(res.data.data);
-                toast.success('Focus Protocol Initiated');
-            }
-        } catch (err) {
-            toast.error('Failed to start session');
-        }
-    };
-
     const handleCompleteSession = async () => {
         try {
-            const res = await api.post(`/social/rooms/${id}/complete`);
+            const res = await api.post(`/social/rooms/${id}/session/end`);
             if (res.data.success) {
-                setRoom(res.data.data);
-                toast.success('Session Completed! XP Granted.');
+                fetchRoom();
+                setShowSummaryModal(true);
             }
         } catch (err) {
             toast.error('Failed to complete session');
+        }
+    };
+
+    const handleToggleTaskStatus = async (taskId) => {
+        try {
+            const task = myTasks.find(t => t._id === taskId);
+            const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+            
+            // If in active battle, use the battle-specific route to award points
+            if (room.activeBattle) {
+                const battleId = room.activeBattle._id || room.activeBattle;
+                const res = await api.patch(`/social/battle/toggle-task/${battleId}`, { taskId });
+                if (res.data.success) {
+                    if (newStatus === 'completed') {
+                        const myParticipant = room.activeBattle?.participants?.find(p => {
+                            const pid = p.user?._id || p.user?.id || p.user;
+                            const mid = currentUser?._id || currentUser?.id;
+                            return String(pid) === String(mid);
+                        });
+                        const isAssigned = myParticipant?.battleTasks?.some(bt => (bt._id || bt) === taskId);
+                        const pts = isAssigned ? 50 : 10;
+                        
+                        setPointsPop({ show: true, points: pts });
+                        setTimeout(() => setPointsPop({ show: false, points: 0 }), 3000);
+
+                        toast.success(`Objective Secured! +${pts} XP`, {
+                            icon: <Trophy className="text-amber-400" />
+                        });
+                        setFinishedTasks(prev => [task, ...prev]);
+                    }
+                    fetchRoom();
+                    fetchMyTasks();
+                }
+            } else {
+                const res = await api.put(`/tasks/${taskId}`, { status: newStatus });
+                if (res.data.success) {
+                    if (newStatus === 'completed') {
+                        setFinishedTasks(prev => [task, ...prev]);
+                    }
+                    fetchMyTasks();
+                    fetchRoom();
+                }
+            }
+        } catch (err) {
+            toast.error('Sync failed');
+        }
+    };
+
+    const handleStartSession = async () => {
+        try {
+            const res = await api.post(`/social/rooms/${id}/session/start`, {
+                duration: sessionDuration,
+                type: 'battle'
+            });
+            if (res.data.success) {
+                toast.success('Battle Synchronized. All operatives on standby.', {
+                    icon: <Zap className="text-amber-400" />
+                });
+                setShowConfigModal(false);
+                fetchRoom();
+            }
+        } catch (err) {
+            toast.error('Neural uplink failed');
+        }
+    };
+
+    const handleControl = async (action) => {
+        try {
+            const res = await api.post(`/social/rooms/${id}/session/control`, { action });
+            if (res.data.success) {
+                toast.success(`Session ${action === 'pause' ? 'Paused' : 'Resumed'}`);
+                fetchRoom();
+            }
+        } catch (err) {
+            toast.error(`Failed to ${action} session`);
         }
     };
 
@@ -318,58 +362,58 @@ export default function SquadFocusArena() {
                             <span className="text-[9px] font-black text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">{myTasks.filter(t => t.status === 'completed').length} DONE</span>
                         </div>
                         <div className="space-y-3">
-                            {myTasks?.filter(t => selectedTaskIds.includes(t._id)).length > 0 ? 
+                            {myTasks?.filter(t => selectedTaskIds.includes(t._id)).length > 0 ?
                                 myTasks.filter(t => selectedTaskIds.includes(t._id) && !t.parentId).map((task) => (
-                                <div key={task._id} className="space-y-2">
-                                    <div 
-                                        className={`p-4 rounded-2xl bg-white/[0.03] border flex items-center justify-between gap-3 transition-all group border-white/5 ${task.isBigTask ? 'border-indigo-500/20 bg-indigo-500/[0.01]' : ''}`}
-                                    >
-                                        <div className="flex items-center gap-3 overflow-hidden">
-                                            <button 
-                                                onClick={() => handleToggleTaskStatus(task._id)}
-                                                className="p-1.5 rounded-lg transition-all bg-white/5 text-white/20 hover:text-emerald-500 hover:bg-emerald-500/10"
-                                            >
-                                                <CheckSquare size={14} />
-                                            </button>
-                                            <div className="flex flex-col">
-                                                <span className={`text-xs font-black truncate ${task.isBigTask ? 'text-indigo-400' : 'text-white'}`}>
-                                                    {task.title}
-                                                </span>
-                                                {task.isBigTask && <span className="text-[7px] font-black uppercase text-indigo-400/50">Master Mission</span>}
-                                            </div>
-                                        </div>
-                                        <div className={`w-1.5 h-1.5 rounded-full ${task.isBigTask ? 'bg-indigo-400' : 'bg-indigo-500/50'} shadow-[0_0_5px_rgba(99,102,241,0.3)]`} />
-                                    </div>
-                                    
-                                    {/* Render Sub-tasks */}
-                                    <div className="ml-6 space-y-2">
-                                        {myTasks.filter(st => (st.parentId?._id || st.parentId) === task._id && selectedTaskIds.includes(st._id)).map(st => (
-                                            <div 
-                                                key={st._id}
-                                                className="p-3 rounded-xl bg-white/[0.015] border border-white/5 flex items-center justify-between gap-3 group"
-                                            >
-                                                <div className="flex items-center gap-3 overflow-hidden">
-                                                    <button 
-                                                        onClick={() => handleToggleTaskStatus(st._id)}
-                                                        className="p-1.5 rounded-lg bg-white/5 text-white/10 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all"
-                                                    >
-                                                        <CheckSquare size={12} />
-                                                    </button>
-                                                    <span className="text-[11px] font-bold text-white/70 truncate">{st.title}</span>
+                                    <div key={task._id} className="space-y-2">
+                                        <div
+                                            className={`p-4 rounded-2xl bg-white/[0.03] border flex items-center justify-between gap-3 transition-all group border-white/5 ${task.isBigTask ? 'border-indigo-500/20 bg-indigo-500/[0.01]' : ''}`}
+                                        >
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <button
+                                                    onClick={() => handleToggleTaskStatus(task._id)}
+                                                    className="p-1.5 rounded-lg transition-all bg-white/5 text-white/20 hover:text-emerald-500 hover:bg-emerald-500/10"
+                                                >
+                                                    <CheckSquare size={14} />
+                                                </button>
+                                                <div className="flex flex-col">
+                                                    <span className={`text-xs font-black truncate ${task.isBigTask ? 'text-indigo-400' : 'text-white'}`}>
+                                                        {task.title}
+                                                    </span>
+                                                    {task.isBigTask && <span className="text-[7px] font-black uppercase text-indigo-400/50">Master Mission</span>}
                                                 </div>
-                                                <div className="w-1 h-1 rounded-full bg-indigo-500/30" />
                                             </div>
-                                        ))}
+                                            <div className={`w-1.5 h-1.5 rounded-full ${task.isBigTask ? 'bg-indigo-400' : 'bg-indigo-500/50'} shadow-[0_0_5px_rgba(99,102,241,0.3)]`} />
+                                        </div>
+
+                                        {/* Render Sub-tasks */}
+                                        <div className="ml-6 space-y-2">
+                                            {myTasks.filter(st => (st.parentId?._id || st.parentId) === task._id && selectedTaskIds.includes(st._id)).map(st => (
+                                                <div
+                                                    key={st._id}
+                                                    className="p-3 rounded-xl bg-white/[0.015] border border-white/5 flex items-center justify-between gap-3 group"
+                                                >
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        <button
+                                                            onClick={() => handleToggleTaskStatus(st._id)}
+                                                            className="p-1.5 rounded-lg bg-white/5 text-white/10 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all"
+                                                        >
+                                                            <CheckSquare size={12} />
+                                                        </button>
+                                                        <span className="text-[11px] font-bold text-white/70 truncate">{st.title}</span>
+                                                    </div>
+                                                    <div className="w-1 h-1 rounded-full bg-indigo-500/30" />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )) : (
-                                <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-2xl">
-                                    <p className="text-[10px] font-black text-muted uppercase">No Tasks Active</p>
-                                </div>
-                            )}
-                            <Button 
-                                variant="ghost" 
-                                className="w-full text-[10px] h-11 border-dashed bg-white/[0.02] border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/30" 
+                                )) : (
+                                    <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-2xl">
+                                        <p className="text-[10px] font-black text-muted uppercase">No Tasks Active</p>
+                                    </div>
+                                )}
+                            <Button
+                                variant="ghost"
+                                className="w-full text-[10px] h-11 border-dashed bg-white/[0.02] border-white/5 hover:bg-indigo-500/10 hover:border-indigo-500/30"
                                 icon={Zap}
                                 onClick={() => { setShowTaskEditModal(true) }}
                             >
@@ -389,7 +433,7 @@ export default function SquadFocusArena() {
                                 const peerId = (p.user?._id || p.user?.id || p.user)?.toString();
                                 const myName = currentUser?.name?.toLowerCase().trim();
                                 const peerName = p.user?.name?.toLowerCase().trim();
-                                
+
                                 const isMe = (myId && peerId && myId === peerId) || (myName && peerName && myName === peerName);
                                 return !isMe;
                             }).map((peer) => (
@@ -427,7 +471,7 @@ export default function SquadFocusArena() {
 
                                     {/* Task Assignment for Host */}
                                     {isHost && (
-                                        <button 
+                                        <button
                                             onClick={() => { setTargetUserId(peer.user?._id || peer.user?.id || peer.user); setShowTaskSelector(true); }}
                                             className="w-full py-2.5 rounded-xl border border-dashed border-white/10 text-[9px] font-black uppercase text-muted hover:text-indigo-400 hover:border-indigo-400/30 transition-all flex items-center justify-center gap-2"
                                         >
@@ -438,27 +482,98 @@ export default function SquadFocusArena() {
                             ))}
                         </div>
                     </div>
+
+                    {/* Leaderboard Section */}
+                    {room.activeBattle?.participants?.length > 0 && (
+                        <div className="space-y-6 pt-6 border-t border-white/5">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <Trophy size={14} className="text-amber-400" /> Top Operatives
+                                </h3>
+                                <div className="flex items-center gap-2 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
+                                    <Shield size={10} className="text-emerald-400" />
+                                    <span className="text-[9px] font-black text-emerald-400 uppercase">{room.squadPoints || 0}</span>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                {[...(room.activeBattle.participants || [])]
+                                    .sort((a, b) => b.pointsEarned - a.pointsEarned)
+                                    .map((p, idx) => (
+                                        <div key={p.user?._id || p.user} className="flex items-center justify-between group">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] font-black text-white/20 w-4">{idx + 1}.</span>
+                                                <Avatar src={p.user?.avatar} name={p.user?.name} size="xs" />
+                                                <span className="text-[11px] font-bold text-white/80">{p.user?.name}</span>
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[11px] font-black text-indigo-400">+{p.pointsEarned} XP</span>
+                                                <span className="text-[8px] font-black text-white/20 uppercase">{p.tasksCompleted} Missions</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Center: The Grand Arena Grid */}
                 <div className="lg:col-span-2 relative flex flex-col p-8 overflow-y-auto pc-scrollbar">
-                     <div className="max-w-3xl mx-auto w-full space-y-12">
+                    <div className="max-w-3xl mx-auto w-full space-y-12">
                         {/* Timer UI */}
-                        <div className="text-center space-y-4">
-                            <motion.div 
-                                animate={{ 
-                                    scale: room.activeSession?.isActive ? [1, 1.01, 1] : 1,
-                                    color: timeLeft > 0 && timeLeft < 300 ? ['#ffffff', '#f43f5e', '#ffffff'] : '#ffffff'
-                                }}
-                                transition={{ repeat: Infinity, duration: timeLeft < 300 ? 1 : 2 }}
-                                className="text-9xl font-black tracking-tighter tabular-nums drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                            >
-                                {room.activeSession?.isActive ? formatTime(timeLeft) : '00:00'}
-                            </motion.div>
-                            <div className="flex flex-col items-center gap-2">
-                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">
-                                    {room.activeSession?.isActive ? 'Focus Session In Progress' : 'Awaiting Deployment'}
-                                </p>
+                        {/* Timer UI */}
+                        <div className="text-center space-y-8">
+                            <div className="relative w-72 h-72 mx-auto flex items-center justify-center">
+                                <svg className="w-full h-full transform -rotate-90">
+                                    <circle
+                                        cx="144"
+                                        cy="144"
+                                        r="130"
+                                        stroke="currentColor"
+                                        strokeWidth="8"
+                                        fill="transparent"
+                                        className="text-white/5"
+                                    />
+                                    <motion.circle
+                                        cx="144"
+                                        cy="144"
+                                        r="130"
+                                        stroke="currentColor"
+                                        strokeWidth="8"
+                                        fill="transparent"
+                                        strokeDasharray="816.8"
+                                        initial={{ strokeDashoffset: 816.8 }}
+                                        animate={{
+                                            strokeDashoffset: 816.8 - (816.8 * (timeLeft / (room.activeSession?.durationMinutes * 60 || 1)))
+                                        }}
+                                        transition={{ duration: 1, ease: "linear" }}
+                                        className="text-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]"
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <motion.span
+                                        animate={{
+                                            scale: room.activeSession?.isActive ? [1, 1.05, 1] : 1,
+                                            color: timeLeft > 0 && timeLeft < 300 ? ['#ffffff', '#f43f5e', '#ffffff'] : '#ffffff'
+                                        }}
+                                        transition={{ repeat: Infinity, duration: timeLeft < 300 ? 1 : 4 }}
+                                        className="text-7xl font-black tracking-tighter tabular-nums text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                                    >
+                                        {room.activeSession?.isActive ? formatTime(timeLeft) : '00:00'}
+                                    </motion.span>
+                                    <span className="text-[10px] font-black uppercase text-muted tracking-[0.3em] mt-2">Protocol {room.activeSession?.isActive ? 'Active' : 'Standby'}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-center gap-4">
+                                {isHost && !room.activeSession?.isActive && (
+                                    <Button onClick={() => setShowConfigModal(true)} variant="primary" className="px-12 h-14 bg-indigo-600 font-extrabold shadow-xl shadow-indigo-600/20">INITIATE FOCUS</Button>
+                                )}
+                                {isHost && room.activeSession?.isActive && (
+                                    <Button icon={Pause} onClick={() => handleControl('pause')} variant="secondary" className="px-8 h-14 bg-white/5 border-white/10">PAUSE</Button>
+                                )}
+                                {isHost && room.activeSession?.isActive && (
+                                    <Button icon={X} onClick={() => handleControl('end')} className="px-8 h-14 bg-rose-600/20 border-rose-600/30 text-rose-500 hover:bg-rose-600 hover:text-white transition-all">ABORT</Button>
+                                )}
                             </div>
                         </div>
 
@@ -467,13 +582,12 @@ export default function SquadFocusArena() {
                             {room.members.map((p) => {
                                 const isCurrentUser = String(p.user?._id || p.user?.id || p.user) === String(currentUser?._id || currentUser?.id);
                                 return (
-                                    <motion.div 
+                                    <motion.div
                                         key={p._id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className={`flex flex-col items-center gap-4 p-6 rounded-3xl bg-white/[0.02] border transition-all ${
-                                            isCurrentUser ? 'border-indigo-500/30 bg-indigo-500/[0.02]' : 'border-white/5'
-                                        }`}
+                                        className={`flex flex-col items-center gap-4 p-6 rounded-3xl bg-white/[0.02] border transition-all ${isCurrentUser ? 'border-indigo-500/30 bg-indigo-500/[0.02]' : 'border-white/5'
+                                            }`}
                                     >
                                         <div className="relative">
                                             <Avatar src={p.user?.avatar} name={p.user?.name} size="lg" />
@@ -490,7 +604,7 @@ export default function SquadFocusArena() {
                                                 <span className={`text-[9px] font-black uppercase ${p.status === 'focusing' ? 'text-emerald-400' : 'text-amber-400'}`}>{p.status}</span>
                                             </div>
                                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                                <motion.div 
+                                                <motion.div
                                                     initial={{ width: 0 }}
                                                     animate={{ width: p.status === 'focusing' ? '100%' : '50%' }}
                                                     className={`h-full ${isCurrentUser ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : (p.status === 'focusing' ? 'bg-emerald-500/50' : 'bg-amber-500/50')}`}
@@ -512,7 +626,7 @@ export default function SquadFocusArena() {
                                 )}
                             </div>
                         )}
-                     </div>
+                    </div>
                 </div>
 
                 {/* Right Sidebar: Signal Log & Comms */}
@@ -527,9 +641,8 @@ export default function SquadFocusArena() {
                                     const isMe = String(msg.sender?._id || msg.sender?.id || msg.sender) === String(currentUser?._id || currentUser?.id);
                                     return (
                                         <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                            <div className={`max-w-[85%] p-3 rounded-2xl text-[11px] font-bold ${
-                                                isMe ? 'bg-indigo-500 text-white rounded-tr-none shadow-[0_0_10px_rgba(99,102,241,0.3)]' : 'bg-white/5 text-white/80 rounded-tl-none border border-white/5'
-                                            }`}>
+                                            <div className={`max-w-[85%] p-3 rounded-2xl text-[11px] font-bold ${isMe ? 'bg-indigo-500 text-white rounded-tr-none shadow-[0_0_10px_rgba(99,102,241,0.3)]' : 'bg-white/5 text-white/80 rounded-tl-none border border-white/5'
+                                                }`}>
                                                 {!isMe && <p className="text-[8px] opacity-40 uppercase mb-1">{msg.sender?.name || 'Squad Member'}</p>}
                                                 {msg.text}
                                             </div>
@@ -542,9 +655,9 @@ export default function SquadFocusArena() {
                     </div>
 
                     <div className="pt-6 border-t border-white/5 mt-auto">
-                         <div className="relative group">
+                        <div className="relative group">
                             <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-indigo-500 transition-colors" size={14} />
-                            <input 
+                            <input
                                 type="text"
                                 value={messageInput}
                                 onChange={(e) => setMessageInput(e.target.value)}
@@ -552,7 +665,7 @@ export default function SquadFocusArena() {
                                 placeholder="Transmit message..."
                                 className="pc-input w-full pl-11 h-12 text-xs font-bold bg-white/[0.02] focus:bg-white/[0.05]"
                             />
-                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -560,14 +673,14 @@ export default function SquadFocusArena() {
             <AnimatePresence>
                 {showTaskEditModal && (
                     <>
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowTaskEditModal(false)}
                             className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60]"
                         />
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
@@ -587,7 +700,7 @@ export default function SquadFocusArena() {
                                 <form onSubmit={handleCreateTask} className="flex gap-2">
                                     <div className="relative flex-1 group">
                                         <Plus className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-indigo-500 transition-colors" size={14} />
-                                        <input 
+                                        <input
                                             type="text"
                                             value={newTaskTitle}
                                             onChange={(e) => setNewTaskTitle(e.target.value)}
@@ -601,7 +714,7 @@ export default function SquadFocusArena() {
                                 <div className="flex items-center gap-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">
                                     <div className="flex items-center gap-2">
                                         <label className="text-[10px] font-black uppercase text-muted">Category:</label>
-                                        <select 
+                                        <select
                                             value={filterCategory}
                                             onChange={(e) => setFilterCategory(e.target.value)}
                                             className="bg-transparent text-[10px] font-bold text-white outline-none border-b border-white/10 pb-1"
@@ -613,7 +726,7 @@ export default function SquadFocusArena() {
                                         </select>
                                     </div>
                                     <div className="w-px h-4 bg-white/10" />
-                                    <button 
+                                    <button
                                         onClick={() => setFilterOnlyBig(!filterOnlyBig)}
                                         className={`flex items-center gap-2 text-[10px] font-black uppercase transition-all ${filterOnlyBig ? 'text-indigo-400' : 'text-muted hover:text-white'}`}
                                     >
@@ -634,18 +747,16 @@ export default function SquadFocusArena() {
                                     return true;
                                 }).map(task => (
                                     <div key={task._id} className="space-y-2">
-                                        <button 
+                                        <button
                                             onClick={() => handleToggleTaskSelection(task._id)}
-                                            className={`w-full p-4 rounded-xl border text-left flex items-center justify-between transition-all group ${
-                                                selectedTaskIds.includes(task._id)
-                                                ? 'bg-indigo-500/10 border-indigo-500/40 text-white'
-                                                : 'bg-white/[0.02] border-white/5 text-muted hover:border-white/20'
-                                            }`}
+                                            className={`w-full p-4 rounded-xl border text-left flex items-center justify-between transition-all group ${selectedTaskIds.includes(task._id)
+                                                    ? 'bg-indigo-500/10 border-indigo-500/40 text-white'
+                                                    : 'bg-white/[0.02] border-white/5 text-muted hover:border-white/20'
+                                                }`}
                                         >
                                             <div className="flex items-center gap-3 overflow-hidden">
-                                                <div className={`p-1.5 rounded-lg transition-all ${
-                                                    selectedTaskIds.includes(task._id) ? 'bg-indigo-500 text-white' : 'bg-white/5 text-white/20'
-                                                }`}>
+                                                <div className={`p-1.5 rounded-lg transition-all ${selectedTaskIds.includes(task._id) ? 'bg-indigo-500 text-white' : 'bg-white/5 text-white/20'
+                                                    }`}>
                                                     <CheckSquare size={14} />
                                                 </div>
                                                 <div className="flex flex-col">
@@ -661,14 +772,13 @@ export default function SquadFocusArena() {
                                         {/* Nested Children in Modal */}
                                         <div className="ml-8 space-y-2 border-l border-white/5 pl-4">
                                             {myTasks.filter(st => (st.parentId?._id || st.parentId) === task._id).map(st => (
-                                                <button 
+                                                <button
                                                     key={st._id}
                                                     onClick={() => handleToggleTaskSelection(st._id)}
-                                                    className={`w-full p-3 rounded-lg border text-left flex items-center justify-between transition-all ${
-                                                        selectedTaskIds.includes(st._id)
-                                                        ? 'bg-indigo-500/5 border-indigo-500/20 text-white'
-                                                        : 'bg-white/[0.01] border-white/5 text-muted hover:border-white/10'
-                                                    }`}
+                                                    className={`w-full p-3 rounded-lg border text-left flex items-center justify-between transition-all ${selectedTaskIds.includes(st._id)
+                                                            ? 'bg-indigo-500/5 border-indigo-500/20 text-white'
+                                                            : 'bg-white/[0.01] border-white/5 text-muted hover:border-white/10'
+                                                        }`}
                                                 >
                                                     <div className="flex items-center gap-3 overflow-hidden">
                                                         <CheckSquare size={12} className={selectedTaskIds.includes(st._id) ? 'text-indigo-400' : 'text-white/10'} />
@@ -681,14 +791,14 @@ export default function SquadFocusArena() {
                                 )) : (
                                     <div className="py-12 flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/5 rounded-2xl">
                                         <Target size={24} className="text-white/10" />
-                                        <p className="text-[10px] font-black text-muted uppercase text-center">No matching data <br/> found in scanner</p>
+                                        <p className="text-[10px] font-black text-muted uppercase text-center">No matching data <br /> found in scanner</p>
                                     </div>
                                 )}
                             </div>
 
-                            <Button 
-                                variant="primary" 
-                                className="w-full mt-8 h-14 bg-indigo-600 shadow-lg shadow-indigo-600/20 font-black" 
+                            <Button
+                                variant="primary"
+                                className="w-full mt-8 h-14 bg-indigo-600 shadow-lg shadow-indigo-600/20 font-black"
                                 onClick={() => setShowTaskEditModal(false)}
                             >
                                 CLOSE SCANNER
@@ -702,12 +812,12 @@ export default function SquadFocusArena() {
             <AnimatePresence>
                 {showSummaryModal && finishedTasks.length > 0 && (
                     <>
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setShowSummaryModal(false)}
                             className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[70]"
                         />
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
                             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-gradient-to-br from-[#121214] to-[#0A0A0B] border border-emerald-500/20 rounded-[2.5rem] p-10 z-[71] shadow-[0_0_50px_rgba(16,185,129,0.1)] text-center"
                         >
@@ -716,7 +826,7 @@ export default function SquadFocusArena() {
                             </div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-2">Protocol Secured</h2>
                             <p className="text-xs text-muted mb-8 font-bold">Your focus session has yielded results. Synergy peak detected.</p>
-                            
+
                             <div className="space-y-3 mb-8 text-left max-h-60 overflow-y-auto pc-scrollbar pr-2">
                                 <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                                     <Activity size={12} /> Objectives Completed ({finishedTasks.length})
@@ -729,9 +839,9 @@ export default function SquadFocusArena() {
                                 ))}
                             </div>
 
-                            <Button 
-                                variant="primary" 
-                                className="w-full h-14 bg-emerald-600 shadow-lg shadow-emerald-600/20 font-black text-xs" 
+                            <Button
+                                variant="primary"
+                                className="w-full h-14 bg-emerald-600 shadow-lg shadow-emerald-600/20 font-black text-xs"
                                 onClick={() => setShowSummaryModal(false)}
                             >
                                 CONTINUE SQUAD FOCUS
@@ -744,12 +854,12 @@ export default function SquadFocusArena() {
             <AnimatePresence>
                 {showTaskSelector && (
                     <>
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setShowTaskSelector(false)}
                             className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60]"
                         />
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
                             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0D0D0F] border border-white/10 rounded-3xl p-8 z-[61] shadow-2xl"
                         >
@@ -758,7 +868,7 @@ export default function SquadFocusArena() {
                             </h2>
                             <div className="space-y-2 max-h-80 overflow-y-auto pc-scrollbar pr-2">
                                 {myTasks.length > 0 ? myTasks.map(task => (
-                                    <button 
+                                    <button
                                         key={task._id}
                                         onClick={() => handleAssignTask(task._id)}
                                         className="w-full p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all text-left flex items-center gap-3 group"
@@ -775,6 +885,81 @@ export default function SquadFocusArena() {
                             <Button variant="secondary" className="w-full mt-6 h-12" onClick={() => setShowTaskSelector(false)}>Cancel</Button>
                         </motion.div>
                     </>
+                )}
+            </AnimatePresence>
+
+            {/* Leaderboard and Points Popups */}
+            <AnimatePresence>
+                {pointsPop.show && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, y: -100, scale: 1.5 }}
+                        exit={{ opacity: 0, scale: 2 }}
+                        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] pointer-events-none"
+                    >
+                        <div className="flex flex-col items-center">
+                            <span className="text-6xl font-black text-amber-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.5)]">+{pointsPop.points} XP</span>
+                            <span className="text-xl font-black text-white uppercase tracking-widest mt-2">Objective Secured</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Session Configuration Modal */}
+            <AnimatePresence>
+                {showConfigModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowConfigModal(false)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-md bg-[#0D0D0F] border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden"
+                        >
+                            {/* Background Glow */}
+                            <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-[100px]" />
+
+                            <div className="relative space-y-8">
+                                <div className="text-center space-y-2">
+                                    <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto border border-indigo-500/20">
+                                        <Timer className="text-indigo-400" size={32} />
+                                    </div>
+                                    <h2 className="text-2xl font-black text-white uppercase tracking-tight">Mission Briefing</h2>
+                                    <p className="text-xs font-bold text-muted uppercase tracking-widest">Select Operation Duration</p>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    {[25, 50, 90].map((mins) => (
+                                        <button
+                                            key={mins}
+                                            onClick={() => setSessionDuration(mins)}
+                                            className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${sessionDuration === mins
+                                                    ? 'bg-indigo-500/10 border-indigo-500/40 text-white'
+                                                    : 'bg-white/[0.02] border-white/5 text-muted hover:border-white/20'
+                                                }`}
+                                        >
+                                            <span className="text-xl font-black">{mins}</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest">MINS</span>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <Button
+                                    onClick={handleStartSession}
+                                    variant="primary"
+                                    className="w-full h-14 bg-indigo-600 font-extrabold text-xs uppercase tracking-[0.2em]"
+                                >
+                                    Initiate Protocol
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
