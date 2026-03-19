@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, Plus, Search, Zap, CheckCircle, Bell,
@@ -11,9 +12,11 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { AvatarDisplay } from '../avatar/AvatarDisplay';
 import { PageInsight } from '../components/PageInsight';
+import { SquadConfigModal } from '../components/SquadConfigModal';
 
 export function Squad() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [friends, setFriends] = useState([]);
     const [requests, setRequests] = useState([]);
     const [rooms, setRooms] = useState([]);
@@ -25,6 +28,7 @@ export function Squad() {
     const [showSearchModal, setShowSearchModal] = useState(false);
     const [showNotifCenter, setShowNotifCenter] = useState(false);
     const [showInviteModal, setShowInviteModal] = useState(false);
+    const [showConfigModal, setShowConfigModal] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -213,6 +217,19 @@ export function Squad() {
             setMessages([]);
         } catch (error) {
             toast.error('Failed to leave room.');
+        }
+    };
+
+    const handleStartSession = async (config) => {
+        try {
+            const res = await api.post(`/social/rooms/${activeRoom._id}/start`, { duration: config.duration });
+            if (res.data.success) {
+                toast.success('Focus Protocol Initiated');
+                setShowConfigModal(false);
+                navigate(`/squad/focus/${activeRoom._id}`);
+            }
+        } catch (err) {
+            toast.error('Failed to start session');
         }
     };
 
@@ -659,17 +676,20 @@ export function Squad() {
                                 <div className="flex items-center gap-3">
                                     {String(activeRoom.host?._id || activeRoom.host?.id || activeRoom.host) === String(user?._id || user?.id) && !activeRoom.activeSession?.isActive && (
                                         <button
-                                            onClick={() => startSession(25)}
+                                            onClick={() => setShowConfigModal(true)}
                                             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
                                         >
                                             <Zap size={16} fill="currentColor" strokeWidth={3} /> START SQUAD FOCUS
                                         </button>
                                     )}
                                     {activeRoom.activeSession?.isActive && (
-                                        <div className="px-5 py-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-black rounded-xl flex items-center gap-2">
+                                        <button 
+                                            onClick={() => navigate(`/squad/focus/${activeRoom._id}`)}
+                                            className="px-5 py-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-black rounded-xl flex items-center gap-2 hover:bg-rose-500/20 transition-all cursor-pointer"
+                                        >
                                             <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                                            ACTIVE SESSION
-                                        </div>
+                                            OPEN ACTIVE ARENA
+                                        </button>
                                     )}
                                 </div>
                             </div>
@@ -678,23 +698,16 @@ export function Squad() {
                             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                                 {/* Left Side: Chat & Content */}
                                 <div className="flex-1 flex flex-col min-w-0 border-r border-border/5">
-                                    {/* Timer Overlay (if active) */}
-                                    {activeRoom.activeSession?.isActive ? (
-                                        <div className="px-8 py-10 flex flex-col items-center justify-center bg-primary/5 border-b border-primary/10">
-                                            <div className="relative">
-                                                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-                                                <div className="relative flex flex-col items-center">
-                                                    <Clock className="text-primary mb-2" size={32} />
-                                                    <h4 className="text-6xl font-black tabular-nums tracking-tighter">{timeLeft || '00:00'}</h4>
-                                                    <p className="text-[10px] font-black uppercase text-primary/60 tracking-[0.3em] mt-2 italic">Protocol Active</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="px-8 py-6 bg-surface/30 border-b border-border/5">
-                                            <p className="text-[10px] font-black uppercase text-muted tracking-widest">Waiting for host to start session...</p>
-                                        </div>
-                                    )}
+                                    {/* Session Status Banner */}
+                                    <div className="px-8 py-6 bg-surface/30 border-b border-border/5 flex items-center justify-between">
+                                        <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                            {activeRoom.activeSession?.isActive ? (
+                                                <><div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> <span className="text-rose-500">Protocol Active in Arena</span></>
+                                            ) : (
+                                                <><span className="text-muted">Waiting for host to deploy session...</span></>
+                                            )}
+                                        </p>
+                                    </div>
 
                                     {/* Chat Area */}
                                     <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin bg-surface/5">
@@ -924,6 +937,11 @@ export function Squad() {
             </div>
 
             {/* Modals */}
+            <SquadConfigModal 
+                open={showConfigModal}
+                onClose={() => setShowConfigModal(false)}
+                onConfirm={handleStartSession}
+            />
             <AnimatePresence>
                 {showInviteModal && activeRoom && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">

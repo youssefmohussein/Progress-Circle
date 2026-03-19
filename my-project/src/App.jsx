@@ -27,6 +27,7 @@ import { Nutrition } from './pages/Nutrition';
 import { Squad } from './pages/Squad';
 import Pricing from './pages/Pricing';
 import FocusBattleArena from './pages/FocusBattleArena';
+import SquadFocusArena from './pages/SquadFocusArena';
 import PaymentSuccess from './pages/PaymentSuccess';
 
 function PrivateRoute({ children }) {
@@ -103,6 +104,7 @@ function AppRoutes() {
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
       <Route path="/battle/:id/*" element={<PrivateRoute><FocusBattleArena /></PrivateRoute>} />
+      <Route path="/squad/focus/:id" element={<PrivateRoute><SquadFocusArena /></PrivateRoute>} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" />} />
