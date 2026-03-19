@@ -20,7 +20,14 @@ function calculateTrends(currentSessions, pastSessions) {
 function calculateSectorFocus(sessions) {
     const sectors = {};
     sessions.forEach(s => {
-        const sector = s.classification || 'Other';
+        let sector = s.classification || 'Other';
+        
+        // Fix for legacy encrypted classifications showing up in Astra Assistant
+        // Encrypted strings from mongoose-field-encryption typically look like long hex + ":" + hex
+        if (sector.length > 30 && sector.includes(':')) {
+            sector = 'Universal'; // Fallback to a clean default
+        }
+        
         sectors[sector] = (sectors[sector] || 0) + (s.duration || 0);
     });
     return Object.entries(sectors).sort((a, b) => b[1] - a[1])[0] || [null, 0];

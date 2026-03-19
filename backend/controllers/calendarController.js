@@ -77,9 +77,13 @@ const getCalendarEvents = async (req, res, next) => {
 
         // 3. Sessions (Focus time)
         sessions.forEach(session => {
+            let className = session.classification || 'Universal';
+            if (className.length > 30 && className.includes(':')) {
+                className = 'Universal';
+            }
             events.push({
                 id: `session-${session._id}`,
-                title: `Focus: ${session.classification}`,
+                title: `Focus: ${className}`,
                 start: session.startTime,
                 end: session.endTime || session.startTime,
                 type: 'session',

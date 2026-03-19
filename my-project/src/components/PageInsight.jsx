@@ -9,19 +9,33 @@ import { Modal } from './Modal';
  */
 export function PageInsight({ title, intro, operations, neuralTip }) {
     const [isOpen, setIsOpen] = useState(false);
+    
+    // Check if user has already opened this specific insight before
+    const storageKey = `insight_seen_${title.replace(/\s+/g, '_').toLowerCase()}`;
+    const [hasSeen, setHasSeen] = useState(() => localStorage.getItem(storageKey) === 'true');
+
+    const handleOpen = () => {
+        setIsOpen(true);
+        if (!hasSeen) {
+            setHasSeen(true);
+            localStorage.setItem(storageKey, 'true');
+        }
+    };
 
     return (
         <>
             <button 
-                onClick={() => setIsOpen(true)}
+                onClick={handleOpen}
                 className="group relative flex items-center justify-center w-9 h-9 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-500 hover:bg-indigo-600 hover:text-white transition-all duration-500 shadow-lg shadow-indigo-600/5 active:scale-90"
                 title="Neural Insight"
             >
                 <Info size={18} />
-                <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                </span>
+                {!hasSeen && (
+                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    </span>
+                )}
             </button>
 
             <Modal open={isOpen} onClose={() => setIsOpen(false)} title="Neural Intelligence Feed" maxWidth="600px">

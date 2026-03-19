@@ -66,6 +66,13 @@ sessionSchema.plugin(fieldEncryption, {
     saltGenerator: (secret) => secret.slice(0, 16),
 });
 
+// Helper to sanitize legacy encrypted classifications
+const sanitizeClassification = (doc) => {
+    if (doc.classification && doc.classification.length > 30 && doc.classification.includes(':')) {
+        doc.classification = 'Universal';
+    }
+};
+
 // Decrypt fields after retrieval
 sessionSchema.post('init', (doc) => {
     try {
@@ -73,6 +80,7 @@ sessionSchema.post('init', (doc) => {
     } catch (err) {
         // Already decrypted or failed
     }
+    sanitizeClassification(doc);
 });
 
 // Decrypt fields after save
@@ -82,6 +90,7 @@ sessionSchema.post('save', (doc) => {
     } catch (err) {
         // Already decrypted or failed
     }
+    sanitizeClassification(doc);
 });
 
 module.exports = mongoose.model('Session', sessionSchema);
