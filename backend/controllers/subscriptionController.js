@@ -352,6 +352,7 @@ exports.getPublicPricing = async (req, res) => {
             success: true,
             monthlyPriceCents: settings.monthlyPriceCents,
             yearlyPriceCents: settings.yearlyPriceCents,
+            features: settings.features || []
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to get pricing.' });

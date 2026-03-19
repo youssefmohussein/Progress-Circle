@@ -51,7 +51,7 @@ export default function Pricing() {
                     setYearlyPrice(Math.round(data.yearlyPriceCents / 100));
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
     const yearlyPerMonth = (yearlyPrice / 12).toFixed(0);
@@ -82,7 +82,7 @@ export default function Pricing() {
         if (!window.confirm('Are you sure you want to cancel your Premium subscription? You will lose access to premium features at the end of your billing cycle.')) {
             return;
         }
-        
+
         try {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
             const res = await fetch(`${apiUrl}/subscription/cancel`, {
@@ -91,7 +91,7 @@ export default function Pricing() {
             });
             const data = await res.json();
             if (!data.success) throw new Error(data.message || 'Failed to cancel subscription.');
-            
+
             toast.success(data.message);
             await refreshUser();
         } catch (err) {
@@ -215,12 +215,12 @@ export default function Pricing() {
                             <div className="premium-badge-large">
                                 💎 {user?.subscription?.status === 'cancelled' ? 'Cancelled Subscription' : 'Active Subscription'}
                             </div>
-                            
+
                             {user?.subscription && (user.subscription.status === 'active' || user.subscription.status === 'cancelled') ? (
                                 <div className="subscription-details">
                                     <p>
-                                        {user.subscription.status === 'cancelled' 
-                                            ? 'Your subscription is cancelled but remains active until the end of the billing period.' 
+                                        {user.subscription.status === 'cancelled'
+                                            ? 'Your subscription is cancelled but remains active until the end of the billing period.'
                                             : 'Your subscription is active.'}
                                     </p>
                                     {user.subscription.currentPeriodEnd && (
@@ -229,8 +229,8 @@ export default function Pricing() {
                                         </p>
                                     )}
                                     {user.subscription.status === 'active' && (
-                                        <button 
-                                            className="cancel-btn" 
+                                        <button
+                                            className="cancel-btn"
                                             onClick={handleCancelSubscription}
                                         >
                                             Cancel Subscription
@@ -255,7 +255,7 @@ export default function Pricing() {
                                     position: 'relative',
                                     textAlign: 'center'
                                 }}>
-                                    <button 
+                                    <button
                                         onClick={handleRemovePromo}
                                         style={{
                                             position: 'absolute',
@@ -314,8 +314,8 @@ export default function Pricing() {
                         <div className="promo-code-section mt-6 p-4 border border-indigo-500/20 rounded-xl bg-indigo-500/5">
                             <h4 className="text-sm font-black text-indigo-400 mb-2 uppercase tracking-widest text-center">Have a Promo Code?</h4>
                             <div className="flex gap-2">
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="Enter Code"
                                     value={promoCode}
                                     onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
