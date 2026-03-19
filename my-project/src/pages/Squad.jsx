@@ -110,7 +110,7 @@ export function Squad() {
 
                 if (remaining === 0 && activeRoom.activeSession.isActive) {
                     // Start completion if we are the host
-                    if (activeRoom.host === user._id) {
+                    if (String(activeRoom.host?._id || activeRoom.host) === String(user?._id || user?.id)) {
                         completeSession();
                     }
                     setTimeLeft('00:00');
@@ -579,7 +579,7 @@ export function Squad() {
                                         const userId = user?._id || user?.id;
                                         return r.members.some(m => (m.user?._id || m.user?.id || m.user) === userId);
                                     }).map((room) => {
-                                        const isHost = room.host === user._id || room.host?._id === user._id;
+                                        const isHost = String(room.host?._id || room.host?.id || room.host) === String(user?._id || user?.id);
                                         return (
                                         <motion.div
                                             key={room._id}
@@ -636,7 +636,7 @@ export function Squad() {
                                         <X size={18} className="group-hover:rotate-90 transition-transform" />
                                         <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Back</span>
                                     </button>
-                                    {activeRoom.host === user._id && (
+                                    {String(activeRoom.host?._id || activeRoom.host?.id || activeRoom.host) === String(user?._id || user?.id) && (
                                         <button
                                             onClick={deleteRoom}
                                             className="p-2.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition-all text-rose-500 flex items-center gap-2"
@@ -657,7 +657,7 @@ export function Squad() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    {activeRoom.host === user._id && !activeRoom.activeSession?.isActive && (
+                                    {String(activeRoom.host?._id || activeRoom.host?.id || activeRoom.host) === String(user?._id || user?.id) && !activeRoom.activeSession?.isActive && (
                                         <button
                                             onClick={() => startSession(25)}
                                             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
