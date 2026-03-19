@@ -370,7 +370,13 @@ exports.getRoom = async (req, res, next) => {
             .populate('host', 'name avatar')
             .populate('members.user', 'name avatar avatarConfig')
             .populate('messages.sender', 'name avatar avatarConfig')
-            .populate('activeBattle');
+            .populate({
+                path: 'activeBattle',
+                populate: {
+                    path: 'participants.battleTasks',
+                    model: 'Task'
+                }
+            });
             
         if (!room) return res.status(404).json({ success: false, message: "Room not found." });
         res.status(200).json({ success: true, data: room });

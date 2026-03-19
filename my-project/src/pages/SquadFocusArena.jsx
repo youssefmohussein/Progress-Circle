@@ -126,6 +126,29 @@ export default function SquadFocusArena() {
         }
     };
 
+    const handleAssignTask = async (taskId) => {
+        try {
+            const battleId = room.activeBattle?._id || room.activeBattle;
+            if (!battleId) {
+                toast.error('Tactical session not active');
+                return;
+            }
+            const res = await api.post(`/social/battle/add-task/${battleId}`, {
+                taskId,
+                targetUserId
+            });
+            if (res.data.success) {
+                toast.success('Mission assigned to operative');
+                // Remove from my selection if it was there
+                setSelectedTaskIds(prev => prev.filter(id => id !== taskId));
+                fetchRoom();
+                setShowTaskSelector(false);
+            }
+        } catch (err) {
+            toast.error('Assignment synchronization failed');
+        }
+    };
+
     const handleToggleTaskSelection = (taskId) => {
         setSelectedTaskIds(prev => {
             const isSelecting = !prev.includes(taskId);
@@ -361,7 +384,15 @@ export default function SquadFocusArena() {
                             <Activity size={14} className="text-emerald-400" /> Squad Status
                         </h3>
                         <div className="space-y-8">
-                            {room.members.filter(p => (p.user?._id || p.user?.id || p.user) !== (currentUser?._id || currentUser?.id)).map((peer) => (
+                            {currentUser && room.members.filter(p => {
+                                const myId = (currentUser?._id || currentUser?.id)?.toString();
+                                const peerId = (p.user?._id || p.user?.id || p.user)?.toString();
+                                const myName = currentUser?.name?.toLowerCase().trim();
+                                const peerName = p.user?.name?.toLowerCase().trim();
+                                
+                                const isMe = (myId && peerId && myId === peerId) || (myName && peerName && myName === peerName);
+                                return !isMe;
+                            }).map((peer) => (
                                 <div key={peer._id} className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
@@ -377,6 +408,32 @@ export default function SquadFocusArena() {
                                         <Timer size={12} className="text-white/30" />
                                         <span className="text-[10px] font-bold text-white/60">Session Time: {Math.floor(peer.totalFocusTime / 60)}h {(peer.totalFocusTime % 60)}m</span>
                                     </div>
+
+                                    {/* Member's Assigned Tasks */}
+                                    {room.activeBattle?.participants?.find(p => (p.user?._id || p.user) === (peer.user?._id || peer.user))?.battleTasks?.length > 0 && (
+                                        <div className="space-y-2 mt-2">
+                                            {room.activeBattle.participants.find(p => (p.user?._id || p.user) === (peer.user?._id || peer.user)).battleTasks.map(bt => (
+                                                <div key={bt._id} className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3 group">
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        <div className={`w-5 h-5 rounded-md flex items-center justify-center ${bt.status === 'completed' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-white/5 text-white/20'}`}>
+                                                            {bt.status === 'completed' ? <CheckSquare size={10} /> : <Zap size={10} />}
+                                                        </div>
+                                                        <span className={`text-[10px] font-bold truncate ${bt.status === 'completed' ? 'text-white/30 line-through' : 'text-white/70'}`}>{bt.title}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Task Assignment for Host */}
+                                    {isHost && (
+                                        <button 
+                                            onClick={() => { setTargetUserId(peer.user?._id || peer.user?.id || peer.user); setShowTaskSelector(true); }}
+                                            className="w-full py-2.5 rounded-xl border border-dashed border-white/10 text-[9px] font-black uppercase text-muted hover:text-indigo-400 hover:border-indigo-400/30 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Plus size={10} /> Assign Task
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -679,6 +736,43 @@ export default function SquadFocusArena() {
                             >
                                 CONTINUE SQUAD FOCUS
                             </Button>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showTaskSelector && (
+                    <>
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowTaskSelector(false)}
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60]"
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0D0D0F] border border-white/10 rounded-3xl p-8 z-[61] shadow-2xl"
+                        >
+                            <h2 className="text-xl font-black text-white mb-6 uppercase tracking-tight flex items-center gap-3">
+                                <Target size={20} className="text-indigo-500" /> Assign Protocol
+                            </h2>
+                            <div className="space-y-2 max-h-80 overflow-y-auto pc-scrollbar pr-2">
+                                {myTasks.length > 0 ? myTasks.map(task => (
+                                    <button 
+                                        key={task._id}
+                                        onClick={() => handleAssignTask(task._id)}
+                                        className="w-full p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all text-left flex items-center gap-3 group"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-muted group-hover:text-indigo-400 transition-colors">
+                                            <Zap size={14} />
+                                        </div>
+                                        <span className="text-sm font-bold text-white truncate">{task.title}</span>
+                                    </button>
+                                )) : (
+                                    <p className="text-center py-8 text-xs text-muted font-bold">No tasks available in your scanner.</p>
+                                )}
+                            </div>
+                            <Button variant="secondary" className="w-full mt-6 h-12" onClick={() => setShowTaskSelector(false)}>Cancel</Button>
                         </motion.div>
                     </>
                 )}
