@@ -13,7 +13,7 @@ import { AvatarDisplay } from '../avatar/AvatarDisplay';
 import { NotificationCenter } from './NotificationCenter';
 
 const moreNavItems = [
-    { path: '/savings', icon: Wallet, label: 'Savings', key: 'savingsEnabled' },
+    { path: '/savings', icon: Wallet, label: 'Finance', key: 'savingsEnabled' },
     { path: '/fitness', icon: Activity, label: 'Fitness', key: 'fitnessEnabled' },
     { path: '/nutrition', icon: Salad, label: 'Fuel', key: 'nutritionEnabled' },
 ];
@@ -30,7 +30,7 @@ function getNavItems(user) {
     }
 
     if (user?.savingsEnabled) {
-        base.push({ path: '/savings', icon: Wallet, label: 'Savings' });
+        base.push({ path: '/savings', icon: Wallet, label: 'Finance' });
     }
 
     if (user?.fitnessEnabled) {

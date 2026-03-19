@@ -105,6 +105,12 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        salaryDay: {
+            type: Number,
+            default: 1,
+            min: 1,
+            max: 31,
+        },
         savingsGoal: {
             type: Number,
             default: 50000,

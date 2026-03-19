@@ -10,17 +10,67 @@ const transactionSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ['expense', 'investment', 'income'],
+            enum: ['expense', 'investment', 'income', 'lend', 'transfer'],
             required: true,
         },
-        account: {
-            type: String,
-            enum: ['cash', 'credit'],
-            default: 'cash',
+        isTransfer: {
+            type: Boolean,
+            default: false,
         },
+        transferToAccountId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Account',
+            default: null,
+        },
+        currency: {
+            type: String,
+            default: 'EGP',
+        },
+        originalAmount: {
+            type: Number,
+            default: null,
+        },
+        exchangeRate: {
+            type: Number,
+            default: 1,
+        },
+        account: {
+            type: String, // Legacy label fallback (e.g. account name)
+            default: '',
+        },
+        accountId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Account',
+            default: null,
+        },
+        isRecurring: {
+            type: Boolean,
+            default: false,
+        },
+        recurringTransactionId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'RecurringTransaction',
+            default: null,
+        },
+        // Income: who sent money
         fromWho: {
             type: String,
-            default: '', // Useful for income source or recipient
+            default: '',
+        },
+        // Expense: who received money
+        toWho: {
+            type: String,
+            default: '',
+        },
+        // Purpose: what was it for (expense/investment)
+        purpose: {
+            type: String,
+            default: '',
+        },
+        // Lending: who borrowed from you
+        lentTo: {
+            type: String,
+            default: '',
         },
         amount: {
             type: Number,

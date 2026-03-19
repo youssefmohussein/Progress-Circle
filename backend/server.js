@@ -33,6 +33,7 @@ const integrationRoutes = require('./routes/integrationRoutes');
 const socialRoutes = require('./routes/socialRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const promoCodeRoutes = require('./routes/promoCodeRoutes');
+const financeRoutes = require('./routes/financeRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -117,6 +118,7 @@ app.use('/api/integration', integrationRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/promocodes', promoCodeRoutes);
+app.use('/api/finance', financeRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
