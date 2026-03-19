@@ -2,18 +2,21 @@ const User = require('../models/User');
 const Battle = require('../models/Battle');
 const Notification = require('../models/Notification');
 const Task = require('../models/Task');
+const SquadRoom = require('../models/SquadRoom');
+const SquadActivity = require('../models/SquadActivity');
 
 // @desc    Search for users
 // @route   GET /api/social/search
 // @access  Private
 exports.searchUsers = async (req, res, next) => {
     try {
-        const { query } = req.query;
+        const query = req.query.q || req.query.query;
         if (!query) return res.status(200).json({ success: true, data: [] });
 
         // NEURAL FIREWALL: Sanitize regex input to prevent ReDoS
         const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+        // Check if query is a valid MongoDB ObjectId
         const isId = /^[0-9a-fA-F]{24}$/.test(query);
 
         const users = await User.find({
@@ -24,8 +27,8 @@ exports.searchUsers = async (req, res, next) => {
             ],
             _id: { $ne: req.user._id }
         })
-        .select('name avatar avatarConfig points streak socialStats')
-        .limit(10);
+            .select('name avatar avatarConfig points streak socialStats')
+            .limit(10);
 
         res.status(200).json({ success: true, data: users });
     } catch (err) {
@@ -33,94 +36,497 @@ exports.searchUsers = async (req, res, next) => {
     }
 };
 
-// @desc    Follow a user
-// @route   POST /api/social/follow/:id
+// @desc    Send Friend Request
+// @route   POST /api/social/friends/request/:id
 // @access  Private
-exports.followUser = async (req, res, next) => {
+exports.sendFriendRequest = async (req, res, next) => {
     try {
         if (req.user._id.toString() === req.params.id) {
-            return res.status(400).json({ success: false, message: "You cannot follow yourself." });
+            return res.status(400).json({ success: false, message: "You cannot befriend yourself." });
         }
 
-        const userToFollow = await User.findById(req.params.id);
-        if (!userToFollow) return res.status(404).json({ success: false, message: "User not found." });
+        const userToRequest = await User.findById(req.params.id);
+        if (!userToRequest) return res.status(404).json({ success: false, message: "Operative not found." });
 
-        await User.findByIdAndUpdate(req.user._id, { $addToSet: { following: req.params.id } });
-        await User.findByIdAndUpdate(req.params.id, { $addToSet: { followers: req.user._id } });
+        // Check if already friends
+        if (userToRequest.friends.includes(req.user._id)) {
+            return res.status(400).json({ success: false, message: "Already friends." });
+        }
 
-        res.status(200).json({ success: true, message: `Now following ${userToFollow.name}` });
-    } catch (err) {
-        next(err);
-    }
+        // Check if request already exists
+        const existingRequest = userToRequest.friendRequests.find(r => r.sender.toString() === req.user._id.toString());
+        if (existingRequest) return res.status(400).json({ success: false, message: "Request already pending." });
+
+        await User.findByIdAndUpdate(req.params.id, {
+            $push: { friendRequests: { sender: req.user._id } }
+        });
+
+        // Create Notification
+        await Notification.create({
+            recipient: req.params.id,
+            sender: req.user._id,
+            type: 'friend_request',
+            message: `${req.user.name} wants to connect with your squad.`
+        });
+
+        res.status(200).json({ success: true, message: `Friend request sent to ${userToRequest.name}` });
+    } catch (err) { next(err); }
 };
 
-// @desc    Unfollow a user
-// @route   POST /api/social/unfollow/:id
+// @desc    Accept Friend Request
+// @route   POST /api/social/friends/accept/:id (sender ID)
 // @access  Private
-exports.unfollowUser = async (req, res, next) => {
+exports.acceptFriendRequest = async (req, res, next) => {
     try {
-        await User.findByIdAndUpdate(req.user._id, { $pull: { following: req.params.id } });
-        await User.findByIdAndUpdate(req.params.id, { $pull: { followers: req.user._id } });
+        const user = await User.findById(req.user._id);
+        const request = user.friendRequests.find(r => r.sender.toString() === req.params.id);
 
-        res.status(200).json({ success: true, message: "Unfollowed successfully" });
-    } catch (err) {
-        next(err);
-    }
+        if (!request) return res.status(404).json({ success: false, message: "Request not found." });
+
+        // Add to both friends lists
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: { friends: req.params.id },
+            $pull: { friendRequests: { sender: req.params.id } }
+        });
+        await User.findByIdAndUpdate(req.params.id, {
+            $push: { friends: req.user._id }
+        });
+
+        res.status(200).json({ success: true, message: "Friend request accepted." });
+    } catch (err) { next(err); }
 };
 
-// @desc    Get social network (followers & following)
-// @route   GET /api/social/network
+// @desc    Reject Friend Request
+// @route   POST /api/social/friends/reject/:id
 // @access  Private
-exports.getNetwork = async (req, res, next) => {
+exports.rejectFriendRequest = async (req, res, next) => {
+    try {
+        await User.findByIdAndUpdate(req.user._id, {
+            $pull: { friendRequests: { sender: req.params.id } }
+        });
+        res.status(200).json({ success: true, message: "Request declined." });
+    } catch (err) { next(err); }
+};
+
+// @desc    Remove Friend
+// @route   DELETE /api/social/friends/:id
+// @access  Private
+exports.removeFriend = async (req, res, next) => {
+    try {
+        await User.findByIdAndUpdate(req.user._id, { $pull: { friends: req.params.id } });
+        await User.findByIdAndUpdate(req.params.id, { $pull: { friends: req.user._id } });
+        res.status(200).json({ success: true, message: "Friend removed." });
+    } catch (err) { next(err); }
+};
+
+// @desc    Get Friends List
+// @route   GET /api/social/friends
+// @access  Private
+exports.getFriends = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id)
-            .populate('followers', 'name avatar avatarConfig points streak socialStats')
-            .populate('following', 'name avatar avatarConfig points streak socialStats');
+            .populate('friends', 'name avatar avatarConfig points streak lastActive socialStats')
+            .populate('friendRequests.sender', 'name avatar avatarConfig');
 
         res.status(200).json({
             success: true,
             data: {
-                followers: user.followers,
-                following: user.following
+                friends: user.friends,
+                requests: user.friendRequests
             }
         });
-    } catch (err) {
-        next(err);
-    }
+    } catch (err) { next(err); }
 };
 
-// @desc    Send a Synergy Orb
-// @route   POST /api/social/gift-orb
-// @access  Private (Premium)
-exports.sendSynergyOrb = async (req, res, next) => {
+// ── SQUAD ROOMS ──────────────────────────────────────────────────────────────
+
+// @desc    Create Room
+// @route   POST /api/social/rooms
+// @access  Private
+exports.createRoom = async (req, res, next) => {
     try {
-        if (req.user.plan !== 'premium') {
-            return res.status(403).json({ success: false, message: "Synergy Orbs are a Premium feature!" });
-        }
-
-        const { recipientId } = req.body;
-        const sender = await User.findById(req.user._id);
-        
-        if (sender.points < 500) {
-            return res.status(400).json({ success: false, message: "Not enough points (Need 500)" });
-        }
-
-        const recipient = await User.findById(recipientId);
-        if (!recipient) return res.status(404).json({ success: false, message: "Recipient not found" });
-
-        // Logic: Transfer points or grant a multiplier (simplified: grant recipient points)
-        await User.findByIdAndUpdate(req.user._id, { 
-            $inc: { points: -500, 'socialStats.orbsSent': 1 } 
-        });
-        await User.findByIdAndUpdate(recipientId, { 
-            $inc: { points: 750, 'socialStats.synergyPoints': 100 } 
+        const { name, isPrivate = true, invitedFriends = [] } = req.body;
+        const room = await SquadRoom.create({
+            name,
+            host: req.user._id,
+            members: [{ user: req.user._id, status: 'idle' }],
+            isPrivate,
+            invitedUsers: invitedFriends
         });
 
-        res.status(200).json({ success: true, message: `Synergy Orb deployed to ${recipient.name}!` });
-    } catch (err) {
-        next(err);
-    }
+        // Send invites
+        for (const friendId of invitedFriends) {
+            await Notification.create({
+                recipient: friendId,
+                sender: req.user._id,
+                type: 'room_invite',
+                refId: room._id,
+                message: `${req.user.name} invited you to join the room: ${name}`
+            });
+        }
+
+        const populatedRoom = await SquadRoom.findById(room._id)
+            .populate('host', 'name avatar')
+            .populate('members.user', 'name avatar avatarConfig');
+
+        res.status(201).json({ success: true, data: populatedRoom });
+    } catch (err) { next(err); }
 };
+
+// @desc    Join Room
+// @route   POST /api/social/rooms/join/:id
+// @access  Private
+exports.joinRoom = async (req, res, next) => {
+    try {
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+
+        // Check if already in
+        if (room.members.some(m => m.user.toString() === req.user._id.toString())) {
+            return res.status(200).json({ success: true, data: room });
+        }
+
+        room.members.push({ user: req.user._id, status: 'idle' });
+        await room.save();
+
+        // Log Activity
+        await SquadActivity.create({
+            user: req.user._id,
+            type: 'room_joined',
+            details: `joined room "${room.name}"`
+        });
+
+        const populatedRoom = await SquadRoom.findById(room._id)
+            .populate('host', 'name avatar')
+            .populate('members.user', 'name avatar avatarConfig')
+            .populate('messages.sender', 'name avatar avatarConfig');
+
+        res.status(200).json({ success: true, data: populatedRoom });
+    } catch (err) { next(err); }
+};
+
+// @desc    Get Rooms (Public and joined)
+// @route   GET /api/social/rooms
+// @access  Private
+exports.getRooms = async (req, res, next) => {
+    try {
+        const rooms = await SquadRoom.find({
+            $or: [
+                { isPrivate: false },
+                { 'members.user': req.user._id },
+                { 'invitedUsers': req.user._id }
+            ]
+        }).populate('host', 'name avatar')
+            .populate('members.user', 'name avatar avatarConfig')
+            .populate('activeBattle')
+            .sort({ updatedAt: -1 });
+
+        res.status(200).json({ success: true, data: rooms });
+    } catch (err) { next(err); }
+};
+
+// @desc    Accept Room Invite
+// @route   POST /api/social/rooms/:id/accept
+// @access  Private
+exports.acceptRoomInvite = async (req, res, next) => {
+    try {
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+
+        // Check if invited
+        if (!room.invitedUsers.includes(req.user._id)) {
+            return res.status(403).json({ success: false, message: "You are not invited to this room." });
+        }
+
+        // Move from invited to members
+        room.invitedUsers = room.invitedUsers.filter(uid => uid.toString() !== req.user._id.toString());
+        room.members.push({ user: req.user._id, status: 'idle' });
+        await room.save();
+
+        // Update Notification
+        await Notification.findOneAndUpdate(
+            { refId: room._id, recipient: req.user._id, type: 'room_invite' },
+            { status: 'accepted' }
+        );
+
+        // Notify Host
+        await Notification.create({
+            recipient: room.host,
+            sender: req.user._id,
+            type: 'room_accepted',
+            message: `${req.user.name} joined your room [${room.name}]`
+        });
+
+        const populatedRoom = await SquadRoom.findById(room._id)
+            .populate('host', 'name avatar')
+            .populate('members.user', 'name avatar avatarConfig');
+
+        res.status(200).json({ success: true, data: populatedRoom });
+    } catch (err) { next(err); }
+};
+
+// @desc    Reject Room Invite
+// @route   POST /api/social/rooms/:id/reject
+// @access  Private
+exports.rejectRoomInvite = async (req, res, next) => {
+    try {
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+
+        room.invitedUsers = room.invitedUsers.filter(uid => uid.toString() !== req.user._id.toString());
+        await room.save();
+
+        // Mark Notification as handled
+        await Notification.findOneAndUpdate(
+            { refId: room._id, recipient: req.user._id, type: 'room_invite' },
+            { status: 'rejected' }
+        );
+
+        res.status(200).json({ success: true, message: "Invite declined." });
+    } catch (err) { next(err); }
+};
+
+// @desc    Leave Room
+// @route   POST /api/social/rooms/leave/:id
+// @access  Private
+exports.leaveRoom = async (req, res, next) => {
+    try {
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+
+        room.members = room.members.filter(m => m.user.toString() !== req.user._id.toString());
+        await room.save();
+
+        res.status(200).json({ success: true, message: "Left room." });
+    } catch (err) { next(err); }
+};
+
+// @desc    Delete Room
+// @route   DELETE /api/social/rooms/:id
+// @access  Private (Host only)
+exports.deleteRoom = async (req, res, next) => {
+    try {
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+
+        if (room.host.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Only the host can delete this room." });
+        }
+
+        await SquadRoom.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({ success: true, message: "Room deleted." });
+    } catch (err) { next(err); }
+};
+
+// @desc    Send Message in Room
+// @route   POST /api/social/rooms/:id/chat
+// @access  Private
+exports.sendRoomMessage = async (req, res, next) => {
+    try {
+        const { text } = req.body;
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+
+        room.messages.push({ sender: req.user._id, text, createdAt: new Date() });
+
+        // Optimization: Cap message history at 100 to prevent document bloat
+        if (room.messages.length > 100) {
+            room.messages = room.messages.slice(-100);
+        }
+        await room.save();
+
+        // Handle @mentions
+        const mentionRegex = /@(\w+)/g;
+        const matches = [...text.matchAll(mentionRegex)];
+        if (matches.length > 0) {
+            const usernames = matches.map(m => m[1]);
+            const mentionedUsers = await User.find({ name: { $in: usernames } });
+
+            for (const target of mentionedUsers) {
+                if (target._id.toString() !== req.user._id.toString()) {
+                    await Notification.create({
+                        recipient: target._id,
+                        sender: req.user._id,
+                        type: 'room_invite', // Re-using type or should be 'room_mention'
+                        message: `${req.user.name} mentioned you in ${room.name}`,
+                        refId: room._id
+                    });
+                }
+            }
+        }
+
+        const updatedRoom = await SquadRoom.findById(room._id).populate('messages.sender', 'name avatar');
+        res.status(200).json({ success: true, data: updatedRoom.messages });
+    } catch (err) { next(err); }
+};
+
+// @desc    Get Single Room Details
+// @route   GET /api/social/rooms/:id
+// @access  Private
+exports.getRoom = async (req, res, next) => {
+    try {
+        const room = await SquadRoom.findById(req.params.id)
+            .populate('host', 'name avatar')
+            .populate('members.user', 'name avatar avatarConfig')
+            .populate('messages.sender', 'name avatar avatarConfig')
+            .populate({
+                path: 'activeBattle',
+                populate: {
+                    path: 'participants.battleTasks',
+                    model: 'Task'
+                }
+            });
+            
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+        res.status(200).json({ success: true, data: room });
+    } catch (err) { next(err); }
+};
+
+// @desc    Update Member Status
+// @route   PATCH /api/social/rooms/:id/status
+// @access  Private
+exports.updateMemberStatus = async (req, res, next) => {
+    try {
+        const { status } = req.body; // 'working', 'idle', 'away'
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+
+        const member = room.members.find(m => m.user.toString() === req.user._id.toString());
+        if (member) {
+            member.status = status;
+            member.lastActive = new Date();
+            await room.save();
+        }
+
+        res.status(200).json({ success: true, data: room });
+    } catch (err) { next(err); }
+};
+
+// @desc    Start Room Session (shared timer)
+// @route   POST /api/social/rooms/:id/start
+// @access  Private (Host only)
+exports.startRoomSession = async (req, res, next) => {
+    try {
+        const { duration, type = 'focus' } = req.body;
+        const room = await SquadRoom.findById(req.params.id);
+
+        if (room.host.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Only the host can start sessions." });
+        }
+
+        // Create Battle record for competitive tracking
+        const battle = await Battle.create({
+            participants: room.members.map(m => ({ user: m.user, pointsEarned: 0 })),
+            host: req.user._id,
+            status: 'active',
+            startTime: new Date(),
+            durationMinutes: duration,
+            stake: duration * 2 // Squad bonus
+        });
+
+        room.activeBattle = battle._id;
+        room.activeSession = {
+            startTime: new Date(),
+            durationMinutes: duration,
+            type,
+            isActive: true
+        };
+        await room.save();
+
+        const populatedRoom = await SquadRoom.findById(room._id)
+            .populate('host', 'name avatar')
+            .populate('members.user', 'name avatar avatarConfig')
+            .populate('activeBattle');
+
+        res.status(200).json({ success: true, data: populatedRoom });
+    } catch (err) { next(err); }
+};
+
+// @desc    Complete Room Session (award rewards)
+// @route   POST /api/social/rooms/:id/complete
+// @access  Private
+exports.completeSquadSession = async (req, res, next) => {
+    try {
+        const room = await SquadRoom.findById(req.params.id).populate('activeBattle');
+        if (!room || !room.activeSession?.isActive) {
+            return res.status(400).json({ success: false, message: "No active session to complete." });
+        }
+
+        const sessionDuration = room.activeSession.durationMinutes;
+        const xpReward = sessionDuration * 2 + 50; // Base + Squad Bonus
+
+        // Update Battle status
+        if (room.activeBattle) {
+            const battle = await Battle.findById(room.activeBattle._id || room.activeBattle);
+            if (battle) {
+                battle.status = 'completed';
+                battle.endTime = new Date();
+                await battle.save();
+            }
+        }
+
+        // Award rewards to all members present in the room session
+        const participantIds = room.members.map(m => m.user);
+        await User.updateMany(
+            { _id: { $in: participantIds } },
+            {
+                $inc: {
+                    totalFocusTime: sessionDuration,
+                    points: xpReward,
+                    xp: xpReward,
+                    'socialStats.squadPoints': xpReward
+                }
+            }
+        );
+
+        // Update room member stats
+        room.members.forEach(member => {
+            member.totalFocusTime += sessionDuration;
+            member.status = 'idle';
+        });
+
+        room.activeSession.isActive = false;
+        room.activeBattle = null;
+        await room.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Session completed!",
+            rewards: { xp: xpReward }
+        });
+    } catch (err) { next(err); }
+};
+
+// @desc    Get Global Squad Leaderboard
+// @route   GET /api/social/leaderboard
+// @access  Private
+exports.getGlobalSquadLeaderboard = async (req, res, next) => {
+    try {
+        const rooms = await SquadRoom.find({ isPrivate: false })
+            .populate('members.user', 'name avatar points socialStats totalFocusTime')
+            .populate('host', 'name avatar');
+
+        const leaderboard = rooms.map(room => {
+            const totalXP = room.members.reduce((sum, m) => sum + (m.user?.xp || 0), 0);
+            const totalFocus = room.members.reduce((sum, m) => sum + (m.user?.totalFocusTime || 0), 0);
+            return {
+                _id: room._id,
+                name: room.name,
+                host: room.host,
+                memberCount: room.members.length,
+                totalXP: totalXP,
+                totalFocus: totalFocus,
+                rankScore: totalXP + (totalFocus * 10) // Weighted score
+            };
+        });
+
+        const sorted = leaderboard.sort((a, b) => b.rankScore - a.rankScore).slice(0, 10);
+
+        res.status(200).json({ success: true, data: sorted });
+    } catch (err) { next(err); }
+};
+
 
 // @desc    Invite a user to a Focus Battle
 // @route   POST /api/social/battle/invite
@@ -132,7 +538,7 @@ exports.inviteToBattle = async (req, res, next) => {
         }
 
         const { opponentId, duration = 25, isMultiday = false, tasks = [] } = req.body;
-        
+
         // Ensure mutual following if required (Simplified for now: just notified)
         const opponent = await User.findById(opponentId);
         if (!opponent) return res.status(404).json({ success: false, message: "Peer not found" });
@@ -170,7 +576,7 @@ exports.respondToBattle = async (req, res, next) => {
     try {
         const { action } = req.body; // 'accept' or 'reject'
         const battle = await Battle.findById(req.params.id);
-        
+
         if (!battle) return res.status(404).json({ success: false, message: "Battle session not found" });
         if (battle.participants[1].user.toString() !== req.user._id.toString()) {
             return res.status(401).json({ success: false, message: "Not authorized" });
@@ -181,14 +587,14 @@ exports.respondToBattle = async (req, res, next) => {
                 battle.status = 'active';
                 battle.startTime = new Date();
                 battle.endTime = battle.isMultiday ? null : new Date(Date.now() + battle.durationMinutes * 60000);
-                
+
                 battle.logs.push({
                     message: "Protocol Activated. Strategic alignment complete.",
                     timestamp: new Date()
                 });
 
                 await battle.save();
-                
+
                 // Only create join notification once if not already active
                 const existingNotif = await Notification.findOne({
                     recipient: battle.host,
@@ -249,6 +655,29 @@ exports.controlBattle = async (req, res, next) => {
         } else if (action === 'end') {
             battle.status = 'completed';
             battle.endTime = new Date();
+
+            // Determine winner (simplified: person with most points in battle)
+            let winnerId = null;
+            let maxPoints = -1;
+            battle.participants.forEach(p => {
+                if (p.pointsEarned > maxPoints) {
+                    maxPoints = p.pointsEarned;
+                    winnerId = p.user;
+                }
+            });
+
+            if (winnerId) {
+                battle.winner = winnerId;
+                // Update User Stats
+                await User.findByIdAndUpdate(winnerId, { $inc: { 'socialStats.battlesWon': 1 } });
+
+                // Log Activity
+                await SquadActivity.create({
+                    user: winnerId,
+                    type: 'battle_won',
+                    details: 'won a Focus Battle 🔥'
+                });
+            }
         }
 
         await battle.save();
@@ -322,7 +751,7 @@ exports.getBattle = async (req, res, next) => {
             .populate('participants.user', 'name avatar')
             .populate('participants.battleTasks')
             .populate('messages.sender', 'name avatar');
-        
+
         if (!battle) return res.status(404).json({ success: false, message: "Battle not found" });
 
         // Ensure all populated tasks are decrypted
@@ -343,7 +772,7 @@ exports.sendBattleMessage = async (req, res, next) => {
     try {
         const { message } = req.body;
         const battle = await Battle.findById(req.params.id);
-        
+
         if (!battle) return res.status(404).json({ success: false, message: "Battle not found" });
 
         const isParticipant = battle.participants.some(p => p.user.toString() === req.user._id.toString());
@@ -355,7 +784,7 @@ exports.sendBattleMessage = async (req, res, next) => {
         });
 
         await battle.save();
-        
+
         const updatedBattle = await Battle.findById(battle._id)
             .populate('participants.user', 'name avatar')
             .populate('participants.battleTasks')
@@ -374,7 +803,7 @@ exports.getActiveBattles = async (req, res, next) => {
             participants: { $elemMatch: { user: req.user._id } },
             status: { $in: ['active', 'paused', 'pending'] }
         }).populate('participants.user', 'name avatar');
-        
+
         res.status(200).json({ success: true, data: battles });
     } catch (err) {
         next(err);
@@ -390,7 +819,7 @@ exports.getDiscoverableBattles = async (req, res, next) => {
             'participants.user': { $ne: req.user._id },
             status: 'active'
         }).populate('host', 'name avatar');
-        
+
         res.status(200).json({ success: true, data: battles });
     } catch (err) {
         next(err);
@@ -404,7 +833,7 @@ exports.addTaskToBattle = async (req, res, next) => {
     try {
         const { taskId, targetUserId } = req.body; // targetUserId optional, defaults to self
         const battle = await Battle.findById(req.params.id);
-        
+
         if (!battle || battle.status === 'completed' || battle.status === 'cancelled') {
             return res.status(400).json({ success: false, message: "Arena is not active." });
         }
@@ -417,17 +846,17 @@ exports.addTaskToBattle = async (req, res, next) => {
 
         if (!participant.battleTasks.includes(taskId)) {
             participant.battleTasks.push(taskId);
-            
+
             const task = await Task.findById(taskId);
             const targetUser = await User.findById(effectiveTarget);
 
             battle.logs.push({
-                message: isHost && targetUserId && targetUserId !== req.user._id.toString() 
+                message: isHost && targetUserId && targetUserId !== req.user._id.toString()
                     ? `Host assigned mission [${task?.title || 'Unknown'}] to ${targetUser?.name}`
                     : `${req.user.name} staked mission: [${task?.title || 'Unknown'}]`,
                 timestamp: new Date()
             });
-            
+
             await battle.save();
         }
 
@@ -444,7 +873,7 @@ exports.extendBattleTime = async (req, res, next) => {
     try {
         const { minutes } = req.body;
         const battle = await Battle.findById(req.params.id);
-        
+
         if (battle.host.toString() !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: "Only the host can adjust the temporal sequence." });
         }
@@ -452,12 +881,12 @@ exports.extendBattleTime = async (req, res, next) => {
         if (battle.status !== 'completed') {
             const currentEnd = battle.endTime ? new Date(battle.endTime) : new Date();
             battle.endTime = new Date(currentEnd.getTime() + minutes * 60000);
-            
+
             battle.logs.push({
                 message: `Temporal extension deployed: +${minutes} minutes.`,
                 timestamp: new Date()
             });
-            
+
             await battle.save();
         }
 
@@ -474,7 +903,7 @@ exports.toggleTaskStatus = async (req, res, next) => {
     try {
         const { taskId } = req.body;
         const battle = await Battle.findById(req.params.id);
-        
+
         const participant = battle.participants.find(p => p.user.toString() === req.user._id.toString());
         if (!participant) return res.status(403).json({ success: false, message: "Not a participant." });
 
@@ -487,7 +916,7 @@ exports.toggleTaskStatus = async (req, res, next) => {
 
         const oldStatus = task.status;
         const newStatus = oldStatus === 'completed' ? 'pending' : 'completed';
-        
+
         task.status = newStatus;
         task.completedAt = newStatus === 'completed' ? new Date() : null;
         await task.save();
@@ -496,7 +925,7 @@ exports.toggleTaskStatus = async (req, res, next) => {
         if (newStatus === 'completed') {
             participant.tasksCompleted += 1;
             participant.pointsEarned += 50; // Arena bonus
-            
+
             battle.logs.push({
                 message: `Target Neutralized: ${req.user.name} finished [${task.title}]`,
                 timestamp: new Date()
@@ -545,7 +974,7 @@ exports.clearSynergyData = async (req, res, next) => {
 
         // 1. Reset user synergy points and stats
         await User.findByIdAndUpdate(userId, {
-            $set: { 
+            $set: {
                 'socialStats.synergyPoints': 0,
                 'socialStats.orbsSent': 0,
                 'socialStats.battlesWon': 0
@@ -564,19 +993,158 @@ exports.clearSynergyData = async (req, res, next) => {
 
         // Remove user from battles where they are a participant but not host
         await Battle.updateMany(
-            { 
-                'participants.user': userId, 
+            {
+                'participants.user': userId,
                 host: { $ne: userId },
                 status: { $in: ['pending', 'active', 'paused'] }
             },
             { $pull: { participants: { user: userId } } }
         );
 
-        res.status(200).json({ 
-            success: true, 
-            message: "Synergy data purged. Neural collaborative nodes reset." 
+        res.status(200).json({
+            success: true,
+            message: "Synergy data purged. Neural collaborative nodes reset."
         });
     } catch (err) {
         next(err);
     }
+};
+
+// @desc    Get Squad Performance Stats
+// @route   GET /api/social/stats
+// @access  Private
+exports.getSquadStats = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+        // Calculate Rank Progression (Mock algorithm based on points)
+        const points = user.points || 0;
+        const rankPercent = Math.min(99, Math.floor((points / 10000) * 100));
+
+        res.status(200).json({
+            success: true,
+            data: {
+                sessionsWon: user.socialStats?.battlesWon || 0,
+                squadXP: user.socialStats?.squadPoints || 0,
+                rankProgression: rankPercent,
+                rankLabel: points > 5000 ? 'Top 1%' : 'Active'
+            }
+        });
+    } catch (err) { next(err); }
+};
+
+// @desc    Get Squad Activity Feed
+// @route   GET /api/social/activity
+// @access  Private
+exports.getSquadActivity = async (req, res, next) => {
+    try {
+        // Get user and friends to see their activity
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+        const userIds = [req.user._id, ...(user.friends || [])];
+
+        const activities = await SquadActivity.find({ user: { $in: userIds } })
+            .populate('user', 'name')
+            .sort({ createdAt: -1 })
+            .limit(10);
+
+        res.status(200).json({
+            success: true,
+            data: activities
+        });
+    } catch (err) { next(err); }
+};
+// @desc    Get Notifications for the current user
+// @route   GET /api/social/notifications
+// @access  Private
+exports.getNotifications = async (req, res, next) => {
+    try {
+        const notifications = await Notification.find({ recipient: req.user._id })
+            .populate('sender', 'name avatar avatarConfig')
+            .sort({ createdAt: -1 })
+            .limit(50);
+
+        res.status(200).json({ success: true, data: notifications });
+    } catch (err) { next(err); }
+};
+
+// @desc    Mark notification as toasted
+// @route   PATCH /api/social/notifications/:id/toasted
+// @access  Private
+exports.markNotificationToasted = async (req, res, next) => {
+    try {
+        await Notification.findByIdAndUpdate(req.params.id, { isToasted: true });
+        res.status(200).json({ success: true });
+    } catch (err) { next(err); }
+};
+
+// @desc    Invite additional friends to an existing room
+// @route   POST /api/social/rooms/:id/invite
+// @access  Private (Host)
+exports.inviteToRoom = async (req, res, next) => {
+    try {
+        const { friendIds } = req.body;
+        const room = await SquadRoom.findById(req.params.id);
+
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+        if (room.host.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Only the squad leader can deploy reinforcements." });
+        }
+
+        const newInvites = [];
+        for (const friendId of friendIds) {
+            // Check if already a member or already invited
+            const isMember = room.members.some(m => m.user.toString() === friendId);
+            const isInvited = room.invitedUsers.includes(friendId);
+
+            if (!isMember && !isInvited) {
+                room.invitedUsers.push(friendId);
+                newInvites.push(friendId);
+
+                // Create Notification
+                await Notification.create({
+                    recipient: friendId,
+                    sender: req.user._id,
+                    type: 'room_invite',
+                    refId: room._id,
+                    message: `${req.user.name} invited you to the squad: ${room.name}`
+                });
+            }
+        }
+
+        if (newInvites.length > 0) {
+            await room.save();
+        }
+
+        res.status(200).json({ success: true, message: `${newInvites.length} invite(s) sent.`, data: room });
+    } catch (err) { next(err); }
+};
+
+// @desc    Clear all notifications
+// @route   DELETE /api/social/notifications
+// @access  Private
+exports.clearNotifications = async (req, res, next) => {
+    try {
+        await Notification.deleteMany({ recipient: req.user._id });
+        res.status(200).json({ success: true, message: 'Notifications cleared.' });
+    } catch (err) { next(err); }
+};
+
+// @desc    Delete single notification
+// @route   DELETE /api/social/notifications/:id
+// @access  Private
+exports.deleteNotification = async (req, res, next) => {
+    try {
+        const notif = await Notification.findById(req.params.id);
+        if (!notif) return res.status(404).json({ success: false, message: 'Notification not found.' });
+
+        if (notif.recipient.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: 'Not authorized.' });
+        }
+
+        await notif.deleteOne();
+        res.status(200).json({ success: true, message: 'Notification deleted.' });
+    } catch (err) { next(err); }
 };

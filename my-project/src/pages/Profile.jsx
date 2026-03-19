@@ -28,7 +28,7 @@ export function Profile() {
     const { user, setUser } = useAuth();
     const { tasks } = useData();
     const { gamData } = useGamification();
-    useSEO('My Profile', 'Manage your ProgressCircle operator profile, toggle modules, choose themes, and export your neural data.');
+    useSEO('My Profile', 'Manage your ProgressCircle profile, toggle features, choose themes, and export your productivity data.');
     const [updating, setUpdating] = useState(false);
     
     // Music Preferences Local States
@@ -116,19 +116,19 @@ export function Profile() {
 
 
     const handleClearSynergy = async () => {
-        if (!window.confirm("Are you sure? This will purge all your Synergy points, team-specific missions, and active Battles. This action is irreversible.")) return;
+        if (!window.confirm("Are you sure? This will reset all your Squad points and active focus rooms. This action is irreversible.")) return;
 
         try {
             setIsClearingSynergy(true);
             const res = await api.delete('/social/clear-synergy');
             if (res.data?.success) {
-                toast.success('Synergy Archive Purged.');
+                toast.success('Squad data reset.');
                 // Refresh user data to show 0 points etc
                 const profileRes = await api.get('/users/profile');
                 if (profileRes.data?.success) setUser(profileRes.data.data);
             }
         } catch (error) {
-            toast.error('Purge Failed: Collaborative nodes are locked.');
+            toast.error('Reset Failed: Squad data is locked.');
         } finally {
             setIsClearingSynergy(false);
         }
@@ -144,14 +144,14 @@ export function Profile() {
             const link = document.createElement('a');
             link.href = url;
             const extension = format;
-            link.setAttribute('download', `Neural_Data_${new Date().toISOString().split('T')[0]}.${extension}`);
+            link.setAttribute('download', `Productivity_Data_${new Date().toISOString().split('T')[0]}.${extension}`);
             document.body.appendChild(link);
             link.click();
             link.remove();
-            toast.success(`Neural data synced in .${format.toUpperCase()} format.`);
+            toast.success(`Productivity data downloaded in .${format.toUpperCase()} format.`);
         } catch (error) {
             console.error('Export failed:', error);
-            toast.error('Data science bridge failed. Verify premium status.');
+            toast.error('Export system failed. Verify premium status.');
         } finally {
             setExporting(null);
         }
@@ -189,7 +189,7 @@ export function Profile() {
                                         const idToCopy = user?._id || user?.id;
                                         if (idToCopy) {
                                             navigator.clipboard.writeText(idToCopy);
-                                            toast.success('Neural ID copied to clipboard');
+                                            toast.success('User ID copied to clipboard');
                                         }
                                     }}
                                     className="hover:text-primary transition-colors"
@@ -248,7 +248,7 @@ export function Profile() {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Tasks Done" value={completedTasks} icon={Trophy} color="primary" delay={0} />
-                <StatCard label="Total Nodes" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
+                <StatCard label="Total Tasks" value={tasks.length} icon={Calendar} color="orange" delay={0.05} />
             </div>
 
             {/* Referral System */}
@@ -267,7 +267,7 @@ export function Profile() {
                         <Gift size={20} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-white">Neural Growth Program</h3>
+                        <h3 className="text-sm font-bold text-white">Squad Growth Program</h3>
                         <p className="text-[11px] text-muted">Invite friends and earn Premium access</p>
                     </div>
                 </div>
@@ -293,7 +293,7 @@ export function Profile() {
 
                 <div className="p-3 bg-black/40 rounded-xl border border-white/5 flex items-center justify-between gap-3">
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-[10px] text-muted mb-0.5">Your Neural Referral Link</p>
+                        <p className="text-[10px] text-muted mb-0.5">Your Referral Link</p>
                         <p className="text-xs font-mono text-white truncate">
                             {`${window.location.origin}/register?ref=${user.referralToken || 'ALPHA'}`}
                         </p>
@@ -301,7 +301,7 @@ export function Profile() {
                     <button 
                         onClick={() => {
                             navigator.clipboard.writeText(`${window.location.origin}/register?ref=${user.referralToken}`);
-                            toast.success('Referral link copied to neural buffer');
+                            toast.success('Referral link copied to clipboard');
                         }}
                         className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all scale-press"
                     >
@@ -315,7 +315,7 @@ export function Profile() {
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <Palette className="pc-gradient-text" size={22} />
-                        <h2 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Universe Themes</h2>
+                        <h2 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Visual Themes</h2>
                     </div>
                     <div className="flex bg-white/5 rounded-xl p-1 gap-1">
                         <button 
@@ -402,8 +402,8 @@ export function Profile() {
                 <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
                     <TrendingUp size={80} />
                 </div>
-                <h3 className="text-lg font-black mb-1" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>System Modules</h3>
-                <p className="text-xs text-pc-muted mb-6">Activate specialized nodes to expand your productivity horizon.</p>
+                <h3 className="text-lg font-black mb-1" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>System Features</h3>
+                <p className="text-xs text-pc-muted mb-6">Activate specialized features to expand your productivity goals.</p>
 
                 <div className="space-y-3">
                     {[
@@ -439,9 +439,9 @@ export function Profile() {
                     >
                         <div>
                             <p className="text-xs font-bold text-red-400 flex items-center gap-1.5 uppercase tracking-wider mb-1">
-                                <AlertTriangle size={14} /> Data Purge Protocol
+                                <AlertTriangle size={14} /> Reset Squad Data
                             </p>
-                            <p className="text-[10px] text-pc-muted">Reset synergy progress, points, and active collaborative nodes.</p>
+                            <p className="text-[10px] text-pc-muted">Reset squad progress, points, and active focus rooms.</p>
                         </div>
                         <button
                             disabled={isClearingSynergy}
@@ -449,7 +449,7 @@ export function Profile() {
                             className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 border border-red-500/20"
                         >
                             {isClearingSynergy ? <RefreshCw className="animate-spin" size={12} /> : <Trash2 size={12} />}
-                            Reset Synergy
+                            Reset Squad Points
                         </button>
                     </motion.div>
                 )}
@@ -464,9 +464,9 @@ export function Profile() {
                     <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
                         <Download size={22} />
                     </div>
-                    <h3 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Neural Data Science</h3>
+                    <h3 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Productivity Export</h3>
                 </div>
-                <p className="text-xs text-pc-muted mb-8 max-w-md">Access your complete neural performance history. Generate a high-fidelity intelligence report containing your consistency loops and node completion analytics.</p>
+                <p className="text-xs text-pc-muted mb-8 max-w-md">Access your complete productivity history. Generate a professional report containing your patterns and task completion analytics.</p>
 
                 {user.plan === 'premium' ? (
                     <div className="space-y-4">
@@ -477,10 +477,10 @@ export function Profile() {
                                 className="flex items-center gap-2 px-5 py-3 bg-indigo-500 hover:bg-indigo-600 active:scale-95 disabled:opacity-50 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 text-xs"
                             >
                                 {exporting === 'pdf' ? <RefreshCw className="animate-spin" size={14} /> : <FileText size={14} />}
-                                Generate Neural Archive (PDF)
+                                Generate Productivity Report (PDF)
                             </button>
                         </div>
-                        <p className="text-center mt-4 text-[9px] text-indigo-400/40 font-mono uppercase tracking-[0.2em]">Archival Integrity Verified // Progress Circle Intelligence</p>
+                        <p className="text-center mt-4 text-[9px] text-indigo-400/40 font-mono uppercase tracking-[0.2em]">Verified // Progress Circle Productivity</p>
                     </div>
                 ) : (
                     <div className="p-8 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex flex-col items-center text-center">
@@ -489,7 +489,7 @@ export function Profile() {
                         <p className="text-xs text-pc-muted mb-6 max-w-xs">Neural data archiving and professional reporting require a verified Premium biological sync.</p>
                         <Link to="/pricing">
                             <button className="pc-btn pc-btn-primary px-10 py-3 text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20">
-                                <Crown size={14} className="mr-2 inline" /> Synchronize for Archive
+                                <Crown size={14} className="mr-2 inline" /> Upgrade for Export
                             </button>
                         </Link>
                     </div>

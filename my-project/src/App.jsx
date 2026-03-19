@@ -23,11 +23,11 @@ import { AvatarShop } from './avatar/AvatarShop';
 import { FocusFarm } from './pages/FocusFarm';
 import { Unlockables } from './pages/Unlockables';
 import { Planner } from './pages/Planner';
-import { Social } from './pages/Social';
 import { Nutrition } from './pages/Nutrition';
-import { SynergyArena } from './pages/SynergyArena';
+import { Squad } from './pages/Squad';
 import Pricing from './pages/Pricing';
 import FocusBattleArena from './pages/FocusBattleArena';
+import SquadFocusArena from './pages/SquadFocusArena';
 import PaymentSuccess from './pages/PaymentSuccess';
 
 function PrivateRoute({ children }) {
@@ -88,11 +88,11 @@ function AppRoutes() {
       <Route path="/planner" element={<PrivateRoute><Layout><Planner /></Layout></PrivateRoute>} />
       <Route path="/info" element={<PrivateRoute><Layout><Info /></Layout></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
-      <Route path="/social" element={<PrivateRoute><Layout><Social /></Layout></PrivateRoute>} />
+      <Route path="/social" element={<Navigate to="/squad" />} />
       <Route path="/savings" element={<PrivateRoute><Layout><Savings /></Layout></PrivateRoute>} />
       <Route path="/fitness" element={<PrivateRoute><Layout><Fitness /></Layout></PrivateRoute>} />
       <Route path="/nutrition" element={<PrivateRoute><Layout><Nutrition /></Layout></PrivateRoute>} />
-      <Route path="/synergy" element={<PrivateRoute><Layout><SynergyArena /></Layout></PrivateRoute>} />
+      <Route path="/squad" element={<PrivateRoute><Layout><Squad /></Layout></PrivateRoute>} />
       <Route path="/focus" element={<PrivateRoute><Layout><FocusMode /></Layout></PrivateRoute>} />
       <Route path="/pricing" element={<PrivateRoute><Layout><Pricing /></Layout></PrivateRoute>} />
       <Route path="/payment-success" element={<PrivateRoute><Layout><PaymentSuccess /></Layout></PrivateRoute>} />
@@ -104,6 +104,7 @@ function AppRoutes() {
 
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
       <Route path="/battle/:id/*" element={<PrivateRoute><FocusBattleArena /></PrivateRoute>} />
+      <Route path="/squad/focus/:id" element={<PrivateRoute><SquadFocusArena /></PrivateRoute>} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" />} />

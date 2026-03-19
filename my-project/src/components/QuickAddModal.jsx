@@ -24,11 +24,11 @@ export function QuickAddModal({ open, onClose }) {
     };
 
     return (
-        <Modal open={open} onClose={onClose} title="Quantum Add">
+        <Modal open={open} onClose={onClose} title="Quick Add">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-[10px] font-black text-muted uppercase tracking-widest mb-2">Subject</label>
+                        <label className="block text-[10px] font-black text-muted uppercase tracking-widest mb-2">Task Name</label>
                         <input
                             type="text"
                             value={title}
@@ -65,14 +65,14 @@ export function QuickAddModal({ open, onClose }) {
                         </div>
                         <input type="checkbox" className="hidden" checked={isBigTask} onChange={(e) => setIsBigTask(e.target.checked)} />
                         <div className="flex-1">
-                            <p className="text-xs font-black text-white uppercase tracking-widest">Big Task Container</p>
+                            <p className="text-xs font-black text-white uppercase tracking-widest">Main Task / Project</p>
                             <p className="text-[10px] text-muted">A parent for sub-tasks (e.g. Courses)</p>
                         </div>
                     </label>
                 </div>
 
                 <button type="submit" className="pc-btn pc-btn-primary w-full h-14 rounded-2xl text-lg font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 active:scale-95 transition-transform">
-                    Deploy Task
+                    Add Task
                 </button>
             </form>
         </Modal>

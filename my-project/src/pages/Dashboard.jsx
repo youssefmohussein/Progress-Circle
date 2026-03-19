@@ -77,10 +77,10 @@ export function Dashboard() {
     const handleEnablePush = async () => {
         const sub = await subscribeUserToPush();
         if (sub) {
-            toast.success('Neural push bridge active! 🚀');
+            toast.success('Smart notifications active! 🚀');
             setPushPromptVisible(false);
         } else {
-            toast.error('Failed to establish push bridge.');
+            toast.error('Failed to enable notifications.');
         }
     };
 
@@ -161,7 +161,7 @@ export function Dashboard() {
                                 <BellRing size={20} className="animate-bounce" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-black uppercase tracking-tight">Stay synchronized</h3>
+                                <h3 className="text-sm font-black uppercase tracking-tight">Stay updated</h3>
                                 <p className="text-[10px] text-pc-muted font-bold">Enable push notifications for real-time streak and habit alerts.</p>
                             </div>
                         </div>
@@ -199,15 +199,15 @@ export function Dashboard() {
                         </h1>
                         <div className="mb-2">
                             <PageInsight 
-                                title="Central Intelligence Hub"
-                                intro="The primary command interface for all tactical operations. Synthesize task energy, focus sessions, and AI-driven growth metrics."
+                                title="Your Dashboard"
+                                intro="Your central hub for tracking productivity, focus sessions, and growth."
                                 operations={[
-                                    { title: 'Neural Progress Ring', content: 'Monitor real-time daily objective completion and focus-to-task ratios.' },
-                                    { title: 'Strategic Assessor', content: 'Review AI-computed bandwidth for deep-work sessions based on your calendar.' },
-                                    { title: 'Critical Threat Log', content: 'Immediate visibility on overdue missions and high-priority targets.' },
-                                    { title: 'Operational Timeline', content: 'Chronographic audit of all task completions and focus milestones achieved.' }
+                                    { title: 'Daily Progress', content: 'Track your tasks and focus time in real-time.' },
+                                    { title: 'Smart Insights', content: 'AI-powered suggestions to help you manage your time better.' },
+                                    { title: 'Priority Tasks', content: 'Focus on what matters most with clear deadlines.' },
+                                    { title: 'Activity Timeline', content: 'A history of everything you have accomplished today.' }
                                 ]}
-                                neuralTip="A vertical focus split—clearing small tasks early—maximizes cognitive energy for mid-day deep-work operations."
+                                neuralTip="Try clearing small tasks early in the day to build momentum for deeper work later."
                             />
                         </div>
                     </div>
@@ -315,7 +315,7 @@ export function Dashboard() {
                                 </p>
                             </>
                         ) : (
-                            <p className="text-xs font-bold text-pc-muted">No upcoming deadlines.</p>
+                            <p className="text-xs font-bold text-pc-muted">All caught up!</p>
                         )}
                     </div>
                 </Card>
@@ -384,8 +384,8 @@ export function Dashboard() {
                                     <CheckCircle2 size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-base">System Optimized</h3>
-                                    <p className="text-[10px] text-pc-muted mt-0.5 max-w-[180px]">All critical tasks for today resolved.</p>
+                                    <h3 className="font-black text-base">Perfectly Productive</h3>
+                                    <p className="text-[10px] text-pc-muted mt-0.5 max-w-[180px]">All your priority tasks have been finished.</p>
                                 </div>
                             </div>
                         ) : (

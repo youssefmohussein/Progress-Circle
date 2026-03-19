@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSEO } from '../hooks/useSEO';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Zap, Activity, Trophy, Target, 
-    ArrowRight, CheckCircle2, 
-    BarChart3, Layout, Smartphone, 
+import {
+    Zap, Activity, Trophy, Target,
+    ArrowRight, CheckCircle2,
+    BarChart3, Layout, Smartphone,
     Users, Shield, Globe, Cpu, Star,
     Menu, X, ChevronRight, Layers, Sparkles, Github
 } from 'lucide-react';
@@ -34,8 +34,8 @@ export function Landing() {
     const { user } = useAuth();
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [pricing, setPricing] = useState({ 
-        monthly: '149', 
+    const [pricing, setPricing] = useState({
+        monthly: '149',
         yearly: '1299'
     });
 
@@ -59,7 +59,7 @@ export function Landing() {
                     }));
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
 
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -87,12 +87,11 @@ export function Landing() {
             </div>
 
             {/* Navigation */}
-            <nav 
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
-                    isScrolled 
-                        ? 'bg-[#0B0B0F]/90 backdrop-blur-xl border-white/[0.08] py-3' 
+            <nav
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${isScrolled
+                        ? 'bg-[#0B0B0F]/90 backdrop-blur-xl border-white/[0.08] py-3'
                         : 'bg-transparent border-transparent py-6'
-                }`}
+                    }`}
             >
                 <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
                     <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
@@ -103,7 +102,7 @@ export function Landing() {
                             ProgressCircle
                         </span>
                     </div>
-                    
+
                     <div className="hidden md:flex items-center gap-10">
                         <NavLink href="#features">Features</NavLink>
                         <NavLink href="#ecosystem">Ecosystem</NavLink>
@@ -112,7 +111,7 @@ export function Landing() {
 
                     <div className="hidden md:flex items-center gap-6">
                         <Link to="/login" className="text-sm font-medium text-white/50 hover:text-white transition-colors">Sign In</Link>
-                        <button 
+                        <button
                             onClick={() => navigate('/login')}
                             className="relative group px-6 py-2.5 bg-white text-[#0B0B0F] text-sm font-bold rounded-full overflow-hidden transition-all hover:scale-[1.03] active:scale-[0.98] shadow-xl shadow-white/5"
                         >
@@ -130,7 +129,7 @@ export function Landing() {
                 {/* Mobile Menu */}
                 <AnimatePresence>
                     {mobileMenuOpen && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
@@ -153,7 +152,7 @@ export function Landing() {
                 {/* Hero Section */}
                 <section className="relative pt-48 pb-32 px-6">
                     <div className="max-w-6xl mx-auto text-center relative z-10">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8 }}
@@ -165,7 +164,7 @@ export function Landing() {
                             </span>
                         </motion.div>
 
-                        <motion.h1 
+                        <motion.h1
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -177,7 +176,7 @@ export function Landing() {
                             </span> <br className="md:hidden" /> with simple precision.
                         </motion.h1>
 
-                        <motion.p 
+                        <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -187,21 +186,21 @@ export function Landing() {
                             Sync your tasks, habits, and biological rhythms into a unified mission.
                         </motion.p>
 
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                             className="flex flex-col sm:flex-row items-center justify-center gap-6"
                         >
-                            <button 
+                            <button
                                 onClick={() => navigate('/login')}
                                 className="group relative w-full sm:w-auto px-10 py-4.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full font-bold text-lg shadow-2xl shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <span>Start Your Mission</span> 
+                                <span>Start Your Mission</span>
                                 <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <button 
+                            <button
                                 className="w-full sm:w-auto px-10 py-4.5 bg-white/[0.03] border border-white/[0.1] rounded-full font-bold text-lg text-white/70 hover:bg-white/[0.06] hover:text-white hover:border-white/20 transition-all active:scale-[0.98]"
                             >
                                 Learn More
@@ -218,7 +217,7 @@ export function Landing() {
                 {/* Features Section */}
                 <section id="features" className="py-32 px-6 border-t border-white/[0.03] relative overflow-hidden">
                     <div className="max-w-7xl mx-auto relative z-10">
-                        <motion.div 
+                        <motion.div
                             initial="initial"
                             whileInView="animate"
                             viewport={{ once: true }}
@@ -230,41 +229,41 @@ export function Landing() {
                                 Experience a set of modules designed to streamline every aspect of your professional and personal life.
                             </motion.p>
                         </motion.div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            <FeatureCard 
-                                icon={<Layers size={24} />} 
-                                title="Master Plan" 
+                            <FeatureCard
+                                icon={<Layers size={24} />}
+                                title="Master Plan"
                                 desc="Advanced task management with mission containers and priority logic."
                                 color="indigo"
                             />
-                            <FeatureCard 
-                                icon={<Activity size={24} />} 
-                                title="Physiological Sync" 
+                            <FeatureCard
+                                icon={<Activity size={24} />}
+                                title="Physiological Sync"
                                 desc="Synchronize your nutrition and fitness with your productivity peaks."
                                 color="violet"
                             />
-                            <FeatureCard 
-                                icon={<BarChart3 size={24} />} 
-                                title="Operational Metrics" 
+                            <FeatureCard
+                                icon={<BarChart3 size={24} />}
+                                title="Operational Metrics"
                                 desc="High-fidelity heatmaps and projected focus session velocity."
                                 color="blue"
                             />
-                            <FeatureCard 
-                                icon={<Zap size={24} />} 
-                                title="Focus Protocols" 
+                            <FeatureCard
+                                icon={<Zap size={24} />}
+                                title="Focus Protocols"
                                 desc="Deep work sessions using Pomodoro and advanced flow states."
                                 color="yellow"
                             />
-                            <FeatureCard 
-                                icon={<Sparkles size={24} />} 
-                                title="Digital Legacy" 
+                            <FeatureCard
+                                icon={<Sparkles size={24} />}
+                                title="Digital Legacy"
                                 desc="Avatar shop, focus farms, and leveling up your digital persona."
                                 color="indigo"
                             />
-                            <FeatureCard 
-                                icon={<Users size={24} />} 
-                                title="Synergy Arena" 
+                            <FeatureCard
+                                icon={<Users size={24} />}
+                                title="Synergy Arena"
                                 desc="Multi-user missions, shared progress, and competitive leaderboards."
                                 color="emerald"
                             />
@@ -305,11 +304,11 @@ export function Landing() {
                                         <div className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase rounded-lg">Top 1%</div>
                                     </div>
                                     <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ width: 0 }}
                                             whileInView={{ width: '82%' }}
                                             transition={{ duration: 1.5, delay: 0.5 }}
-                                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500" 
+                                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
@@ -335,19 +334,19 @@ export function Landing() {
                             <h2 className="text-3xl md:text-5xl font-outfit font-bold mb-6">Simple, fair pricing.</h2>
                             <p className="text-white/40 text-lg">Choose the tier that fits your journey.</p>
                         </div>
-                        
+
                         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl">
-                            <PricingCard 
-                                title="Free Starter" 
-                                price="0" 
+                            <PricingCard
+                                title="Free Starter"
+                                price="0"
                                 period="EGP / forever"
                                 features={FEATURES.map(f => ({ label: f.label, value: f.free }))}
                                 btnText="Get Started"
                                 onAction={() => navigate('/login')}
                             />
-                            <PricingCard 
-                                title="Elite Premium" 
-                                price={pricing.monthly} 
+                            <PricingCard
+                                title="Elite Premium"
+                                price={pricing.monthly}
                                 period="EGP / month"
                                 featured
                                 features={FEATURES.map(f => ({ label: f.label, value: f.premium }))}
@@ -363,13 +362,13 @@ export function Landing() {
                     <div className="max-w-5xl mx-auto bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.08] rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden group">
                         <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-500/10 blur-[100px] group-hover:bg-indigo-500/20 transition-colors duration-1000" />
                         <div className="absolute bottom-0 right-0 w-64 h-64 bg-violet-500/10 blur-[100px] group-hover:bg-violet-500/20 transition-colors duration-1000" />
-                        
+
                         <div className="relative z-10">
                             <h2 className="text-4xl md:text-6xl font-outfit font-bold mb-8 tracking-tight">Ready to master your time?</h2>
                             <p className="text-white/40 text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed font-light">
-                                Join our circle of high-performers today and begin your digital expansion. 
+                                Join our circle of high-performers today and begin your digital expansion.
                             </p>
-                            <button 
+                            <button
                                 onClick={() => navigate('/login')}
                                 className="px-12 py-5 bg-white text-[#0B0B0F] rounded-full font-bold text-xl hover:scale-105 hover:bg-neutral-100 transition-all duration-300 shadow-2xl shadow-white/10 active:scale-95"
                             >
@@ -437,8 +436,8 @@ export function Landing() {
 // Sub-components
 function NavLink({ href, children }) {
     return (
-        <a 
-            href={href} 
+        <a
+            href={href}
             className="relative text-sm font-semibold text-white/40 hover:text-white transition-colors duration-300 py-1 group"
         >
             {children}
@@ -457,7 +456,7 @@ function FeatureCard({ icon, title, desc, color }) {
     };
 
     return (
-        <motion.div 
+        <motion.div
             whileHover={{ y: -8 }}
             className="p-10 bg-white/[0.02] border border-white/[0.05] rounded-[2rem] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-500 group"
         >
@@ -492,11 +491,10 @@ function FeatureValue({ value }) {
 
 function PricingCard({ title, price, period, features, featured = false, btnText, onAction }) {
     return (
-        <div className={`p-10 rounded-[3rem] border transition-all duration-500 flex flex-col relative overflow-hidden ${
-            featured 
-                ? 'bg-gradient-to-b from-indigo-500/[0.07] to-transparent border-indigo-500/30 shadow-2xl shadow-indigo-500/10' 
+        <div className={`p-10 rounded-[3rem] border transition-all duration-500 flex flex-col relative overflow-hidden ${featured
+                ? 'bg-gradient-to-b from-indigo-500/[0.07] to-transparent border-indigo-500/30 shadow-2xl shadow-indigo-500/10'
                 : 'bg-white/[0.02] border-white/[0.05] hover:border-white/10'
-        }`}>
+            }`}>
             {featured && (
                 <div className="absolute top-6 right-8 px-4 py-1.5 bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
                     Most Popular
@@ -517,13 +515,12 @@ function PricingCard({ title, price, period, features, featured = false, btnText
                     </li>
                 ))}
             </ul>
-            <button 
+            <button
                 onClick={onAction}
-                className={`w-full py-5 rounded-full font-bold text-lg transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] ${
-                    featured 
-                        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' 
+                className={`w-full py-5 rounded-full font-bold text-lg transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] ${featured
+                        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30'
                         : 'bg-white/[0.04] border border-white/10 text-white hover:bg-white/10'
-                }`}
+                    }`}
             >
                 {btnText}
             </button>

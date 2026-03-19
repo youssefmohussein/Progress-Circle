@@ -57,6 +57,14 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        xp: { // Alias for points for the Squad XP system
+            type: Number,
+            default: 0,
+        },
+        totalFocusTime: {
+            type: Number,
+            default: 0,
+        },
         streak: {
             type: Number,
             default: 0,
@@ -157,18 +165,19 @@ const userSchema = new mongoose.Schema(
             paymobOrderId: { type: String, default: '' },
             paymobTransactionId: { type: String, default: '' }
         },
-        followers: [{
+        friends: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
         }],
-        following: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
+        friendRequests: [{
+            sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            status: { type: String, enum: ['pending'], default: 'pending' },
+            createdAt: { type: Date, default: Date.now }
         }],
         socialStats: {
             battlesWon: { type: Number, default: 0 },
-            orbsSent: { type: Number, default: 0 },
-            synergyPoints: { type: Number, default: 0 },
+            squadPoints: { type: Number, default: 0 },
+            roomsJoined: { type: Number, default: 0 },
             dailyPoints: [{
                 date: { type: Date },
                 points: { type: Number }

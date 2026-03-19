@@ -40,7 +40,7 @@ export function NotificationCenter() {
         try {
             await api.put('/notifications/read-all');
             setNotifications(notifications.map(n => ({ ...n, status: 'read' })));
-            toast.success('All neural nodes synchronized.');
+            toast.success('All notifications marked as read.');
         } catch (error) {
             toast.error('Batch sync failed.');
         }
@@ -94,24 +94,24 @@ export function NotificationCenter() {
                             style={{ maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
                         >
                             <div className="p-4 border-b border-border/10 flex items-center justify-between">
-                                <h3 className="font-black text-sm tracking-tight">Neural Alert Hub</h3>
+                                <h3 className="font-black text-sm tracking-tight">Notification Center</h3>
                                 {unreadCount > 0 && (
                                     <button 
                                         onClick={markAllRead}
                                         className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-widest"
                                     >
-                                        Sync All
+                                        Read All
                                     </button>
                                 )}
                             </div>
 
                             <div className="flex-1 overflow-y-auto min-h-[100px] max-h-[400px]">
                                 {loading && notifications.length === 0 ? (
-                                    <div className="p-8 text-center text-xs text-muted">Scanning for alerts...</div>
+                                    <div className="p-8 text-center text-xs text-muted">Checking for notifications...</div>
                                 ) : notifications.length === 0 ? (
                                     <div className="p-12 text-center text-muted flex flex-col items-center gap-3">
                                         <Bell size={32} className="opacity-10" />
-                                        <p className="text-xs">No active neural alerts found.</p>
+                                        <p className="text-xs">No active notifications found.</p>
                                     </div>
                                 ) : (
                                     <div className="divide-y divide-border/5">
