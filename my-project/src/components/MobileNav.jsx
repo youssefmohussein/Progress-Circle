@@ -15,7 +15,7 @@ export function MobileNav({ onQuickAdd }) {
     const navItems = [
         { path: '/', icon: LayoutDashboard, label: 'Home' },
         { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
-        { path: '/social', icon: Users, label: 'Social' },
+        { path: '/squad', icon: Users, label: 'Squad' },
         { path: '/profile', icon: User, label: 'Me' },
     ];
 

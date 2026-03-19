@@ -64,7 +64,7 @@ const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handle
                         <h3 className={`font-bold text-[16px] truncate ${task.status === 'completed' ? 'line-through text-muted' : ''}`}>
                             {task.title}
                         </h3>
-                        {task.isBigTask && <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500 text-[10px] font-black uppercase rounded-md flex items-center gap-1"><Layout size={10} /> Container</span>}
+                        {task.isBigTask && <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500 text-[10px] font-black uppercase rounded-md flex items-center gap-1"><Layout size={10} /> Project</span>}
                         <PriorityBadge priority={task.priority} />
                         {category && (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1" style={{ backgroundColor: `${category.color}20`, color: category.color }}>
@@ -161,7 +161,7 @@ const TaskItem = ({ task, tasks, categories, expandedTasks, toggleExpand, handle
 
 export function Tasks() {
     const { user } = useAuth();
-    useSEO('Task Engine', 'Manage tasks, set priorities, track deadlines, and break down goals with the ProgressCircle task engine.');
+    useSEO('Task Manager', 'Manage tasks, set priorities, track deadlines, and break down goals with the ProgressCircle task manager.');
     const { tasks, categories, addTask, updateTask, deleteTask } = useData();
     const [filter, setFilter] = useState('All');
     const [modalOpen, setModalOpen] = useState(false);
@@ -279,16 +279,16 @@ export function Tasks() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
                     <div className="flex items-center gap-3">
-                        <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>Master Plan</h1>
+                        <h1 className="font-extrabold pc-gradient-text tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.6rem, 6vw, 2.25rem)' }}>My Tasks</h1>
                         <PageInsight 
-                            title="Central Intelligence Task Engine"
-                            intro="The core operational layer for objective decomposition. Architect complex missions into manageable micro-targets and monitor execution velocity."
+                            title="Task Manager"
+                            intro="The core layer for breaking down your objectives. Architect complex goals into manageable steps and monitor your execution speed."
                             operations={[
-                                { title: 'Objective Decomposition', content: 'Fragment large-scale goals into atomic tasks with assigned priorities and urgency.' },
-                                { title: 'Strategic Categorization', content: 'Organize operations into functional sectors like Work, Personal, and Strategy.' },
-                                { title: 'Status Synchronization', content: 'Real-time monitoring of task completion states from Initial to Complete.' }
+                                { title: 'Task Breakdown', content: 'Break large-scale goals into small tasks with assigned priorities and urgency.' },
+                                { title: 'Categorization', content: 'Organize your work into functional sectors like Work, Personal, and Goals.' },
+                                { title: 'Progress Tracking', content: 'Real-time monitoring of task completion states from Pending to Finished.' }
                             ]}
-                            neuralTip="Defining a 'Target Outcome' for each task before execution increases focus density by up to 40%."
+                            neuralTip="Defining a 'Result' for each task before starting increases focus by up to 40%."
                         />
                     </div>
                     <p className="text-xs text-muted font-medium mt-1 uppercase tracking-[0.2em]">{tasks.length} total · {tasks.filter(t => t.status === 'completed').length} done</p>
@@ -340,7 +340,7 @@ export function Tasks() {
                 </div>
             )}
 
-            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editTask ? "Review Node" : (form.isBigTask ? "New Big Task" : "New Task")}>
+            <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editTask ? "Edit Task" : (form.isBigTask ? "New Project" : "New Task")}>
                 <div className="space-y-5">
                     <div>
                         <label className="block text-[11px] font-black text-muted uppercase tracking-[0.15em] mb-2">Title</label>
@@ -415,7 +415,7 @@ export function Tasks() {
                             </div>
                         )}
                         {user?.plan !== 'premium' && (
-                            <p className="text-[10px] text-muted italic">Break tasks into measurable steps with counters.</p>
+                            <p className="text-[10px] text-muted italic">Break tasks into measurable steps using counters.</p>
                         )}
                     </div>
 
@@ -490,16 +490,16 @@ export function Tasks() {
                         <input type="checkbox" className="hidden" checked={form.isSynergyTask} onChange={(e) => setForm({ ...form, isSynergyTask: e.target.checked })} />
                         <div className="flex-1">
                             <div className="flex items-center gap-2">
-                                <p className="text-xs font-black text-white uppercase tracking-widest">Synergy Protocol</p>
+                                <p className="text-xs font-black text-white uppercase tracking-widest">Squad Focus</p>
                                 <Zap size={12} className="text-indigo-400" />
                             </div>
-                            <p className="text-[10px] text-muted">1.5x Multiplier / Shared Progress</p>
+                            <p className="text-[10px] text-muted">1.5x Multiplier / Group Progress</p>
                         </div>
                     </label>
 
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <label className="block text-[11px] font-black text-muted uppercase tracking-[0.15em]">Project Notes</label>
+                            <label className="block text-[11px] font-black text-muted uppercase tracking-[0.15em]">Task Notes</label>
                             {user?.plan !== 'premium' && <Crown size={12} className="text-amber-500" />}
                         </div>
                         <textarea 
@@ -515,7 +515,7 @@ export function Tasks() {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                        <Button className="flex-1 h-12 text-lg" loading={saving} onClick={handleSave}>{editTask ? 'Update Plan' : 'Commit to Life'}</Button>
+                        <Button className="flex-1 h-12 text-lg" loading={saving} onClick={handleSave}>{editTask ? 'Update Task' : 'Add Task'}</Button>
                         <Button variant="secondary" onClick={() => setModalOpen(false)}>Back</Button>
                     </div>
                 </div>

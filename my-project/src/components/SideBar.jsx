@@ -42,8 +42,7 @@ function getNavItems(user) {
     }
 
     if (user?.synergyEnabled) {
-        base.push({ path: '/synergy', icon: Shield, label: 'Synergy' });
-        base.push({ path: '/social', icon: Users, label: 'Social' });
+        base.push({ path: '/squad', icon: Users, label: 'Squad' });
     }
     base.push({ path: '/leaderboard', icon: Trophy, label: 'Board' });
     base.push({ path: '/profile', icon: User, label: 'Profile' });

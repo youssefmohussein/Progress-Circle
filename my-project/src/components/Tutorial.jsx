@@ -53,8 +53,8 @@ export function Tutorial() {
             content: (
                 <div>
                     <h3 className="text-xl font-black mb-3 pc-gradient-text" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Welcome to ProgressCircle</h3>
-                    <p className="text-sm font-medium text-gray-300 mb-2">Let's take a deep, professional dive into our premium productivity ecosystem.</p>
-                    <p className="text-xs text-indigo-400 font-bold tracking-wider uppercase">Your Command Center</p>
+                    <p className="text-sm font-medium text-gray-300 mb-2">Let's take a quick tour of your new productivity dashboard.</p>
+                    <p className="text-xs text-indigo-400 font-bold tracking-wider uppercase">Your Dashboard</p>
                 </div>
             ),
             placement: 'center',
@@ -66,7 +66,7 @@ export function Tutorial() {
             content: (
                 <div>
                     <h3 className="text-lg font-black mb-2 text-white">The Dashboard</h3>
-                    <p className="text-sm font-medium text-gray-300">This is where your productivity starts. The AI synthesizes everything to give you absolute clarity on your day.</p>
+                    <p className="text-sm font-medium text-gray-300">This is where your productivity starts. Track your tasks and focus time in one place.</p>
                 </div>
             ),
             placement: 'right',
@@ -76,8 +76,8 @@ export function Tutorial() {
             target: '#tour-nav-tasks',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Central Intelligence Task Engine</h3>
-                    <p className="text-sm font-medium text-gray-300">Break massive goals into micro-tasks, set priority levels, and track overarching milestones across all spheres of life.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Task Manager</h3>
+                    <p className="text-sm font-medium text-gray-300">Break massive goals into small tasks, set priority levels, and track your progress.</p>
                 </div>
             ),
             placement: 'right',
@@ -87,8 +87,8 @@ export function Tutorial() {
             target: '#tour-nav-planner',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Tactical Planner</h3>
-                    <p className="text-sm font-medium text-gray-300">Visualize your week ahead. Timeblock tasks intelligently into deep-work sessions or light work routines.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Weekly Planner</h3>
+                    <p className="text-sm font-medium text-gray-300">Visualize your week ahead. Plan your tasks and schedule deep-work sessions.</p>
                 </div>
             ),
             placement: 'right',
@@ -101,8 +101,8 @@ export function Tutorial() {
             target: '#tour-nav-habits',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Habit Protocol</h3>
-                    <p className="text-sm font-medium text-gray-300">Build atomic routines. Track daily completion to construct unbreakable streaks and rewire your foundation.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Habit Tracker</h3>
+                    <p className="text-sm font-medium text-gray-300">Build better routines. Track daily completion to build long-term consistency.</p>
                 </div>
             ),
             placement: 'right',
@@ -115,8 +115,8 @@ export function Tutorial() {
             target: '#tour-nav-savings',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Financial Matrix</h3>
-                    <p className="text-sm font-medium text-gray-300">Track incoming revenue and expenses. Achieve your savings goals to fund your freedom.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Savings Tracker</h3>
+                    <p className="text-sm font-medium text-gray-300">Track your income and expenses. Achieve your savings goals faster.</p>
                 </div>
             ),
             placement: 'right',
@@ -129,8 +129,8 @@ export function Tutorial() {
             target: '#tour-nav-fitness',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Physical Optimization</h3>
-                    <p className="text-sm font-medium text-gray-300">Log hypertrophy sessions, monitor intensity, and track biometric progress alongside mental focus.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Fitness Tracking</h3>
+                    <p className="text-sm font-medium text-gray-300">Log your workouts, monitor your intensity, and track your physical progress.</p>
                 </div>
             ),
             placement: 'right',
@@ -157,8 +157,8 @@ export function Tutorial() {
             target: '#tour-nav-synergy',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Synergy Multiplayer</h3>
-                    <p className="text-sm font-medium text-gray-300">Enter the Battle Arena. Compete in real-time focus sessions alongside elite operators.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Squad Rooms</h3>
+                    <p className="text-sm font-medium text-gray-300">Work with friends. Stay accountable. Join focus rooms to stay productive together.</p>
                 </div>
             ),
             placement: 'right',
@@ -168,8 +168,8 @@ export function Tutorial() {
             target: '#tour-nav-social',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Global Network</h3>
-                    <p className="text-sm font-medium text-gray-300">Connect with comrades, form alliances, and track collective productivity milestones.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Friends</h3>
+                    <p className="text-sm font-medium text-gray-300">Connect with your friends, send requests, and track combined productivity.</p>
                 </div>
             ),
             placement: 'right',
@@ -181,8 +181,8 @@ export function Tutorial() {
         target: '#tour-nav-leaderboard',
         content: (
             <div>
-                <h3 className="text-lg font-black mb-2 text-white">Global Rankings</h3>
-                <p className="text-sm font-medium text-gray-300">See where you stand against the top operators globally based on pure focus minutes and completed tasks.</p>
+                <h3 className="text-lg font-black mb-2 text-white">Global Leaderboard</h3>
+                <p className="text-sm font-medium text-gray-300">See where you stand against users worldwide based on target focus time and tasks.</p>
             </div>
         ),
         placement: 'right',
@@ -205,8 +205,8 @@ export function Tutorial() {
         target: '#tour-quick-focus',
         content: (
             <div>
-                <h3 className="text-lg font-black mb-2 text-white">Quick Focus Ignition</h3>
-                <p className="text-sm font-medium text-gray-300">Need zero distractions? Located universally at the top right, this triggers the Focus Mode matrix to shut out the world.</p>
+                <h3 className="text-lg font-black mb-2 text-white">Focus Mode</h3>
+                <p className="text-sm font-medium text-gray-300">Need zero distractions? Trigger Focus Mode to shut out the world and concentrate on your work.</p>
             </div>
         ),
         placement: 'bottom-end',
@@ -217,8 +217,8 @@ export function Tutorial() {
         target: '#tour-profile',
         content: (
             <div>
-                <h3 className="text-lg font-black mb-2 text-white">Your Operator Profile</h3>
-                <p className="text-sm font-medium text-gray-300">Toggle powerful modules like Fitness and Savings here, analyze overall XP, and edit application preferences.</p>
+                <h3 className="text-lg font-black mb-2 text-white">Your Profile</h3>
+                <p className="text-sm font-medium text-gray-300">Toggle modules like Fitness and Savings, check your points, and manage your account settings.</p>
             </div>
         ),
         placement: 'right',
@@ -232,8 +232,8 @@ export function Tutorial() {
             target: '#tour-progress-brain',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Neural Progress Ring</h3>
-                    <p className="text-sm font-medium text-gray-300">A live readout of how close you are to closing out your day. It tracks deep focus minutes vs objective completion probability.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Daily Progress Ring</h3>
+                    <p className="text-sm font-medium text-gray-300">A live readout of how close you are to finishing your tasks and focus goals for the day.</p>
                 </div>
             ),
             placement: 'right',
@@ -243,8 +243,8 @@ export function Tutorial() {
             target: '#tour-smart-suggestion',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">A.I. Strategic Assessor</h3>
-                    <p className="text-sm font-medium text-gray-300">The engine scans your calendar free time and pending tasks, actively computing if you have the bandwidth for deep work.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Smart Assistant</h3>
+                    <p className="text-sm font-medium text-gray-300">The assistant checks your schedule and pending tasks to suggest the best times for deep work.</p>
                 </div>
             ),
             placement: 'bottom',
@@ -254,8 +254,8 @@ export function Tutorial() {
             target: '#tour-next-critical',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Critical Threat Warning</h3>
-                    <p className="text-sm font-medium text-gray-300">If a deadline is looming within 24 hours, it appears here to eliminate the possibility of forgotten missions.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Deadline Warnings</h3>
+                    <p className="text-sm font-medium text-gray-300">Critical deadlines within 24 hours appear here so you never miss an important task.</p>
                 </div>
             ),
             placement: 'bottom',
@@ -265,8 +265,8 @@ export function Tutorial() {
             target: '#tour-activity-timeline',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Live Operations Log</h3>
-                    <p className="text-sm font-medium text-gray-300">An immutable stream of every task completed and focus session won today. See your momentum visualised chronologically.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Activity Timeline</h3>
+                    <p className="text-sm font-medium text-gray-300">A history of every task you've completed and focus session you've finished today.</p>
                 </div>
             ),
             placement: 'right',
@@ -276,8 +276,8 @@ export function Tutorial() {
             target: '#tour-weekly-insights',
             content: (
                 <div>
-                    <h3 className="text-lg font-black mb-2 text-white">Weekly Delta Analysis</h3>
-                    <p className="text-sm font-medium text-gray-300">Track task completions vs focus energy day-by-day. Identify your most productive periods and eliminate bottlenecks.</p>
+                    <h3 className="text-lg font-black mb-2 text-white">Weekly Performance</h3>
+                    <p className="text-sm font-medium text-gray-300">Track your progress over the week. Identify your most productive days and stay consistent.</p>
                 </div>
             ),
             placement: 'top',

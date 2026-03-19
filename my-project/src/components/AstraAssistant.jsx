@@ -83,9 +83,9 @@ export function AstraAssistant() {
                         </div>
                     </div>
                     
-                    <h3 className="text-sm font-black uppercase tracking-widest mb-2">Astra Intelligence</h3>
+                    <h3 className="text-sm font-black uppercase tracking-widest mb-2">Astra Assistant</h3>
                     <p className="text-[11px] text-pc-muted mb-5 max-w-[200px] leading-relaxed">
-                        Unlock Astra for personalized Captain's Logs, habit insights, and trajectory predictions.
+                        Unlock Astra for personalized productivity logs, habit insights, and daily predictions.
                     </p>
                     
                     <Link to="/pricing">
@@ -139,7 +139,7 @@ export function AstraAssistant() {
                         Astra Assistant
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     </h3>
-                    <p className="text-[10px] text-pc-muted font-bold">Intelligent Core Online</p>
+                    <p className="text-[10px] text-pc-muted font-bold">Assistant Online</p>
                 </div>
             </div>
 
@@ -147,7 +147,7 @@ export function AstraAssistant() {
                 {loading ? (
                     <div className="flex items-center gap-2 text-[10px] text-pc-muted animate-pulse">
                         <Zap size={12} className="animate-bounce" />
-                        Scanning mission data...
+                        Scanning activity data...
                     </div>
                 ) : (
                     <p className="text-[11px] leading-relaxed text-indigo-50/90 italic font-medium">
@@ -197,7 +197,7 @@ export function AstraAssistant() {
                     </div>
                     <div className="flex-1">
                         <p className="text-[10px] font-black text-primary leading-tight uppercase tracking-tight mb-0.5">
-                            Astra Strategic Directive
+                            Astra Recommendation
                         </p>
                         <p className="text-[9px] text-pc-muted font-bold leading-relaxed">
                             {analysis.recommendation}
@@ -207,14 +207,14 @@ export function AstraAssistant() {
             )}
 
             <div className="mt-5 flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase tracking-widest text-pc-muted">Core Trajectory Locked</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-pc-muted">Growth Path Locked</span>
                 
                 <button 
                     onClick={() => fetchAnalysis(true)}
                     disabled={loading || isTyping}
                     className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 hover:gap-2 transition-all disabled:opacity-30"
                 >
-                    Recalibrate <ChevronRight size={12} />
+                    Refresh <ChevronRight size={12} />
                 </button>
             </div>
         </motion.div>

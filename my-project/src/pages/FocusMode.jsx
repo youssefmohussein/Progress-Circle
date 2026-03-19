@@ -31,27 +31,27 @@ export function FocusMode() {
     ];
 
     const focusBriefing = {
-        title: "Neural Focus Protocol",
-        intro: "A high-fidelity environment designed for deep cognitive engagement. Utilize the Command Center to synchronize your operative goals with surgical time management.",
+        title: "Smart Focus Mode",
+        intro: "A clean environment designed for deep work. Use the session timer to stay on track and manage your time effectively.",
         operations: [
             { 
-                title: "Protocol Selection", 
-                content: "Choose between Pomodoro, 52/17, 90-Minute, or Deep Work sequences based on your current cognitive load and objective complexity." 
+                title: "Timer Selection", 
+                content: "Choose between Pomodoro, 52/17, 90-Minute, or Deep Work sessions based on your needs." 
             },
             { 
-                title: "Mission Assignment", 
-                content: "Attach a specific mission (Task) from your Central Intelligence hub to ensure every focus cycle contributes to a high-level objective." 
+                title: "Task Assignment", 
+                content: "Attach a task to your session to ensure you stay productive and meet your goals." 
             },
             { 
-                title: "Operative Notes", 
-                content: "Document real-time insights and technical blockers within the Focus Clock to maintain analytical clarity across multiple sessions." 
+                title: "Focus Notes", 
+                content: "Record thoughts or distractions during your session to review later." 
             },
             { 
-                title: "Sequence Archiving", 
-                content: "Upon completion, your session data is automatically synchronized with the Mission Logs Archive for long-term behavioral auditing." 
+                title: "Session History", 
+                content: "Your focus data is automatically saved to your history for long-term tracking." 
             }
         ],
-        neuralTip: "Intermittent 'Infinite Flow' sessions are recommended for creative ideation phases where temporal constraints hinder cognitive expansion."
+        neuralTip: "Try 'Infinite Flow' for creative work where you don't want to be interrupted by a timer."
     };
 
     return (
@@ -64,7 +64,7 @@ export function FocusMode() {
                 <div className="flex items-center justify-between px-2">
                     <Link to="/" className="relative z-[110] flex items-center gap-3 text-pc-muted hover:text-white transition-all text-xs font-black uppercase tracking-widest group">
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> 
-                        <span className="hidden sm:inline">Back to Reality</span>
+                        <span className="hidden sm:inline">Back to Dashboard</span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <button 
@@ -72,11 +72,11 @@ export function FocusMode() {
                             className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition-all"
                         >
                             <History size={14} className="text-[#818cf8]" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#818cf8]">Mission Logs</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#818cf8]">Session History</span>
                         </button>
                         <PageInsight {...focusBriefing} />
                         <div className="h-px w-12 bg-indigo-500/20 hidden md:block" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#818cf8] animate-pulse">Neural Focus Protocol v2.2</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#818cf8] animate-pulse">Smart Focus v2.2</p>
                     </div>
                 </div>
 
@@ -131,11 +131,11 @@ export function FocusMode() {
                 )}
             </AnimatePresence>
 
-            <Modal open={isLogsOpen} onClose={() => setIsLogsOpen(false)} title="Mission Logs Archive" maxWidth="800px">
+            <Modal open={isLogsOpen} onClose={() => setIsLogsOpen(false)} title="Focus Session History" maxWidth="800px">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
                     {recentSessions.length === 0 ? (
                         <div className="col-span-full py-12 text-center pc-card bg-white/[0.01]">
-                            <p className="text-xs text-pc-muted italic">No logs found in the neural archive.</p>
+                            <p className="text-xs text-pc-muted italic">No sessions found in history.</p>
                         </div>
                     ) : (
                         recentSessions.map((session, idx) => (
@@ -159,7 +159,7 @@ export function FocusMode() {
                                         {session.notes}
                                     </p>
                                 ) : (
-                                    <p className="text-xs text-pc-muted/50 italic mb-4">No operative notes recorded.</p>
+                                    <p className="text-xs text-pc-muted/50 italic mb-4">No focus notes recorded.</p>
                                 )}
                                 
                                 <div className="pt-3 border-t border-white/5 flex items-center justify-between">

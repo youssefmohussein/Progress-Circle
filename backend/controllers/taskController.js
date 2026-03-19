@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Battle = require('../models/Battle');
 const { createSystemNotification } = require('./notificationController');
 const Notification = require('../models/Notification');
+const SquadActivity = require('../models/SquadActivity');
 
 const TASK_POINTS = 10;
 
@@ -182,6 +183,13 @@ const updateTask = async (req, res, next) => {
             // if lastDate === today, streak is already counted for today
 
             await User.findByIdAndUpdate(req.user._id, update);
+
+            // Log Squad Activity
+            await SquadActivity.create({
+                user: req.user._id,
+                type: 'task_completed',
+                details: `completed "${task.title}"`
+            });
         } else if (wasCompleted && !isNowCompleted) {
             // Deduct points if task completion is undone
             await User.findByIdAndUpdate(req.user._id, { $inc: { points: -TASK_POINTS } });

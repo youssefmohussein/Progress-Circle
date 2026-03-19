@@ -44,7 +44,7 @@ export default function FocusBattleArena() {
                 setMessageInput('');
             }
         } catch (err) {
-            toast.error('Signal transmission failed');
+            toast.error('Message failed to send');
         }
     };
 
@@ -53,7 +53,7 @@ export default function FocusBattleArena() {
             const res = await api.patch(`/social/battle/extend/${id}`, { minutes: mins });
             if (res.data.success) {
                 setBattle(res.data.data);
-                toast.success(`Temporal field extended by ${mins}m`);
+                toast.success(`Session extended by ${mins}m`);
                 setExtending(false);
             }
         } catch (err) {
@@ -67,7 +67,7 @@ export default function FocusBattleArena() {
             if (res.data.success) {
                 setBattle(res.data.data);
                 const taskFinished = res.data.data.participants.find(p => p.user?._id === (currentUser?._id || currentUser?.id))?.battleTasks.find(t => t._id === taskId)?.status === 'completed';
-                if (taskFinished) toast.success('Mission Accomplished! +50 XP');
+                if (taskFinished) toast.success('Task Finished! +50 Points');
             }
         } catch (err) {
             toast.error('Sync failed');
@@ -110,7 +110,7 @@ export default function FocusBattleArena() {
             const res = await api.patch(`/social/battle/control/${id}`, { action });
             if (res.data.success) {
                 setBattle(res.data.data);
-                toast.success(`Protocol ${action}ed`);
+                toast.success(`Focus ${action}ed`);
             }
         } catch (err) {
             toast.error('Command failed');
@@ -124,7 +124,7 @@ export default function FocusBattleArena() {
                 targetUserId: targetUserId || currentUser?._id || currentUser?.id 
             });
             if (res.data.success) {
-                toast.success('Mission deployed to Arena');
+                toast.success('Task added to Room');
                 fetchBattle();
             }
         } catch (err) {
@@ -151,8 +151,8 @@ export default function FocusBattleArena() {
     if (!me) {
         return (
             <div className="text-center py-20 flex flex-col items-center gap-4">
-                <p className="text-white/60 font-bold">Protocol Alignment Error: Identity not synced with this Arena.</p>
-                <Button onClick={() => navigate('/social')} variant="secondary">Return to Social</Button>
+                <p className="text-white/60 font-bold">Identity Error: You are not in this Room.</p>
+                <Button onClick={() => navigate('/squad')} variant="secondary">Return to Squad</Button>
             </div>
         );
     }
@@ -165,7 +165,7 @@ export default function FocusBattleArena() {
                     <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.2)]">
                         <Swords size={18} />
                     </div>
-                    <h1 className="text-sm font-black uppercase tracking-[0.2em] text-white">Strategic Room <span className="text-muted opacity-50 underline decoration-rose-500/50 underline-offset-4">ID-{id.slice(-4)}</span></h1>
+                    <h1 className="text-sm font-black uppercase tracking-[0.2em] text-white">Focus Room <span className="text-muted opacity-50 underline decoration-rose-500/50 underline-offset-4">ID-{id.slice(-4)}</span></h1>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -173,7 +173,7 @@ export default function FocusBattleArena() {
                         <div className={`w-2 h-2 rounded-full ${battle.status === 'active' ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-amber-500'}`} />
                         <span className="text-[10px] font-black uppercase text-muted tracking-widest">{battle.status}</span>
                     </div>
-                    <button onClick={() => navigate('/social')} className="p-2 text-muted hover:text-white transition-colors">
+                    <button onClick={() => navigate('/squad')} className="p-2 text-muted hover:text-white transition-colors">
                         <LogOut size={20} />
                     </button>
                 </div>
@@ -186,9 +186,9 @@ export default function FocusBattleArena() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Target size={14} className="text-indigo-400" /> My Missions
+                                <Target size={14} className="text-indigo-400" /> My Tasks
                             </h3>
-                            <span className="text-[9px] font-black text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">{me.tasksCompleted} FINISHED</span>
+                            <span className="text-[9px] font-black text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">{me.tasksCompleted} DONE</span>
                         </div>
                         <div className="space-y-3">
                             {me.battleTasks?.length > 0 ? me.battleTasks.map((task) => (
@@ -212,7 +212,7 @@ export default function FocusBattleArena() {
                                 </div>
                             )) : (
                                 <div className="p-8 text-center border-2 border-dashed border-white/5 rounded-2xl">
-                                    <p className="text-[10px] font-black text-muted uppercase">No Missions Staked</p>
+                                    <p className="text-[10px] font-black text-muted uppercase">No Tasks Assigned</p>
                                 </div>
                             )}
                             <Button 
@@ -221,7 +221,7 @@ export default function FocusBattleArena() {
                                 icon={Zap}
                                 onClick={() => { setTargetUserId(currentUser?._id || currentUser?.id); setShowTaskSelector(true); }}
                             >
-                                Stake Mission
+                                Add Task
                             </Button>
                         </div>
                     </div>
@@ -229,7 +229,7 @@ export default function FocusBattleArena() {
                     {/* Shared Intelligence: Other Participants */}
                     <div className="space-y-6 pt-6 border-t border-white/5">
                         <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
-                            <Activity size={14} className="text-rose-400" /> Room Intel
+                            <Activity size={14} className="text-rose-400" /> Room Activity
                         </h3>
                         <div className="space-y-8">
                             {battle.participants.filter(p => (p.user?._id || p.user?.id || p.user) !== (currentUser?._id || currentUser?.id)).map((peer) => (
@@ -248,14 +248,14 @@ export default function FocusBattleArena() {
                                                 <span className={`text-[10px] font-bold truncate flex-1 ${t.status === 'completed' ? 'text-white/20 line-through' : 'text-white/60'}`}>{t.title}</span>
                                             </div>
                                         )) : (
-                                            <p className="text-[9px] text-center text-muted font-bold italic py-2">No active missions...</p>
+                                            <p className="text-[9px] text-center text-muted font-bold italic py-2">No active tasks...</p>
                                         )}
                                         {isHost && (
                                             <button 
                                                 onClick={() => { setTargetUserId(peer.user?._id); setShowTaskSelector(true); }}
                                                 className="w-full py-1.5 rounded-lg border border-dashed border-white/10 text-[8px] font-black uppercase text-muted hover:text-rose-400 hover:border-rose-400/30 transition-all flex items-center justify-center gap-2"
                                             >
-                                                <Plus size={10} /> Assign Mission
+                                                <Plus size={10} /> Assign Task
                                             </button>
                                         )}
                                     </div>
@@ -281,20 +281,20 @@ export default function FocusBattleArena() {
                                 {formatTime(timeLeft)}
                             </motion.div>
                             <div className="flex flex-col items-center gap-2">
-                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Strategic Countdown Engaged</p>
+                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">Focus Session In Progress</p>
                                 {isHost && (
                                     <div className="flex gap-2 mt-4">
                                         <button 
                                             onClick={() => handleExtend(10)}
                                             className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black uppercase text-muted hover:text-white hover:border-indigo-500/50 transition-all"
                                         >
-                                            +10M Extension
+                                            +10m Extension
                                         </button>
                                         <button 
                                             onClick={() => handleExtend(25)}
                                             className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black uppercase text-muted hover:text-white hover:border-indigo-500/50 transition-all"
                                         >
-                                            +25M Protocol
+                                            +25m Session
                                         </button>
                                     </div>
                                 )}
@@ -345,11 +345,11 @@ export default function FocusBattleArena() {
                         {isHost && (
                             <div className="flex justify-center gap-4 pt-8 border-t border-white/5">
                                 {battle.status === 'paused' ? (
-                                    <Button icon={Play} onClick={() => handleControl('resume')} className="bg-emerald-600 shadow-lg shadow-emerald-600/20 px-8 py-6 text-sm">Resume Protocol</Button>
+                                    <Button icon={Play} onClick={() => handleControl('resume')} className="bg-emerald-600 shadow-lg shadow-emerald-600/20 px-8 py-6 text-sm">Resume Focus</Button>
                                 ) : (
-                                    <Button icon={Pause} onClick={() => handleControl('pause')} variant="secondary" className="px-8 py-6 text-sm">Intermission</Button>
+                                    <Button icon={Pause} onClick={() => handleControl('pause')} variant="secondary" className="px-8 py-6 text-sm">Pause Session</Button>
                                 )}
-                                <Button icon={X} onClick={() => handleControl('end')} className="bg-rose-600 shadow-lg shadow-rose-600/20 px-8 py-6 text-sm">Terminate Arena</Button>
+                                <Button icon={X} onClick={() => handleControl('end')} className="bg-rose-600 shadow-lg shadow-rose-600/20 px-8 py-6 text-sm">End Room</Button>
                             </div>
                         )}
                      </div>
@@ -360,7 +360,7 @@ export default function FocusBattleArena() {
                     <div className="flex-1 space-y-6 overflow-y-auto pc-scrollbar pr-2">
                         <div className="space-y-4">
                              <h3 className="text-[10px] font-black text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                                <Activity size={14} className="text-rose-400" /> Arena Comms
+                                <Activity size={14} className="text-rose-400" /> Room Activity
                             </h3>
                             <div className="space-y-3">
                                 {[...(battle.logs || [])].reverse().slice(0, 10).map((log, i) => (
@@ -374,7 +374,7 @@ export default function FocusBattleArena() {
 
                         <div className="space-y-4 pt-4 border-t border-white/5 max-h-[50%] flex flex-col overflow-hidden">
                             <h3 className="text-[10px] font-black text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                                <MessageSquare size={14} className="text-indigo-400" /> Active Channel
+                                <MessageSquare size={14} className="text-indigo-400" /> Room Chat
                             </h3>
                             <div className="flex-1 space-y-4 overflow-y-auto pc-scrollbar pr-2">
                                 {battle.messages?.map((msg, i) => {
@@ -403,7 +403,7 @@ export default function FocusBattleArena() {
                                 value={messageInput}
                                 onChange={(e) => setMessageInput(e.target.value)}
                                 onKeyPress={handleSendMessage}
-                                placeholder="Transmit signal to peer..."
+                                placeholder="Send a message..."
                                 className="pc-input w-full pl-11 h-12 text-xs font-bold bg-white/[0.02] focus:bg-white/[0.05]"
                             />
                          </div>
@@ -429,7 +429,7 @@ export default function FocusBattleArena() {
                             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0D0D0F] border border-white/10 rounded-3xl p-8 z-[61] shadow-2xl"
                         >
                             <h2 className="text-xl font-black text-white mb-6 uppercase tracking-tight flex items-center gap-3">
-                                <Target size={20} className="text-indigo-500" /> Stake Mission
+                                <Target size={20} className="text-indigo-500" /> Assign Task
                             </h2>
                             <div className="space-y-2 max-h-80 overflow-y-auto pc-scrollbar pr-2">
                                 {myTasks.filter(t => !me.battleTasks.some(bt => bt._id === t._id)).map(task => (
@@ -444,9 +444,9 @@ export default function FocusBattleArena() {
                                         <span className="text-sm font-bold text-white truncate">{task.title}</span>
                                     </button>
                                 ))}
-                                {myTasks.length === 0 && <p className="text-center py-8 text-xs text-muted font-bold">No missions available to stake.</p>}
+                                {myTasks.length === 0 && <p className="text-center py-8 text-xs text-muted font-bold">No tasks available to assign.</p>}
                             </div>
-                            <Button variant="secondary" className="w-full mt-6 h-12" onClick={() => setShowTaskSelector(false)}>Cancel Projection</Button>
+                            <Button variant="secondary" className="w-full mt-6 h-12" onClick={() => setShowTaskSelector(false)}>Cancel</Button>
                         </motion.div>
                     </>
                 )}

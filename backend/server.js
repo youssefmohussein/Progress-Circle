@@ -35,8 +35,8 @@ const aiRoutes = require('./routes/aiRoutes');
 const promoCodeRoutes = require('./routes/promoCodeRoutes');
 const financeRoutes = require('./routes/financeRoutes');
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB (Note: connection is initiated at bottom for startServer control)
+// connectDB();
 
 const app = express();
 
@@ -46,13 +46,25 @@ app.use(mongoSanitize()); // Prevent NoSQL Injection
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
-const allowedOrigin = process.env.FRONTEND_URL?.replace(/\/$/, '') || 'http://localhost:5173';
+const allowedOrigins = [
+    process.env.FRONTEND_URL?.replace(/\/$/, ''),
+    'https://progress-circle-theta.vercel.app',
+    'http://localhost:5173'
+].filter(Boolean);
 
 app.use(
     cors({
-        origin: allowedOrigin,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin) return callback(null, true);
+            if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
         credentials: true
     })
 );
@@ -147,4 +159,11 @@ const startServer = (port) => {
 };
 
 const PORT = parseInt(process.env.PORT) || 5000;
-startServer(PORT);
+
+// Connect to DB then start server
+connectDB().then(() => {
+    startServer(PORT);
+}).catch(err => {
+    console.error('Failed to start server due to DB connection error:', err.message);
+    process.exit(1);
+});
