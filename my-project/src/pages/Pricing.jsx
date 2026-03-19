@@ -7,6 +7,8 @@ import './Pricing.css';
 const FEATURES = [
     { label: 'Daily Progress Circle', free: true, premium: true },
     { label: 'Task Management', free: 'Basic', premium: 'Advanced' },
+    { label: 'Neural Immersion (Video)', free: false, premium: 'Full Ecosystem' },
+    { label: 'Focus Clock Protocols', free: 'Pomodoro & Flow', premium: 'All Advanced Protocols' },
     { label: 'Streak Tracking', free: 'Basic', premium: 'Advanced analytics' },
     { label: 'Habit Tracking', free: '5 habits max', premium: 'Unlimited habits' },
     { label: 'Habit Categories', free: false, premium: true },

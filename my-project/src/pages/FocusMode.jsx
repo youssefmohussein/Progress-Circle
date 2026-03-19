@@ -2,9 +2,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FocusClock } from '../components/FocusClock';
 import { MusicDeck } from '../components/MusicDeck';
 import { useData } from '../context/DataContext';
-import { ArrowLeft, CheckCircle2, Target, Zap, Clock, History, Check, Music, Monitor, Layout, Sliders, PlayCircle, CloudRain, Rocket, User, Coffee } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, CheckCircle2, Target, Zap, Clock, History, Check, Music, Monitor, Layout, Sliders, PlayCircle, CloudRain, Rocket, User, Coffee, Lock } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { useAuth } from '../context/AuthContext';
+
 import { PageInsight } from '../components/PageInsight';
 import { FocusVideo } from '../components/FocusVideo';
 import { Modal } from '../components/Modal';
@@ -12,6 +14,9 @@ import { useState } from 'react';
 
 export function FocusMode() {
     const { tasks, sessions, activeSession } = useData();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const isPremium = user?.plan === 'premium';
     const todayTasks = tasks.filter(t => t.status !== 'completed' && (!t.deadline || dayjs(t.deadline).isSame(dayjs(), 'day')));
     const recentSessions = (sessions || []).slice(0, 5);
 
@@ -19,10 +24,10 @@ export function FocusMode() {
     const [isLogsOpen, setIsLogsOpen] = useState(false);
 
     const VISUAL_PRESETS = [
-        { id: 'lofi', name: 'Lofi Girl', videoId: 'jfKfPfyJRdk', icon: Music },
-        { id: 'rain', name: 'Rainy Night', videoId: 'q76bMs-NwRk', icon: CloudRain },
-        { id: 'cyber', name: 'Cyber City', videoId: 'S_dfq9rFWAE', icon: Rocket },
-        { id: 'cabin', name: 'Cozy Cabin', videoId: 'L_LUpnjgPso', icon: Coffee },
+        { id: 'lofi', name: 'Lofi Girl', videoId: 'jfKfPfyJRdk', icon: Music, isPremium: true },
+        { id: 'rain', name: 'Rainy Night', videoId: 'q76bMs-NwRk', icon: CloudRain, isPremium: true },
+        { id: 'cyber', name: 'Cyber City', videoId: 'S_dfq9rFWAE', icon: Rocket, isPremium: true },
+        { id: 'cabin', name: 'Cozy Cabin', videoId: 'L_LUpnjgPso', icon: Coffee, isPremium: true },
     ];
 
     const focusBriefing = {
@@ -89,10 +94,18 @@ export function FocusMode() {
                         {VISUAL_PRESETS.map((preset) => (
                             <button
                                 key={preset.id}
-                                onClick={() => setActiveVisual(preset)}
+                                onClick={() => {
+                                    if (preset.isPremium && !isPremium) {
+                                        navigate('/pricing');
+                                        return;
+                                    }
+                                    setActiveVisual(activeVisual?.id === preset.id ? null : preset);
+                                }}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeVisual?.id === preset.id ? 'bg-indigo-500/80 backdrop-blur-md text-white shadow-[0_0_20px_rgba(99,102,241,0.3)]' : 'text-white/30 hover:text-white/60 hover:bg-white/5'}`}
                             >
+                                <preset.icon size={12} />
                                 <span>{preset.name}</span>
+                                {preset.isPremium && !isPremium && <Lock size={10} className="ml-1 text-amber-500" />}
                             </button>
                         ))}
                     </div>

@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { Timer, Zap, Coffee, Target, ChevronRight, History, MoreVertical, Play, Square, RefreshCcw, Pause, Move } from 'lucide-react';
+import { Timer, Zap, Coffee, Target, ChevronRight, History, MoreVertical, Play, Square, RefreshCcw, Pause, Move, Lock } from 'lucide-react';
 import { Card } from './Card';
 import { Button } from './Button';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TECHNIQUES = [
-    { id: 'pomodoro', name: 'Pomodoro', work: 25, break: 5, icon: Zap, color: 'text-rose-500' },
-    { id: '52-17', name: '52/17 Rule', work: 52, break: 17, icon: Target, color: 'text-indigo-500' },
-    { id: '90-min', name: '90 Minute', work: 90, break: 15, icon: Coffee, color: 'text-amber-500' },
-    { id: 'deep', name: 'Deep Work', work: 62, break: 0, icon: Target, color: 'text-emerald-500' },
-    { id: 'flow', name: 'Infinite Flow', work: 0, break: 0, icon: RefreshCcw, color: 'text-blue-500' },
+    { id: 'pomodoro', name: 'Pomodoro', work: 25, break: 5, icon: Zap, color: 'text-rose-500', isPremium: false },
+    { id: '52-17', name: '52/17 Rule', work: 52, break: 17, icon: Target, color: 'text-indigo-500', isPremium: true },
+    { id: '90-min', name: '90 Minute', work: 90, break: 15, icon: Coffee, color: 'text-amber-500', isPremium: true },
+    { id: 'deep', name: 'Deep Work', work: 62, break: 0, icon: Target, color: 'text-emerald-500', isPremium: true },
+    { id: 'flow', name: 'Infinite Flow', work: 0, break: 0, icon: RefreshCcw, color: 'text-blue-500', isPremium: false },
 ];
 
 
@@ -68,6 +70,9 @@ const NeuralSelect = ({ label, value, options, onChange, placeholder = "Select o
 
 export const FocusClock = () => {
     const { activeSession, tasks, sessions, startSession, endSession } = useData();
+    const { user } = useAuth();
+    const isPremium = user?.plan === 'premium';
+    const navigate = useNavigate();
     const [selectedTechnique, setSelectedTechnique] = useState(TECHNIQUES[0]);
     const [selectedTaskId, setSelectedTaskId] = useState('');
     const [totalCycles, setTotalCycles] = useState(1);
@@ -298,14 +303,27 @@ export const FocusClock = () => {
                                 {TECHNIQUES.map((t) => (
                                     <button
                                         key={t.id}
-                                        onClick={() => setSelectedTechnique(t)}
+                                        onClick={() => {
+                                            if (t.isPremium && !isPremium) {
+                                                navigate('/pricing');
+                                                return;
+                                            }
+                                            setSelectedTechnique(t);
+                                        }}
                                         className={`relative flex flex-col items-center gap-3 p-4 rounded-3xl border transition-all duration-300 group ${
                                             selectedTechnique.id === t.id 
                                             ? 'bg-white/10 border-indigo-500/50 text-white shadow-xl shadow-indigo-500/10' 
                                             : 'bg-white/[0.02] border-white/5 text-white/40 hover:bg-white/5'
                                         }`}
                                     >
-                                        <t.icon size={22} className={selectedTechnique.id === t.id ? t.color : 'text-white/20 group-hover:text-white/40'} />
+                                        <div className="relative">
+                                            <t.icon size={22} className={selectedTechnique.id === t.id ? t.color : 'text-white/20 group-hover:text-white/40'} />
+                                            {t.isPremium && !isPremium && (
+                                                <div className="absolute -top-1 -right-1.5 p-0.5 bg-amber-500 rounded-full border border-[#0b0c14] shadow-sm">
+                                                    <Lock size={8} className="text-[#0b0c14]" />
+                                                </div>
+                                            )}
+                                        </div>
                                         <span className="text-[9px] font-black uppercase tracking-tighter text-center">{t.name}</span>
                                         {selectedTechnique.id === t.id && (
                                             <motion.div layoutId="activeTech" className="absolute -bottom-1 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
