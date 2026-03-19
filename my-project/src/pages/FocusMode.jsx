@@ -5,11 +5,36 @@ import { useData } from '../context/DataContext';
 import { ArrowLeft, CheckCircle2, Target, Zap, Clock, History, Check, Music } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { PageInsight } from '../components/PageInsight';
 
 export function FocusMode() {
     const { tasks, sessions, updateTask } = useData();
     const todayTasks = tasks.filter(t => t.status !== 'completed' && (!t.deadline || dayjs(t.deadline).isSame(dayjs(), 'day')));
     const recentSessions = (sessions || []).slice(0, 5);
+
+    const focusBriefing = {
+        title: "Neural Focus Protocol",
+        intro: "A high-fidelity environment designed for deep cognitive engagement. Utilize the Command Center to synchronize your operative goals with surgical time management.",
+        operations: [
+            { 
+                title: "Protocol Selection", 
+                content: "Choose between Pomodoro, 52/17, 90-Minute, or Deep Work sequences based on your current cognitive load and objective complexity." 
+            },
+            { 
+                title: "Mission Assignment", 
+                content: "Attach a specific mission (Task) from your Central Intelligence hub to ensure every focus cycle contributes to a high-level objective." 
+            },
+            { 
+                title: "Operative Notes", 
+                content: "Document real-time insights and technical blockers within the Focus Clock to maintain analytical clarity across multiple sessions." 
+            },
+            { 
+                title: "Sequence Archiving", 
+                content: "Upon completion, your session data is automatically synchronized with the Mission Logs Archive for long-term behavioral auditing." 
+            }
+        ],
+        neuralTip: "Intermittent 'Infinite Flow' sessions are recommended for creative ideation phases where temporal constraints hinder cognitive expansion."
+    };
 
     return (
         <div className="fixed inset-0 bg-[#050510] z-[100] overflow-y-auto px-6 pt-12 pb-12 sm:py-16 scrollbar-hide">
@@ -21,6 +46,7 @@ export function FocusMode() {
                         <span className="hidden sm:inline">Back to Reality</span>
                     </Link>
                     <div className="flex items-center gap-4">
+                        <PageInsight {...focusBriefing} />
                         <div className="h-px w-12 bg-indigo-500/20 hidden md:block" />
                         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#818cf8] animate-pulse">Neural Focus Protocol v2.1</p>
                     </div>
