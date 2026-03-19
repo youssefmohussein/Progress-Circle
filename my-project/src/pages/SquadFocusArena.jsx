@@ -336,7 +336,13 @@ export default function SquadFocusArena() {
                     <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
                         <Swords size={18} />
                     </div>
-                    <h1 className="text-sm font-black uppercase tracking-[0.2em] text-white">Squad Focus <span className="text-muted opacity-50 underline decoration-indigo-500/50 underline-offset-4">ID-{id.slice(-4)}</span></h1>
+                    <div className="flex flex-col">
+                        <h1 className="text-sm font-black uppercase tracking-[0.2em] text-white">Squad Focus <span className="text-muted opacity-50 underline decoration-indigo-500/50 underline-offset-4">ID-{id.slice(-4)}</span></h1>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{room.league || 'Bronze'} LEAGUE</span>
+                            <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">• {room.squadXP?.toLocaleString() || 0} XP</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -490,9 +496,9 @@ export default function SquadFocusArena() {
                                 <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
                                     <Trophy size={14} className="text-amber-400" /> Top Operatives
                                 </h3>
-                                <div className="flex items-center gap-2 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
-                                    <Shield size={10} className="text-emerald-400" />
-                                    <span className="text-[9px] font-black text-emerald-400 uppercase">{room.squadPoints || 0}</span>
+                                <div className="flex items-center gap-2 px-2 py-1 rounded bg-indigo-500/10 border border-indigo-500/20">
+                                    <Star size={10} className="text-indigo-400" fill="currentColor" fillOpacity={0.2} />
+                                    <span className="text-[9px] font-black text-indigo-400 uppercase">{room.league || 'Bronze'}</span>
                                 </div>
                             </div>
                             <div className="space-y-4">

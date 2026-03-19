@@ -39,8 +39,11 @@ const squadRoomSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    squadPoints: { type: Number, default: 0 },
-    squadLevel: { type: Number, default: 1 }
+    squadXP: { type: Number, default: 0 },
+    squadPoints: { type: Number, default: 0 }, // keeping for compatibility, will sync to squadXP
+    squadLevel: { type: Number, default: 1 },
+    league: { type: String, default: 'Bronze' },
+    lastLeagueUpdate: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 module.exports = mongoose.model('SquadRoom', squadRoomSchema);

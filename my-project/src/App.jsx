@@ -29,6 +29,7 @@ import Pricing from './pages/Pricing';
 import FocusBattleArena from './pages/FocusBattleArena';
 import SquadFocusArena from './pages/SquadFocusArena';
 import PaymentSuccess from './pages/PaymentSuccess';
+import { SquadLeaderboard } from './pages/SquadLeaderboard';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -105,6 +106,7 @@ function AppRoutes() {
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
       <Route path="/battle/:id/*" element={<PrivateRoute><FocusBattleArena /></PrivateRoute>} />
       <Route path="/squad/focus/:id" element={<PrivateRoute><SquadFocusArena /></PrivateRoute>} />
+      <Route path="/squad/leaderboard" element={<PrivateRoute><Layout><SquadLeaderboard /></Layout></PrivateRoute>} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" />} />

@@ -903,6 +903,15 @@ exports.extendBattleTime = async (req, res, next) => {
     }
 };
 
+const calculateLeague = (xp) => {
+    if (xp >= 150000) return 'Master';
+    if (xp >= 50000) return 'Diamond';
+    if (xp >= 15000) return 'Platinum';
+    if (xp >= 5000) return 'Gold';
+    if (xp >= 1000) return 'Silver';
+    return 'Bronze';
+};
+
 // @desc    Toggle task status within battle
 // @route   PATCH /api/social/battle/toggle-task/:id
 // @access  Private
@@ -952,6 +961,39 @@ exports.toggleTaskStatus = async (req, res, next) => {
         }
 
         await battle.save();
+
+        // Update squad points & league
+        if (battle.roomId) {
+            const SquadRoom = require('../models/SquadRoom');
+            const inc = newStatus === 'completed' ? pointsAwarded : -pointsAwarded;
+            
+            const room = await SquadRoom.findById(battle.roomId);
+            if (room) {
+                room.squadXP = Math.max(0, (room.squadXP || 0) + inc);
+                room.squadPoints = room.squadXP; // keep in sync
+                
+                const newLeague = calculateLeague(room.squadXP);
+                if (newLeague !== room.league) {
+                    room.league = newLeague;
+                    room.lastLeagueUpdate = new Date();
+                    
+                    // Add to room messages as a system notification
+                    room.messages.push({
+                        sender: null,
+                        text: `SQUAD PROMOTED: This unit has ascended to the ${newLeague} League!`,
+                        createdAt: new Date()
+                    });
+                }
+                
+                await room.save();
+                
+                // Also update the individual user's total squad points for their personal stats card
+                await User.findByIdAndUpdate(req.user._id, {
+                    $inc: { 'socialStats.squadPoints': inc }
+                });
+            }
+        }
+
         res.status(200).json({ success: true, data: battle });
     } catch (err) {
         next(err);
@@ -1162,5 +1204,27 @@ exports.deleteNotification = async (req, res, next) => {
 
         await notif.deleteOne();
         res.status(200).json({ success: true, message: 'Notification deleted.' });
+    } catch (err) { next(err); }
+};
+// @desc    Get global squad leaderboard
+// @route   GET /api/social/leaderboard
+// @access  Private
+exports.getGlobalSquadLeaderboard = async (req, res, next) => {
+    try {
+        const squads = await SquadRoom.find({})
+            .sort({ squadXP: -1 })
+            .limit(50)
+            .select('name squadXP squadLevel members league lastLeagueUpdate')
+            .lean();
+
+        // Add memberCount and ranking
+        const formattedSquads = squads.map((s, index) => ({
+            ...s,
+            rank: index + 1,
+            memberCount: s.members.length,
+            squadPoints: s.squadXP // fallback for old frontend
+        }));
+
+        res.status(200).json({ success: true, data: formattedSquads });
     } catch (err) { next(err); }
 };

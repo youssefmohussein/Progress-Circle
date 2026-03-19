@@ -5,7 +5,7 @@ import {
     Users, Plus, Search, Zap, CheckCircle, Bell,
     MessageSquare, Shield, UserPlus, X, Target,
     Clock, Send, MoreHorizontal, UserCheck, UserX,
-    TrendingUp, Award, BellOff, UserPlus2
+    TrendingUp, Award, BellOff, UserPlus2, Trophy
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../api/client';
@@ -477,6 +477,17 @@ export function Squad() {
                         </AnimatePresence>
                     </div>
 
+                    <PageInsight 
+                        title="SQUAD COMMAND"
+                        intro="The high-performance layer for collective focus. Synchronize with elite units to amplify productivity and climb the global ranks."
+                        operations={[
+                            { title: 'Neural Linkage', content: 'Connect with your most reliable partners and monitor their real-time operational status.' },
+                            { title: 'Tactical Deployment', content: 'Join active focus rooms or architect your own private squad session for surgical precision.' },
+                            { title: 'Arena Dominance', content: 'Compete in the global leagues. Accumulate Squad XP to ascend from Bronze to the Master Matrix.' }
+                        ]}
+                        neuralTip="Working in high-synchronicity squads can increase task completion velocity by up to 65% through social accountability."
+                    />
+
                     <button
                         onClick={() => setShowSearchModal(true)}
                         className="p-2 rounded-xl bg-surface2 hover:bg-surface3 border border-border/10 text-muted hover:text-text transition-all"
@@ -487,7 +498,7 @@ export function Squad() {
             </div>
 
             {/* Top: Friends Carousel */}
-            <div className="flex items-center gap-4 overflow-x-auto pb-4 px-2 scrollbar-none">
+            <div id="tour-squad-friends" className="flex items-center gap-4 overflow-x-auto pb-4 px-2 scrollbar-none">
                 <button
                     onClick={() => setShowSearchModal(true)}
                     className="flex-shrink-0 w-16 h-16 rounded-2xl border-2 border-dashed border-border/20 flex flex-col items-center justify-center text-muted hover:border-primary/40 hover:text-primary transition-all group"
@@ -575,6 +586,7 @@ export function Squad() {
                             <div className="flex items-center justify-between px-2">
                                 <h3 className="text-sm font-black uppercase tracking-wider text-muted">Active Rooms</h3>
                                 <button
+                                    id="tour-squad-create"
                                     onClick={() => setShowCreateModal(true)}
                                     className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all"
                                 >
@@ -582,7 +594,7 @@ export function Squad() {
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div id="tour-squad-rooms" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {rooms.filter(r => {
                                     const userId = user?._id || user?.id;
                                     return r.members.some(m => (m.user?._id || m.user?.id || m.user) === userId);
@@ -606,7 +618,19 @@ export function Squad() {
                                         >
                                             <div>
                                                 <div className="flex justify-between items-start mb-3">
-                                                    <h4 className="font-black text-lg group-hover:text-primary transition-colors">{room.name}</h4>
+                                                    <div>
+                                                        <h4 className="font-black text-lg group-hover:text-primary transition-colors">{room.name}</h4>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                                                room.league === 'Master' ? 'text-amber-400' :
+                                                                room.league === 'Diamond' ? 'text-cyan-400' :
+                                                                room.league === 'Platinum' ? 'text-indigo-400' :
+                                                                room.league === 'Gold' ? 'text-yellow-500' :
+                                                                room.league === 'Silver' ? 'text-slate-300' : 'text-orange-600'
+                                                            }`}>{room.league || 'Bronze'}</span>
+                                                            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">• {room.squadXP?.toLocaleString() || 0} XP</span>
+                                                        </div>
+                                                    </div>
                                                     <div className="flex items-center gap-2">
                                                         {isHost && (
                                                             <button
@@ -669,7 +693,8 @@ export function Squad() {
                                         </div>
                                         <div className="flex items-center gap-2 mt-0.5">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Secure Squad Channel</span>
+                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{activeRoom.league || 'Bronze'} LEAGUE</span>
+                                            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">• Secure Squad Channel</span>
                                         </div>
                                     </div>
                                 </div>
@@ -838,7 +863,7 @@ export function Squad() {
                 {/* Sidebar: Stats & Activity (4 cols) */}
                 <div className="lg:col-span-4 space-y-6">
                     {/* Squad Stats */}
-                    <div className="pc-card p-6 bg-surface2/50 relative overflow-hidden group">
+                    <div id="tour-squad-stats" className="pc-card p-6 bg-surface2/50 relative overflow-hidden group">
                         <TrendingUp className="absolute -right-4 -bottom-4 w-24 h-24 text-text/5 group-hover:scale-110 transition-transform" />
                         <h3 className="font-black text-xs uppercase tracking-widest text-muted mb-4 border-b border-border/5 pb-2">Your Squad Performance</h3>
                         <div className="grid grid-cols-2 gap-4">
@@ -906,10 +931,21 @@ export function Squad() {
                     </div>
 
                     {/* Global Squad Leaderboard */}
-                    <div className="pc-card p-6 bg-gradient-to-br from-surface to-surface2 border-amber-500/20">
-                        <h3 className="font-black text-xs uppercase tracking-[0.2em] text-amber-500 mb-6 flex items-center gap-2">
-                            <Award size={14} className="animate-bounce" /> Hall of Champions
-                        </h3>
+                    <div id="tour-squad-hall" className="pc-card p-6 bg-[#0D0D0F] border-white/5 relative overflow-hidden group shadow-2xl">
+                        <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                            <Trophy size={64} className="text-white" />
+                        </div>
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="font-black text-[10px] uppercase tracking-[0.3em] text-indigo-400 flex items-center gap-2">
+                                <Award size={14} className="animate-pulse" /> Top Tier Matrix
+                            </h3>
+                            <button 
+                                onClick={() => navigate('/squad/leaderboard')}
+                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[9px] font-black text-white/50 hover:text-white uppercase tracking-widest transition-all border border-white/5 flex items-center gap-2"
+                            >
+                                Enter Arena <Zap size={10} fill="currentColor" />
+                            </button>
+                        </div>
                         <div className="space-y-4">
                             {globalLeaderboard.map((lb, i) => (
                                 <div key={lb._id} className="flex items-center justify-between group">
@@ -926,8 +962,11 @@ export function Squad() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-black text-text italic">{lb.totalFocus}H</p>
-                                        <p className="text-[8px] font-bold text-muted uppercase">Global Focus</p>
+                                        <p className="text-[11px] font-black text-white italic tracking-tight">{lb.squadXP?.toLocaleString() || 0} XP</p>
+                                        <div className="flex items-center justify-end gap-1">
+                                            <div className="w-1 h-1 rounded-full bg-indigo-500" />
+                                            <p className="text-[8px] font-black text-muted uppercase tracking-tighter">{lb.league || 'Bronze'}</p>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

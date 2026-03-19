@@ -8,7 +8,6 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { NotificationCenter } from './NotificationCenter';
-import { Tutorial } from './Tutorial';
 
 export function Layout({ children }) {
     const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -40,7 +39,6 @@ export function Layout({ children }) {
 
     return (
         <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', overflow: 'hidden', flexDirection: 'column' }}>
-            <Tutorial />
             {warningMessage && (
                 <div style={{
                     background: 'rgba(234, 179, 8, 0.1)',
