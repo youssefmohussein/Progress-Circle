@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Timer, Zap, Coffee, Target, ChevronRight, History, MoreVertical, Play, Square, RefreshCcw } from 'lucide-react';
+import { Timer, Zap, Coffee, Target, ChevronRight, History, MoreVertical, Play, Square, RefreshCcw, Pause, Move } from 'lucide-react';
 import { Card } from './Card';
 import { Button } from './Button';
 import { useData } from '../context/DataContext';
@@ -75,7 +75,13 @@ export const FocusClock = () => {
     const [isBreak, setIsBreak] = useState(false);
     const [timeLeft, setTimeLeft] = useState(TECHNIQUES[0].work * 60);
     const [notes, setNotes] = useState('');
+    const [isPaused, setIsPaused] = useState(false);
+    const isPausedRef = useRef(isPaused);
     const timerRef = useRef(null);
+
+    useEffect(() => {
+        isPausedRef.current = isPaused;
+    }, [isPaused]);
 
     const todayTasks = tasks.filter(t => t.status !== 'completed');
     const taskOptions = [
@@ -103,16 +109,19 @@ export const FocusClock = () => {
 
             if (!timerRef.current) {
                 timerRef.current = setInterval(() => {
-                    setTimeLeft(prev => {
-                        if (tech.id === 'flow') return prev + 1;
-                        if (prev <= 0) return 0;
-                        return prev - 1;
-                    });
+                    if (!isPausedRef.current) {
+                        setTimeLeft(prev => {
+                            if (tech.id === 'flow') return prev + 1;
+                            if (prev <= 0) return 0;
+                            return prev - 1;
+                        });
+                    }
                 }, 1000);
             }
         } else {
             clearInterval(timerRef.current);
             timerRef.current = null;
+            setIsPaused(false);
             if (selectedTechnique.id !== 'flow') {
                 setTimeLeft(selectedTechnique.work * 60);
             } else {
@@ -144,6 +153,63 @@ export const FocusClock = () => {
         toast.success("Session data archived.");
         setNotes('');
     };
+
+    if (activeSession) {
+        return (
+            <motion.div 
+                drag 
+                dragMomentum={false}
+                className="relative bg-black/60 backdrop-blur-3xl border border-white/10 rounded-full p-8 shadow-2xl flex flex-col items-center justify-center cursor-grab active:cursor-grabbing group hover:border-indigo-500/50 transition-colors"
+                whileHover={{ scale: 1.02 }}
+            >
+                {/* Drag Indicator */}
+                <div className="absolute top-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Move size={14} className="text-white/30" />
+                </div>
+
+                <div className="relative">
+                    <svg className="w-56 h-56 lg:w-72 lg:h-72 -rotate-90 transition-all duration-1000">
+                        <circle cx="50%" cy="50%" r="45%" className="stroke-white/[0.05] fill-none" strokeWidth="2" />
+                        {selectedTechnique.id !== 'flow' && (
+                            <motion.circle
+                                cx="50%" cy="50%" r="45%"
+                                className="stroke-indigo-500 fill-none drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                                strokeWidth="4" strokeLinecap="round"
+                                initial={{ pathLength: 1 }}
+                                animate={{ pathLength: timeLeft / (selectedTechnique.work * 60) }}
+                                transition={{ duration: 0.5 }}
+                            />
+                        )}
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <motion.span 
+                            key={timeLeft}
+                            initial={{ filter: 'blur(2px)', opacity: 0.8 }} animate={{ filter: 'blur(0px)', opacity: 1 }}
+                            className="text-5xl lg:text-6xl font-black italic tracking-tighter font-manrope text-white drop-shadow-lg"
+                        >
+                            {fmt(timeLeft)}
+                        </motion.span>
+                    </div>
+                </div>
+
+                {/* Micro-Controls */}
+                <div className="absolute -bottom-6 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setIsPaused(!isPaused); }}
+                        className="p-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full backdrop-blur-md text-white transition-all shadow-xl"
+                    >
+                        {isPaused ? <Play size={16} fill="white" /> : <Pause size={16} fill="white" />}
+                    </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); handleEnd(); }}
+                        className="p-3 bg-rose-500/20 hover:bg-rose-500/40 border border-rose-500/30 rounded-full backdrop-blur-md text-rose-400 hover:text-rose-200 transition-all shadow-xl"
+                    >
+                        <Square size={16} fill="currentColor" />
+                    </button>
+                </div>
+            </motion.div>
+        );
+    }
 
     return (
         <Card className="relative overflow-hidden p-0 w-full bg-[#0b0c14]/80 border-white/5 shadow-2xl transition-all duration-700">
@@ -226,84 +292,55 @@ export const FocusClock = () => {
                                         <p className="text-[9px] font-bold text-white/30 uppercase mt-1">Configure your neural focus parameters</p>
                                     </div>
                                 </div>
-                                {activeSession && (
-                                    <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                                        <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">System Active</span>
-                                    </div>
-                                )}
                             </div>
 
-                            {!activeSession ? (
-                                <div className="grid grid-cols-5 gap-3">
-                                    {TECHNIQUES.map((t) => (
-                                        <button
-                                            key={t.id}
-                                            onClick={() => setSelectedTechnique(t)}
-                                            className={`relative flex flex-col items-center gap-3 p-4 rounded-3xl border transition-all duration-300 group ${
-                                                selectedTechnique.id === t.id 
-                                                ? 'bg-white/10 border-indigo-500/50 text-white shadow-xl shadow-indigo-500/10' 
-                                                : 'bg-white/[0.02] border-white/5 text-white/40 hover:bg-white/5'
-                                            }`}
-                                        >
-                                            <t.icon size={22} className={selectedTechnique.id === t.id ? t.color : 'text-white/20 group-hover:text-white/40'} />
-                                            <span className="text-[9px] font-black uppercase tracking-tighter text-center">{t.name}</span>
-                                            {selectedTechnique.id === t.id && (
-                                                <motion.div layoutId="activeTech" className="absolute -bottom-1 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="pc-card p-6 flex items-center gap-6 bg-indigo-500/5 border-indigo-500/10 rounded-[2rem]">
-                                    <div className="p-4 bg-indigo-500/10 rounded-2xl">
-                                        <selectedTechnique.icon size={32} className={`${selectedTechnique.color} animate-pulse`} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-black uppercase tracking-[0.2em] text-white">{selectedTechnique.name} Sequence</p>
-                                        <div className="flex items-center gap-3 mt-1.5">
-                                            <span className="text-[11px] text-white/40 font-bold uppercase">Cycle {currentCycle} of {totalCycles}</span>
-                                            <div className="h-1 w-20 bg-white/5 rounded-full overflow-hidden">
-                                                <motion.div 
-                                                    className="h-full bg-indigo-500"
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${(currentCycle / totalCycles) * 100}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            <div className="grid grid-cols-5 gap-3">
+                                {TECHNIQUES.map((t) => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => setSelectedTechnique(t)}
+                                        className={`relative flex flex-col items-center gap-3 p-4 rounded-3xl border transition-all duration-300 group ${
+                                            selectedTechnique.id === t.id 
+                                            ? 'bg-white/10 border-indigo-500/50 text-white shadow-xl shadow-indigo-500/10' 
+                                            : 'bg-white/[0.02] border-white/5 text-white/40 hover:bg-white/5'
+                                        }`}
+                                    >
+                                        <t.icon size={22} className={selectedTechnique.id === t.id ? t.color : 'text-white/20 group-hover:text-white/40'} />
+                                        <span className="text-[9px] font-black uppercase tracking-tighter text-center">{t.name}</span>
+                                        {selectedTechnique.id === t.id && (
+                                            <motion.div layoutId="activeTech" className="absolute -bottom-1 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Configuration: Task & Notes */}
                         <div className="space-y-6">
-                            {!activeSession && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="flex-grow">
-                                        <NeuralSelect 
-                                            label="Assign Mission"
-                                            value={selectedTaskId}
-                                            options={taskOptions}
-                                            onChange={setSelectedTaskId}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="flex-grow">
+                                    <NeuralSelect 
+                                        label="Assign Mission"
+                                        value={selectedTaskId}
+                                        options={taskOptions}
+                                        onChange={setSelectedTaskId}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-white/30 pl-1">Repeat Cycles</label>
+                                    <div className="relative flex items-center">
+                                        <input 
+                                            type="number" 
+                                            min="1" max="10" 
+                                            className="w-full bg-white/[0.03] border border-white/5 p-3 rounded-2xl text-[11px] font-bold text-white outline-none focus:border-indigo-500/40 transition-all pr-12"
+                                            value={totalCycles}
+                                            onChange={(e) => setTotalCycles(Number(e.target.value))}
                                         />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-black uppercase tracking-widest text-white/30 pl-1">Repeat Cycles</label>
-                                        <div className="relative flex items-center">
-                                            <input 
-                                                type="number" 
-                                                min="1" max="10" 
-                                                className="w-full bg-white/[0.03] border border-white/5 p-3 rounded-2xl text-[11px] font-bold text-white outline-none focus:border-indigo-500/40 transition-all pr-12"
-                                                value={totalCycles}
-                                                onChange={(e) => setTotalCycles(Number(e.target.value))}
-                                            />
-                                            <div className="absolute right-4 text-[9px] font-black text-white/20 uppercase tracking-widest pointer-events-none">Qty</div>
-                                        </div>
+                                        <div className="absolute right-4 text-[9px] font-black text-white/20 uppercase tracking-widest pointer-events-none">Qty</div>
                                     </div>
                                 </div>
-                            )}
-
+                            </div>
+                            
                             <div className="space-y-2">
                                 <label className="text-[9px] font-black uppercase tracking-widest text-white/30 pl-1">Operative Notes</label>
                                 <textarea 
@@ -317,24 +354,15 @@ export const FocusClock = () => {
 
                         {/* Action Buttons */}
                         <div className="pt-4 lg:pt-0">
-                            {!activeSession ? (
-                                <button
-                                    onClick={handleStart}
-                                    className="w-full py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] transition-all shadow-2xl shadow-indigo-600/20 flex items-center justify-center gap-4 active:scale-[0.98] group"
-                                >
-                                    <Play size={18} fill="white" className="group-hover:translate-x-0.5 transition-transform" /> 
-                                    Initialize Neural Sequence
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleEnd}
-                                    className="w-full py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] transition-all shadow-2xl shadow-rose-900/20 flex items-center justify-center gap-4 active:scale-[0.98] group"
-                                >
-                                    <Square size={18} fill="white" className="group-hover:scale-110 transition-transform" /> 
-                                    Terminate Focus Session
-                                </button>
-                            )}
+                            <button
+                                onClick={handleStart}
+                                className="w-full py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] transition-all shadow-2xl shadow-indigo-600/20 flex items-center justify-center gap-4 active:scale-[0.98] group"
+                            >
+                                <Play size={18} fill="white" className="group-hover:translate-x-0.5 transition-transform" /> 
+                                Initialize Neural Sequence
+                            </button>
                         </div>
+
                     </div>
                 </div>
             </div>
