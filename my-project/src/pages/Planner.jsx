@@ -142,22 +142,22 @@ export function Planner() {
                         Syncing your goals, habits & time
                     </p>
                 </div>
-                <div className="flex items-center gap-3 bg-white dark:bg-slate-900 p-1 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                    <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                <div className="flex items-center gap-3 bg-surface p-1 rounded-2xl border border-border shadow-sm">
+                    <button onClick={handlePrevMonth} className="p-2 hover:bg-surface2 rounded-xl transition-colors">
                         <ChevronLeft size={20} />
                     </button>
                     <span className="text-sm font-black uppercase tracking-widest px-4 min-w-[140px] text-center">
                         {currentDate.format('MMMM YYYY')}
                     </span>
-                    <button onClick={handleNextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                    <button onClick={handleNextMonth} className="p-2 hover:bg-surface2 rounded-xl transition-colors">
                         <ChevronRight size={20} />
                     </button>
                 </div>
             </div>
 
             {/* Calendar Grid */}
-            <Card className="p-0 overflow-hidden border-none bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl">
-                <div className="grid grid-cols-7 border-b border-gray-100 dark:border-slate-800">
+            <Card className="p-0 overflow-hidden border-none bg-surface/50 backdrop-blur-xl">
+                <div className="grid grid-cols-7 border-b border-border">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                         <div key={day} className="py-4 text-center text-[11px] font-black text-muted uppercase tracking-[0.2em]">
                             {day}
@@ -178,8 +178,8 @@ export function Planner() {
                                     setIsDayModalOpen(true);
                                     setIsAddingBlock(false);
                                 }}
-                                className={`relative p-2 border-r border-b border-gray-100 dark:border-slate-800 cursor-pointer transition-all hover:bg-[var(--primary)]/5
-                                    ${!day.currentMonth ? 'bg-gray-50/50 dark:bg-slate-900/20 opacity-30' : ''}
+                                className={`relative p-2 border-r border-b border-border cursor-pointer transition-all hover:bg-[var(--primary)]/5
+                                    ${!day.currentMonth ? 'opacity-30' : ''}
                                     ${isSelected ? 'bg-[var(--primary)]/10 ring-2 ring-inset ring-[var(--primary)]/30' : ''}
                                 `}
                             >
@@ -232,12 +232,12 @@ export function Planner() {
                             <>
                                 <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {getDayEvents(selectedDate).length === 0 ? (
-                                        <div className="text-center py-12 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-3xl">
+                                        <div className="text-center py-12 border-2 border-dashed border-border rounded-3xl">
                                             <p className="text-muted font-bold uppercase tracking-widest text-xs">No entries for this date</p>
                                         </div>
                                     ) : (
                                         getDayEvents(selectedDate).map((event, idx) => (
-                                            <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50/50 dark:bg-slate-800/20 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                            <div key={idx} className="flex items-center gap-4 p-3 bg-surface2 rounded-2xl border border-border">
                                                 <div className={`p-3 rounded-xl ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text}`}>
                                                     {event.type === 'task' && <Layout size={20} />}
                                                     {event.type === 'habit' && <Activity size={20} />}

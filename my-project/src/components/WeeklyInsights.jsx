@@ -30,7 +30,7 @@ export function WeeklyInsights({ tasks, sessions }) {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <BarChart3 size={18} className="text-indigo-500" />
+                    <BarChart3 size={18} className="text-primary" />
                     <h2 className="text-sm font-black uppercase tracking-widest leading-none">Weekly Performance</h2>
                 </div>
                 <div className="flex items-center gap-4">
@@ -40,7 +40,7 @@ export function WeeklyInsights({ tasks, sessions }) {
                     </div>
                     <div className="text-right border-l border-white/5 pl-4">
                         <p className="text-[9px] font-black text-pc-muted uppercase tracking-tighter">Hours Focused</p>
-                        <p className="text-sm font-black text-indigo-500">{Math.floor(weeklyData.totalFocus / 60)}h</p>
+                        <p className="text-sm font-black text-primary">{Math.floor(weeklyData.totalFocus / 60)}h</p>
                     </div>
                 </div>
             </div>
@@ -53,7 +53,7 @@ export function WeeklyInsights({ tasks, sessions }) {
                                 initial={{ height: 0 }}
                                 animate={{ height: `${(day.completedCount / weeklyData.maxCompleted) * 100}%` }}
                                 transition={{ delay: idx * 0.1 }}
-                                className={`w-3 sm:w-6 rounded-t-lg transition-all ${day.completedCount > 0 ? 'bg-indigo-500 group-hover:bg-indigo-400' : 'bg-white/5'}`}
+                                className={`w-3 sm:w-6 rounded-t-lg transition-all ${day.completedCount > 0 ? 'bg-primary group-hover:opacity-80' : 'bg-white/5'}`}
                                 style={{ minHeight: day.completedCount > 0 ? '4px' : '0' }}
                             />
                         </div>
@@ -62,13 +62,13 @@ export function WeeklyInsights({ tasks, sessions }) {
                 ))}
             </div>
 
-            <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-indigo-500 text-white">
+                    <div className="p-2 rounded-xl bg-primary text-white">
                         <TrendingUp size={16} />
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-indigo-500">Weekly Insight</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-primary">Weekly Insight</p>
                         <p className="text-xs font-bold leading-snug">
                             {weeklyData.totalCompleted > 5
                                 ? "You're building momentum! Keep the streak alive."

@@ -2,11 +2,11 @@ import { motion } from 'framer-motion';
 
 export function StatCard({ label, value, icon: Icon, color = 'indigo', suffix = '', delay = 0 }) {
     const colorMap = {
-        indigo: 'rgb(99, 102, 241)',
+        indigo: 'var(--primary)',
         sky: 'rgb(14, 165, 233)',
         green: 'rgb(34, 197, 94)',
         orange: 'rgb(249, 115, 22)',
-        purple: 'rgb(147, 51, 234)',
+        purple: 'var(--accent)',
     };
     
     const iconColor = colorMap[color] || colorMap.indigo;

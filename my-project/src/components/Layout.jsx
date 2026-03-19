@@ -77,7 +77,7 @@ export function Layout({ children }) {
             >
                 <div className="flex items-center gap-2">
                     <span style={{ fontFamily: 'Manrope,sans-serif', fontWeight: 800, fontSize: '1.1rem', color: dark ? '#fff' : 'var(--text)' }}>
-                        Progress<span style={{ color: 'var(--primary)' }}>Circle</span>
+                        Progress<span style={{ color: dark ? '#fff' : 'var(--primary)', textShadow: dark ? '0 2px 4px rgba(0,0,0,0.2)' : '0 0 1px rgba(0,0,0,0.1)' }}>Circle</span>
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -96,7 +96,18 @@ export function Layout({ children }) {
                     {/* Desktop Header */}
                     <div className="hidden lg:flex items-center justify-end px-8 py-4 gap-4 sticky top-0 z-30" 
                         style={{ background: 'var(--bg)', borderBottom: dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid var(--border)' }}>
-                        <Link id="tour-quick-focus" to="/focus" className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20 hover:bg-indigo-500/20 transition-all">
+                        <Link
+                            id="tour-quick-focus"
+                            to="/focus"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                            style={{
+                                background: 'rgba(var(--primary-rgb), 0.1)',
+                                color: 'var(--primary)',
+                                border: '1px solid rgba(var(--primary-rgb), 0.2)'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--primary-rgb), 0.2)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(var(--primary-rgb), 0.1)'}
+                        >
                             <Zap size={14} fill="currentColor" /> Quick Focus
                         </Link>
                     </div>

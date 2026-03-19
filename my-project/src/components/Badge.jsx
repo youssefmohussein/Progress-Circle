@@ -7,7 +7,7 @@ const STATUS_STYLES = {
     pending: { label: 'Pending', bg: '#f3f4f6', color: '#6b7280' },
     in_progress: { label: 'In Progress', bg: '#dbeafe', color: '#2563eb' },
     completed: { label: 'Completed', bg: '#dcfce7', color: '#16a34a' },
-    active: { label: 'Active', bg: '#ede9fe', color: '#7c3aed' },
+    active: { label: 'Active', bg: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)' },
     paused: { label: 'Paused', bg: '#fef9c3', color: '#ca8a04' },
 };
 

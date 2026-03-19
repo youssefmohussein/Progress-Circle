@@ -73,7 +73,7 @@ export function AstraAssistant() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative overflow-hidden p-5 rounded-3xl border border-white/5 bg-white/[0.02]"
             >
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-purple-500/10 pointer-events-none" />
+                <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: 'linear-gradient(135deg, var(--primary), transparent, var(--accent))' }} />
                 
                 <div className="relative flex flex-col items-center text-center py-4">
                     <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 relative">
@@ -89,7 +89,7 @@ export function AstraAssistant() {
                     </p>
                     
                     <Link to="/pricing">
-                        <button className="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-500/20" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                        <button className="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg" style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)' }}>
                             Upgrade to Pro
                         </button>
                     </Link>
@@ -108,7 +108,7 @@ export function AstraAssistant() {
             className="pc-card relative overflow-hidden group"
         >
             {/* Animated Universe Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/5 via-transparent to-emerald-500/5" />
+            <div className="absolute inset-0 opacity-10" style={{ background: 'linear-gradient(135deg, var(--primary), transparent, var(--accent))' }} />
             
             <div className="relative flex items-center gap-4 mb-4">
                 <div className="relative flex-shrink-0">
@@ -122,10 +122,14 @@ export function AstraAssistant() {
                             scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
                             rotate: { duration: 20, repeat: Infinity, ease: "linear" }
                         }}
-                        className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-emerald-400 p-0.5 flex items-center justify-center shadow-lg shadow-indigo-500/20"
+                        className="w-12 h-12 rounded-full p-0.5 flex items-center justify-center shadow-lg"
+                        style={{ 
+                            background: 'linear-gradient(135deg, var(--primary), var(--accent), #10b981)',
+                            boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)'
+                        }}
                     >
-                        <div className="w-full h-full rounded-full bg-[#0b0d12] flex items-center justify-center">
-                            <Sparkles className="text-white" size={18} />
+                        <div className="w-full h-full rounded-full bg-surface flex items-center justify-center">
+                            <Sparkles className="text-primary" size={18} />
                         </div>
                     </motion.div>
                     
@@ -150,9 +154,9 @@ export function AstraAssistant() {
                         Scanning activity data...
                     </div>
                 ) : (
-                    <p className="text-[11px] leading-relaxed text-indigo-50/90 italic font-medium">
+                    <p className="text-[11px] leading-relaxed italic font-bold" style={{ color: 'var(--text)' }}>
                         {displayText}
-                        {isTyping && <span className="inline-block w-1 h-3 ml-1 bg-indigo-400 animate-pulse" />}
+                        {isTyping && <span className="inline-block w-1 h-3 ml-1 animate-pulse" style={{ background: 'var(--primary)' }} />}
                     </p>
                 )}
             </div>
@@ -171,7 +175,7 @@ export function AstraAssistant() {
                             </div>
                         )}
                         {analysis.stats.topSector && (
-                            <div className="px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black text-indigo-400 flex items-center gap-1.5 shadow-sm">
+                            <div className="px-3 py-1 rounded-xl bg-primary/10 border border-primary/20 text-[10px] font-black text-primary flex items-center gap-1.5 shadow-sm">
                                 <Layers size={12} />
                                 Focus: {analysis.stats.topSector}
                             </div>

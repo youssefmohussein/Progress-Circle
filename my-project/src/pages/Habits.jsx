@@ -117,7 +117,7 @@ export function Habits() {
                         >
                             <Card className="group relative overflow-hidden h-full flex flex-col">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500">
+                                    <div className="p-3 bg-primary/10 rounded-2xl text-primary">
                                         <Repeat size={24} />
                                     </div>
                                     {/* always visible on touch (no hover on mobile) */}
@@ -132,7 +132,7 @@ export function Habits() {
 
                                     <div className="flex flex-wrap gap-3 mb-6">
                                         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/5 rounded-xl border border-white/5">
-                                            <Calendar size={14} className="text-indigo-400" />
+                                            <Calendar size={14} className="text-primary" />
                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted">{habit.frequency}x / Week</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/5 rounded-xl border border-white/5">
@@ -153,7 +153,7 @@ export function Habits() {
                                                 return (
                                                     <div
                                                         key={j}
-                                                        className={`w-3 h-3 rounded-full border-2 border-pc-surface ${isDone ? 'bg-indigo-500 border-indigo-500' : 'bg-white/5 border-white/10'}`}
+                                                        className={`w-3 h-3 rounded-full border-2 border-pc-surface ${isDone ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
                                                         title={dateStr}
                                                     />
                                                 );
@@ -164,7 +164,8 @@ export function Habits() {
 
                                     <button
                                         onClick={() => handleToggle(habit)}
-                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all ${habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'pc-btn-primary shadow-lg shadow-indigo-500/20'}`}
+                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all ${habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'pc-btn-primary'}`}
+                                        style={!habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? { boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)' } : {}}
                                     >
                                         <CheckCircle2 size={14} />
                                         {habit.completedDates?.includes(new Date().toISOString().split('T')[0]) ? 'Finalized' : 'Log Today'}
@@ -237,7 +238,8 @@ export function Habits() {
                     <button
                         type="submit"
                         disabled={saving}
-                        className="pc-btn pc-btn-primary w-full h-14 rounded-2xl text-lg font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20"
+                        className="pc-btn pc-btn-primary w-full h-14 rounded-2xl text-lg font-black uppercase tracking-[0.2em]"
+                        style={{ boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)' }}
                     >
                         {saving ? 'Initializing...' : 'Deploy Habit'}
                     </button>
