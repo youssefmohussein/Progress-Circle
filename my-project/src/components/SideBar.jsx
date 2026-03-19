@@ -81,7 +81,7 @@ export function SidebarContent({ onClose }) {
             <div style={{ padding: '20px 24px 16px', borderBottom: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--border)' }} className="flex items-center justify-between">
                 <div>
                     <span style={{ fontFamily: 'Manrope,sans-serif', fontWeight: 800, fontSize: '1.2rem', color: dark ? '#fff' : 'var(--text)' }}>
-                        Progress<span style={{ color: 'var(--primary)' }}>Circle</span>
+                        Progress<span style={{ color: dark ? '#fff' : 'var(--primary)', textShadow: dark ? '0 2px 4px rgba(0,0,0,0.2)' : '0 0 1px rgba(0,0,0,0.1)' }}>Circle</span>
                     </span>
                     <p style={{ fontSize: '11px', color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)', marginTop: 2 }}>Productivity Suite</p>
                 </div>
@@ -133,13 +133,13 @@ export function SidebarContent({ onClose }) {
                                 textDecoration: 'none', fontSize: 14, fontWeight: 500,
                                 transition: 'all 0.18s',
                                 background: active
-                                    ? (dark ? 'rgba(99,102,241,0.18)' : 'var(--primary-light)')
+                                    ? (dark ? 'rgba(var(--primary-rgb), 0.18)' : 'var(--primary-light)')
                                     : 'transparent',
                                 color: active
-                                    ? (dark ? '#a5b4fc' : 'var(--primary)')
+                                    ? (dark ? 'white' : 'var(--primary)')
                                     : (dark ? 'rgba(255,255,255,0.6)' : 'var(--text-light)'),
                                 border: active
-                                    ? (dark ? '1px solid rgba(99,102,241,0.3)' : '1px solid var(--primary-border)')
+                                    ? (dark ? '1px solid rgba(var(--primary-rgb), 0.3)' : '1px solid var(--primary-border)')
                                     : '1px solid transparent',
                             }}
                         >
@@ -153,10 +153,10 @@ export function SidebarContent({ onClose }) {
                     <Link to="/admin" onClick={onClose} style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         padding: '9px 14px', borderRadius: '0.75rem', textDecoration: 'none',
-                        fontSize: 14, fontWeight: 500, color: dark ? 'rgba(167,139,250,0.8)' : 'var(--text-light)',
+                        fontSize: 14, fontWeight: 500, color: dark ? 'white' : 'var(--text-light)',
                         transition: 'all 0.18s',
                     }}>
-                        <Shield size={17} style={{ color: dark ? '#a78bfa' : 'var(--primary)' }} /> Admin
+                        <Shield size={17} style={{ color: dark ? 'white' : 'var(--primary)' }} /> Admin
                     </Link>
                 )}
 
@@ -177,13 +177,13 @@ export function SidebarContent({ onClose }) {
                                 textDecoration: 'none', fontSize: 14, fontWeight: 500,
                                 transition: 'all 0.18s',
                                 background: active
-                                    ? (dark ? 'rgba(99,102,241,0.18)' : 'var(--primary-light)')
+                                    ? (dark ? 'rgba(var(--primary-rgb), 0.18)' : 'var(--primary-light)')
                                     : 'transparent',
                                 color: active
-                                    ? (dark ? '#a5b4fc' : 'var(--primary)')
+                                    ? (dark ? 'white' : 'var(--primary)')
                                     : (dark ? 'rgba(255,255,255,0.6)' : 'var(--text-light)'),
                                 border: active
-                                    ? (dark ? '1px solid rgba(99,102,241,0.3)' : '1px solid var(--primary-border)')
+                                    ? (dark ? '1px solid rgba(var(--primary-rgb), 0.3)' : '1px solid var(--primary-border)')
                                     : '1px solid transparent',
                             }}
                         >
@@ -211,8 +211,8 @@ export function SidebarContent({ onClose }) {
                     }} 
                     style={{
                         display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-                        padding: '9px 14px', borderRadius: '0.75rem', background: dark ? 'rgba(99,102,241,0.1)' : 'var(--primary-light)',
-                        border: 'none', color: dark ? '#a5b4fc' : 'var(--primary)', fontSize: 14, fontWeight: 600,
+                        padding: '9px 14px', borderRadius: '0.75rem', background: dark ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--primary-light)',
+                        border: 'none', color: dark ? 'white' : 'var(--primary)', fontSize: 14, fontWeight: 600,
                         cursor: 'pointer', transition: 'all 0.18s',
                     }}
                 >
@@ -299,8 +299,8 @@ function MoreDrawer({ onClose }) {
                 )}
 
                 {user?.isAdmin && (
-                    <Link to="/admin" onClick={onClose} style={{ ...rowStyle, color: dark ? 'rgba(167,139,250,0.8)' : 'var(--text-light)' }}>
-                        <Shield size={19} style={{ color: dark ? '#a78bfa' : 'var(--primary)' }} />
+                    <Link to="/admin" onClick={onClose} style={{ ...rowStyle, color: dark ? 'white' : 'var(--text-light)' }}>
+                        <Shield size={19} style={{ color: dark ? 'white' : 'var(--primary)' }} />
                         <span>Admin Panel</span>
                     </Link>
                 )}
@@ -314,13 +314,13 @@ function MoreDrawer({ onClose }) {
                 <div style={{ padding: '8px 20px 4px', fontSize: 10, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.3)' : 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Gamification</div>
                 {gamificationLinks.map(({ path, label, icon: Icon }) => (
                     <Link key={path} to={path} onClick={onClose} style={rowStyle}>
-                        <Icon size={19} style={{ color: dark ? '#818cf8' : 'var(--primary)' }} />
+                        <Icon size={19} style={{ color: dark ? 'white' : 'var(--primary)' }} />
                         <span>{label}</span>
                     </Link>
                 ))}
 
                 <button onClick={() => { toggleDark(); }} style={rowStyle}>
-                    {dark ? <Sun size={19} style={{ color: '#fbbf24' }} /> : <Moon size={19} style={{ color: '#818cf8' }} />}
+                    {dark ? <Sun size={19} style={{ color: '#fbbf24' }} /> : <Moon size={19} style={{ color: 'var(--primary)' }} />}
                     <span>{dark ? 'Light Mode' : 'Dark Mode'}</span>
                 </button>
 

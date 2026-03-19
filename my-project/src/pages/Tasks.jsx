@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useSEO } from '../hooks/useSEO';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -170,6 +170,56 @@ export function Tasks() {
     const [expandedTasks, setExpandedTasks] = useState(new Set());
     const [saving, setSaving] = useState(false);
     const [showConfetti, setShowConfetti] = useState(null); // null | 'regular' | 'big'
+    const filterBarRef = useRef(null);
+    const trackRef = useRef(null);
+    const isDragging = useRef(false);
+    const dragStartX = useRef(0);
+    const dragStartScroll = useRef(0);
+    const [filterScrollThumb, setFilterScrollThumb] = useState(100);
+    const [filterScrollOffset, setFilterScrollOffset] = useState(0);
+    const handleFilterScroll = useCallback(() => {
+        const el = filterBarRef.current;
+        if (!el) return;
+        const { scrollLeft, scrollWidth, clientWidth } = el;
+        const scrollable = scrollWidth - clientWidth;
+        const thumbPct = (clientWidth / scrollWidth) * 100;
+        const offsetPct = scrollable > 0 ? (scrollLeft / scrollable) * (100 - thumbPct) : 0;
+        setFilterScrollThumb(thumbPct);
+        setFilterScrollOffset(offsetPct);
+    }, []);
+    const handleTrackClick = useCallback((e) => {
+        const el = filterBarRef.current;
+        const track = trackRef.current;
+        if (!el || !track) return;
+        const rect = track.getBoundingClientRect();
+        const clickPct = (e.clientX - rect.left) / rect.width;
+        const { scrollWidth, clientWidth } = el;
+        el.scrollLeft = clickPct * (scrollWidth - clientWidth);
+    }, []);
+    const handleThumbMouseDown = useCallback((e) => {
+        e.stopPropagation();
+        const el = filterBarRef.current;
+        const track = trackRef.current;
+        if (!el || !track) return;
+        isDragging.current = true;
+        dragStartX.current = e.clientX;
+        dragStartScroll.current = el.scrollLeft;
+        const onMove = (me) => {
+            if (!isDragging.current) return;
+            const dx = me.clientX - dragStartX.current;
+            const { scrollWidth, clientWidth } = el;
+            const trackWidth = track.getBoundingClientRect().width;
+            const scrollRatio = (scrollWidth - clientWidth) / (trackWidth * (clientWidth / scrollWidth));
+            el.scrollLeft = dragStartScroll.current + dx * scrollRatio;
+        };
+        const onUp = () => {
+            isDragging.current = false;
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    }, []);
     const [form, setForm] = useState({
         title: '', description: '', priority: 'medium', deadline: '',
         categoryId: '', estimatedTime: 0, alertsEnabled: false, timeEnabled: false,
@@ -299,29 +349,64 @@ export function Tasks() {
                 </div>
             </div>
 
-            {/* Filter bar: horizontal scroll on mobile */}
-            <div className="mobile-scroll-x p-1 bg-[#858b99] dark:bg-slate-800/80 rounded-full px-2">
-                {FILTERS.map((f) => {
-                    const isCat = categories.find(c => c.name === f);
-                    const isActive = filter === f;
-                    return (
-                        <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isActive ? 'bg-[#374151] text-indigo-400 shadow-lg' : 'text-[#1e1e2e]/70 dark:text-white/60 hover:text-[#1e1e2e]'}`}
-                        >
-                            {isCat && <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: isCat.color }} />}
-                            {f}
-                        </button>
-                    );
-                })}
-                <div className="h-6 w-px bg-slate-500/30 mx-2" />
-                <button
-                    onClick={() => user?.plan === 'premium' ? openCreateModal(true) : toast.error('Big Tasks are a Premium feature! ✨')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.15em] transition-all ${user?.plan === 'premium' ? 'text-indigo-500 hover:text-indigo-400' : 'text-amber-500 opacity-80'}`}
+            {/* Filter bar: horizontal scroll with custom scrollbar indicator */}
+            <div className="flex items-center rounded-2xl shadow-xl relative max-w-full overflow-hidden" style={{ background: 'var(--surface2)', border: '1px solid var(--border)', paddingBottom: '6px' }}>
+                {/* Scrollable Categories Section — native scrollbar hidden via CSS */}
+                <div
+                    ref={filterBarRef}
+                    onScroll={handleFilterScroll}
+                    className="mobile-scroll-x flex-1 min-w-0 pr-2 pt-1 px-2"
                 >
-                    {user?.plan !== 'premium' ? <Crown size={14} /> : <Plus size={16} />} Big Task
-                </button>
+                    {FILTERS.map((f) => {
+                        const isCat = categories.find(c => c.name === f);
+                        const isActive = filter === f;
+                        return (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className="px-6 py-2 rounded-2xl text-[12px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 flex-shrink-0 whitespace-nowrap"
+                                style={isActive ? {
+                                    background: 'rgba(var(--primary-rgb), 0.1)',
+                                    color: 'var(--primary)',
+                                    border: '1px solid rgba(var(--primary-rgb), 0.2)',
+                                    boxShadow: '0 0 15px -5px rgba(var(--primary-rgb), 0.4)'
+                                } : {
+                                    color: 'var(--muted)',
+                                    border: '1px solid transparent'
+                                }}
+                            >
+                                {isCat && <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isCat.color }} />}
+                                {f}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Sticky Action Section (Always on Right) */}
+                <div className="sticky right-0 flex items-center pl-6 z-10" style={{ background: 'var(--surface2)', boxShadow: '-20px 0 20px -10px var(--surface2)' }}>
+                    <div className="h-6 w-px bg-white/5 mx-2 flex-shrink-0" />
+                    <button
+                        onClick={() => user?.plan === 'premium' ? openCreateModal(true) : toast.error('Big Tasks are a Premium feature! ✨')}
+                        className="flex items-center gap-2 px-5 py-2 rounded-2xl text-[12px] font-bold uppercase tracking-[0.15em] transition-all flex-shrink-0 whitespace-nowrap"
+                        style={{ color: user?.plan === 'premium' ? 'var(--primary)' : undefined }}
+                    >
+                        {user?.plan !== 'premium' ? <Crown size={14} /> : <Plus size={16} />} Big Task
+                    </button>
+                </div>
+
+                {/* Custom draggable scrollbar */}
+                <div
+                    ref={trackRef}
+                    onClick={handleTrackClick}
+                    className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/[0.06] rounded-full mx-2"
+                    style={{ cursor: 'pointer' }}
+                >
+                    <div
+                        onMouseDown={handleThumbMouseDown}
+                        className="h-full rounded-full hover:opacity-80 transition-opacity"
+                        style={{ background: 'var(--primary)', width: `${filterScrollThumb}%`, marginLeft: `${filterScrollOffset}%`, cursor: 'grab', userSelect: 'none' }}
+                    />
+                </div>
             </div>
 
             {filtered.length === 0 ? (

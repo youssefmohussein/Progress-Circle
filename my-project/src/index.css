@@ -86,12 +86,12 @@ h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c7d2fe;
+  background: rgba(var(--primary-rgb), 0.35);
   border-radius: 9999px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #3730a3;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--primary-rgb), 0.6);
 }
 
 /* Input base */
@@ -295,7 +295,7 @@ h6 {
 
 /* Range slider accent */
 input[type=range] {
-  accent-color: #6366f1;
+  accent-color: var(--primary);
 }
 
 /* Select */
@@ -314,17 +314,18 @@ select.pc-input {
 /* ─── Mobile responsive utilities ─────────────────────────── */
 
 /* Horizontal scroll bar (filter pills, etc.) */
+/* Native scrollbar is hidden — custom React indicator is used instead */
 .mobile-scroll-x {
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 4px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 .mobile-scroll-x::-webkit-scrollbar {
-  display: none;
+  display: none !important; /* Chrome, Safari, Opera */
 }
 
 /* On touch devices show action buttons that are normally hover-only */

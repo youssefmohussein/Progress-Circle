@@ -155,9 +155,9 @@ export function Dashboard() {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="overflow-hidden"
                 >
-                    <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-[2rem] p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="bg-primary/10 border border-primary/20 rounded-[2rem] p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-indigo-500 text-white rounded-2xl shadow-lg shadow-indigo-500/20">
+                            <div className="p-3 bg-primary text-white rounded-2xl shadow-lg" style={{ boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)' }}>
                                 <BellRing size={20} className="animate-bounce" />
                             </div>
                             <div>
@@ -168,7 +168,8 @@ export function Dashboard() {
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <Button 
                                 onClick={handleEnablePush}
-                                className="flex-1 sm:flex-none h-9 px-6 bg-indigo-600 text-white border-none text-[10px] font-black uppercase tracking-widest"
+                                className="flex-1 sm:flex-none h-9 px-6 text-white border-none text-[10px] font-black uppercase tracking-widest"
+                                style={{ background: 'var(--primary)' }}
                             >
                                 Enable Push
                             </Button>
@@ -188,7 +189,7 @@ export function Dashboard() {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">Premium System</span>
+                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest">Premium System</span>
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">•</span>
                         <span className="text-pc-muted text-[10px] font-black uppercase tracking-widest">{dayjs().format('MMMM D, YYYY')}</span>
                     </div>
@@ -213,7 +214,7 @@ export function Dashboard() {
                 </div>
                 <div className="flex items-center gap-3">
                     <Link to="/focus" id="tour-focus-mode">
-                        <Button className="rounded-full px-5 h-11 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25 border-none">
+                        <Button className="rounded-full px-5 h-11 text-white border-none" style={{ background: 'var(--primary)', boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)' }}>
                             <Zap size={16} className="fill-current" /> Focus Mode
                         </Button>
                     </Link>
@@ -234,7 +235,7 @@ export function Dashboard() {
 
                     <div className="flex flex-col md:flex-row gap-6 items-center">
                         <div className="flex-shrink-0">
-                            <ProgressCircle progress={taskProgress} size={140} strokeWidth={12} color="#6366f1">
+                            <ProgressCircle progress={taskProgress} size={140} strokeWidth={12} color="var(--primary)">
                                 <div className="text-center">
                                     <span className="text-2xl font-black block">{Math.round(taskProgress)}%</span>
                                     <span className="text-[10px] font-bold text-pc-muted uppercase tracking-widest">Done</span>
@@ -329,19 +330,19 @@ export function Dashboard() {
                     <Card id="tour-activity-timeline" className="p-4">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
-                                <Activity size={16} className="text-indigo-500" />
+                                <Activity size={16} className="text-primary" />
                                 <h2 className="text-xs font-black uppercase tracking-widest">Activity Timeline</h2>
                             </div>
                         </div>
                         <ActivityTimeline activities={activities} />
                     </Card>
 
-                    <Card className="bg-indigo-600/10 border-indigo-500/20 p-4">
+                    <Card className="bg-primary/10 border-primary/20 p-4">
                         <h3 className="text-[10px] font-black uppercase tracking-widest mb-3">Daily Mission</h3>
                         <div className="space-y-2">
                             {tasks.filter(t => t.status !== 'completed').slice(0, 3).map(t => (
                                 <div key={t.id} className="flex items-center gap-2">
-                                    <div className="w-3.5 h-3.5 rounded border border-indigo-500/30 flex-shrink-0" />
+                                    <div className="w-3.5 h-3.5 rounded border border-primary/30 flex-shrink-0" />
                                     <span className="text-[11px] font-bold truncate">{t.title}</span>
                                 </div>
                             ))}
@@ -407,7 +408,7 @@ export function Dashboard() {
                                                 </span>
                                             )}
                                         </div>
-                                        <h4 className="font-bold text-sm line-clamp-2 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{task.title}</h4>
+                                        <h4 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors uppercase tracking-tight">{task.title}</h4>
                                         <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5 text-[10px] font-black uppercase tracking-widest text-pc-muted">
                                             <CalendarDays size={10} /> {getCountdown(task.deadline)}
                                         </div>
@@ -419,8 +420,8 @@ export function Dashboard() {
 
                     {/* Insights Mini Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="flex items-center gap-4 bg-gradient-to-br from-indigo-500/10 to-transparent">
-                            <div className="p-3 rounded-2xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
+                        <Card className="flex items-center gap-4 border-l-4 border-l-primary bg-primary/5">
+                            <div className="p-3 rounded-2xl bg-primary text-white shadow-lg" style={{ boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)' }}>
                                 <Trophy size={20} />
                             </div>
                             <div>

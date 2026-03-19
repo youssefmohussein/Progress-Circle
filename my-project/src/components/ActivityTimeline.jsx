@@ -22,7 +22,7 @@ export function ActivityTimeline({ activities }) {
                     transition={{ delay: idx * 0.1 }}
                     className="timeline-item relative"
                 >
-                    <div className="absolute -left-6 top-0 w-3 h-3 rounded-full bg-indigo-500 border-2 border-surface flex items-center justify-center z-10">
+                    <div className="absolute -left-6 top-0 w-3 h-3 rounded-full bg-primary border-2 border-surface flex items-center justify-center z-10">
                         <div className="w-1 h-1 bg-white rounded-full" />
                     </div>
 
