@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        totalScore: {
+            type: Number,
+            default: 0,
+        },
         xp: { // Alias for points for the Squad XP system
             type: Number,
             default: 0,
@@ -234,8 +238,20 @@ userSchema.pre('save', async function (next) {
     }
 
     // Score is now completely separate from points.
-    // Score = total focus/study time (minutes) ONLY.
-    this.totalScore = this.totalFocusTime || 0;
+    // Score based on streaks + time of deep focus + milestones + squad activity.
+    const streakBonus = (this.streak || 0) * 100;
+    const focusScore = this.totalFocusTime || 0;
+    const squadScore = this.socialStats?.squadPoints || 0;
+    
+    // Estimate milestones based on available data:
+    // - Every 7 days of streak is a milestone (approx)
+    // - Every 5000 points is a milestone
+    // - Trees are awarded for focus milestones
+    const milestoneCount = Math.floor((this.streak || 0) / 7) 
+        + Math.floor((this.points || 0) / 5000)
+        + (this.trees?.length || 0);
+    
+    this.totalScore = streakBonus + focusScore + squadScore + (milestoneCount * 500);
     
     next();
 });

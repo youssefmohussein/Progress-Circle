@@ -29,6 +29,7 @@ export function AdminDashboard() {
     const [editingUser, setEditingUser] = useState(null); // Used for basic edit mode
     const [deepDiveUser, setDeepDiveUser] = useState(null); // Complete data load
     const [isSaving, setIsSaving] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [rewardAmount, setRewardAmount] = useState(50);
     const [pulseData, setPulseData] = useState([]);
 
@@ -215,6 +216,17 @@ export function AdminDashboard() {
             toast.success('Pricing updated successfully!');
         } catch { toast.error('Failed to update pricing'); }
         finally { setIsSavingPricing(false); }
+    };
+
+    const handleSyncScores = async () => {
+        if (!confirm('Execute GLOBAL SCORE SYNCHRONIZATION for all biological signatures? This will recalculate everyone\'s rank based on the new formula.')) return;
+        setIsSyncing(true);
+        try {
+            const res = await adminAPI.syncScores();
+            toast.success(res.data.message || 'GLOBAL SYNC COMPLETE');
+            fetchData();
+        } catch { toast.error('SYNC INTERRUPTED'); }
+        finally { setIsSyncing(false); }
     };
 
     const filteredUsers = users.filter(u => 
@@ -523,8 +535,12 @@ export function AdminDashboard() {
                                     <div className="flex flex-wrap md:flex-nowrap items-center gap-8 w-full md:w-auto">
                                         <div className="flex gap-10">
                                             <div className="text-center">
-                                                <p className="text-xs font-black text-indigo-400 mb-1">{u.points}</p>
-                                                <p className="text-[9px] text-pc-muted font-black uppercase tracking-widest">Neural XP</p>
+                                                <p className="text-xs font-black text-indigo-400 mb-1">{(u.totalScore || u.points || 0).toLocaleString()}</p>
+                                                <p className="text-[9px] text-pc-muted font-black uppercase tracking-widest">Score</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-xs font-black text-emerald-400 mb-1">{(u.points || 0).toLocaleString()}</p>
+                                                <p className="text-[9px] text-pc-muted font-black uppercase tracking-widest">Points</p>
                                             </div>
                                             <div className="text-center">
                                                 <p className="text-xs font-black text-sky-400 mb-1">{u.streak}d</p>
@@ -605,6 +621,18 @@ export function AdminDashboard() {
                                         <span>1.0x</span>
                                         <button onClick={() => toast.info('Multiplier adjustment coming soon')} className="hover:text-white transition-colors"> + </button>
                                     </div>
+                                </div>
+
+                                <div className="pt-6 border-t border-white/5">
+                                    <button 
+                                        onClick={handleSyncScores}
+                                        disabled={isSyncing}
+                                        className="w-full py-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                    >
+                                        <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
+                                        {isSyncing ? 'Synchronizing Neural Ranks...' : 'Global Score Sync (Recalculate All)'}
+                                    </button>
+                                    <p className="text-[9px] text-pc-muted mt-3 text-center uppercase tracking-tighter">Forces a full recalculation of totalScore using the new formula for every user.</p>
                                 </div>
                             </div>
                         </Card>

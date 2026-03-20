@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect } = require('../middleware/auth');
-const { getStatus, requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings, grantSubscription, getSubscriptionPricing, updateSubscriptionPricing, getDeepDiveUser, getAuditLogs } = require('../controllers/adminController');
+const { getStatus, requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings, grantSubscription, getSubscriptionPricing, updateSubscriptionPricing, getDeepDiveUser, getAuditLogs, recalculateScores } = require('../controllers/adminController');
 
 const router = express.Router();
 
@@ -21,6 +21,7 @@ router.post('/users/:id/grant-subscription', grantSubscription);
 router.delete('/users/:id', deleteUser);
 router.get('/pricing', getSubscriptionPricing);
 router.put('/pricing', updateSubscriptionPricing);
+router.post('/sync-scores', recalculateScores);
 router.get('/audit-logs', getAuditLogs);
 
 module.exports = router;

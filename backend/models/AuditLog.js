@@ -22,7 +22,8 @@ const auditLogSchema = new mongoose.Schema(
                 'CREATE_PROMO',
                 'UPDATE_PROMO',
                 'DELETE_PROMO',
-                'SYSTEM_ALERT'
+                'SYSTEM_ALERT',
+                'SYNC_SCORES'
             ],
             index: true,
         },

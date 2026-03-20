@@ -72,6 +72,12 @@ exports.updateGoal = async (req, res, next) => {
             { new: true, runValidators: true }
         );
         if (!goal) return res.status(404).json({ success: false, message: 'Goal not found' });
+        
+        // Award points if goal newly completed
+        if (req.body.status === 'completed' && goal.status !== 'completed') {
+            await User.findByIdAndUpdate(req.user._id, { $inc: { points: 50 } });
+        }
+
         res.status(200).json({ success: true, data: goal });
     } catch (error) {
         next(error);
@@ -102,6 +108,10 @@ exports.createBudget = async (req, res, next) => {
     try {
         const payload = { ...req.body, userId: req.user._id };
         const budget = await Budget.create(payload);
+        
+        // Award points for creating a budget
+        await User.findByIdAndUpdate(req.user._id, { $inc: { points: 10 } });
+
         res.status(201).json({ success: true, data: budget });
     } catch (error) {
         next(error);

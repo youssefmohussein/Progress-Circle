@@ -88,6 +88,10 @@ const addBodyMetric = async (req, res, next) => {
     try {
         const metricData = { ...req.body, user: req.user._id };
         const metric = await BodyMetric.create(metricData);
+        
+        // Award points for logging body metrics
+        await User.findByIdAndUpdate(req.user._id, { $inc: { points: 5 } });
+
         res.status(201).json({ success: true, data: metric });
     } catch (error) {
         next(error);

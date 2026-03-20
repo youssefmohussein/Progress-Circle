@@ -13,18 +13,9 @@ const getLeaderboard = async (req, res, next) => {
             'name email avatar avatarConfig themePreferences points streak totalScore totalFocusTime socialStats trees createdAt'
         );
 
-        // Use the SAME formula as authController getMe + User pre('save'):
-        //   effectiveScore = points + totalFocusTime + (streak * 10) + (battlesWon * 100)
-        // Falls back to this formula if DB totalScore is stale/zero.
+        // Use totalScore directly from the database for rankings.
         const withScore = users.map(user => {
-            const battlesWon = user.socialStats?.battlesWon || 0;
-            const calculated = (user.points || 0)
-                + (user.totalFocusTime || 0)
-                + ((user.streak || 0) * 10)
-                + (battlesWon * 100);
-            const effectiveScore = (user.totalScore && user.totalScore > 0)
-                ? user.totalScore
-                : calculated;
+            const effectiveScore = user.totalScore || 0;
             return { user, effectiveScore };
         });
 

@@ -76,7 +76,7 @@ function OrbitRing({ size, r, c1, c2, duration, reverse, uid }) {
 }
 
 function Planet({ entry, localRank, isMe }) {
-    const league = getLeague(entry.user?.points || 0);
+    const league = getLeague(entry.user?.totalScore || 0);
     const neon   = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
     const size   = getPlanetSize(localRank);
     const score  = (entry.user?.totalScore || entry.user?.points || 0).toLocaleString();
@@ -147,16 +147,21 @@ function Planet({ entry, localRank, isMe }) {
                     {entry.user?.name}
                     {isMe && <span style={{ color: 'var(--primary)', fontSize: size * 0.12 }}> (you)</span>}
                 </p>
-                <p style={{ color: neon.ring, fontSize: size * 0.14, fontWeight: 800 }}>
-                    🌐 #{entry.rank} globally
-                </p>
+                <div className="flex flex-col gap-0.5 mt-1">
+                    <p style={{ color: neon.ring, fontSize: size * 0.13, fontWeight: 800, opacity: 0.9 }}>
+                        🏆 #{localRank} in {league.label}
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: size * 0.11, fontWeight: 700 }}>
+                        🌐 #{entry.rank} globally
+                    </p>
+                </div>
             </div>
         </motion.div>
     );
 }
 
 function ListCard({ entry, isMe, index }) {
-    const league = getLeague(entry.user?.points || 0);
+    const league = getLeague(entry.user?.totalScore || 0);
     const neon   = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
     return (
         <motion.div
@@ -170,7 +175,7 @@ function ListCard({ entry, isMe, index }) {
             }}
         >
             <div className="w-8 flex-shrink-0 text-right">
-                <span className="text-sm font-black" style={{ color: neon.ring }}>#{entry.rank}</span>
+                <span className="text-[10px] font-black opacity-30" style={{ color: neon.ring }}>#{entry.rank}</span>
             </div>
             <AvatarDisplay avatarConfig={entry.user?.avatarConfig} userTheme={entry.user?.themePreferences} size="sm" />
             <div className="flex-1 min-w-0">
@@ -178,10 +183,13 @@ function ListCard({ entry, isMe, index }) {
                     {entry.user?.name}
                     {isMe && <span className="ml-1 text-[10px]" style={{ color: 'var(--primary)' }}>(you)</span>}
                 </p>
-                <p className="text-[10px] flex items-center gap-2 mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    <span className="flex items-center gap-0.5"><Target size={9} style={{ color: '#f59e0b' }}/>{(entry.user?.totalScore||entry.user?.points||0).toLocaleString()} score</span>
-                    <span className="flex items-center gap-0.5"><Flame size={9} style={{ color: '#f97316' }}/>{entry.user?.streak||0}d</span>
-                    <span className="flex items-center gap-0.5"><Clock size={9} style={{ color: '#22d3ee' }}/>{entry.user?.totalFocusTime||0}m</span>
+                <p className="text-[9px] flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <span className="font-bold" style={{ color: neon.ring }}>🏆 #{index + 6} in {league.label}</span>
+                    <span className="opacity-60 text-[8px]">🌐 #{entry.rank} globally</span>
+                </p>
+                <p className="text-[8px] flex items-center gap-2 mt-1 opacity-40">
+                    <span className="flex items-center gap-0.5"><Target size={8} style={{ color: '#f59e0b' }}/>{(entry.user?.totalScore||entry.user?.points||0).toLocaleString()} score</span>
+                    <span className="flex items-center gap-0.5"><Flame size={8} style={{ color: '#f97316' }}/>{entry.user?.streak||0}d</span>
                 </p>
             </div>
             <div className="text-right flex-shrink-0">
@@ -221,7 +229,7 @@ export function Leaderboard() {
         if (!leaderboard) return {};
         const g = {};
         for (const entry of leaderboard) {
-            const l = getLeague(entry.user?.points || 0);
+            const l = getLeague(entry.user?.totalScore || 0);
             if (!g[l.id]) g[l.id] = { league: l, entries: [] };
             g[l.id].entries.push(entry);
         }
@@ -233,7 +241,12 @@ export function Leaderboard() {
     const currentTab = (activeTab && grouped[activeTab]) ? activeTab : tabs[0];
 
     const myRank   = useMemo(() => leaderboard?.find(e => e.user?.id === user?.id)?.rank, [leaderboard, user]);
-    const myLeague = useMemo(() => getLeague(user?.points || 0), [user]);
+    const myLeague = useMemo(() => getLeague(user?.totalScore || 0), [user]);
+    const myLeagueRank = useMemo(() => {
+        if (!grouped[myLeague.id]) return null;
+        const idx = grouped[myLeague.id].entries.findIndex(e => e.user?.id === user?.id);
+        return idx !== -1 ? idx + 1 : null;
+    }, [grouped, myLeague.id, user?.id]);
     const myNeon   = LEAGUE_NEON[myLeague?.id] || LEAGUE_NEON.Bronze;
 
     if (!leaderboard) return <LoadingSpinner />;
@@ -275,13 +288,20 @@ export function Leaderboard() {
                 {/* Your global rank banner */}
                 {myRank && (
                     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                        className="mx-auto max-w-sm flex items-center justify-center gap-3 py-2.5 px-5 rounded-2xl"
+                        className="mx-auto max-w-lg flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3 px-6 rounded-2xl"
                         style={{ background: `${myNeon.ring}12`, border: `1px solid ${myNeon.ring}40` }}>
-                        <Trophy size={16} style={{ color: myNeon.ring }} />
-                        <p className="text-sm font-black text-white">
-                            Your rank: <span style={{ color: myNeon.ring }}>#{myRank}</span>
-                            <span className="font-normal text-white/40"> · {myLeague.emoji} {myLeague.label}</span>
-                        </p>
+                        <div className="flex items-center gap-2">
+                             <Trophy size={16} style={{ color: myNeon.ring }} />
+                             <p className="text-sm font-black text-white">
+                                Global: <span style={{ color: myNeon.ring }}>#{myRank}</span>
+                             </p>
+                        </div>
+                        <div className="flex items-center gap-2 border-l border-white/10 pl-6">
+                             <span className="text-sm">{myLeague.emoji}</span>
+                             <p className="text-sm font-black text-white">
+                                {myLeague.label}: <span style={{ color: myNeon.ring }}>#{myLeagueRank || '?'}</span>
+                             </p>
+                        </div>
                     </motion.div>
                 )}
 

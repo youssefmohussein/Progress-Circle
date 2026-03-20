@@ -1,4 +1,5 @@
 const Nutrition = require('../models/Nutrition');
+const User = require('../models/User');
 
 // @desc    Get nutrition data for a specific date
 // @route   GET /api/nutrition/:date
@@ -53,6 +54,11 @@ exports.addMeal = async (req, res, next) => {
         nutrition.meals.push(mealData);
         await nutrition.save();
 
+        // Award points for logging a meal (Cap: 3 per day)
+        if (nutrition.meals.length <= 3) {
+            await User.findByIdAndUpdate(req.user.id, { $inc: { points: 5 } });
+        }
+
         res.status(200).json({
             success: true,
             data: nutrition,
@@ -78,6 +84,15 @@ exports.updateWater = async (req, res, next) => {
             { $inc: { waterIntake: sanitizedAmount } },
             { new: true }
         );
+
+        // Award points for logging water (Cap: 8 logs per day assuming ~250ml each)
+        // We use a simple heuristic: if waterIntake was low before this increment
+        if (nutrition && nutrition.waterIntake <= 2000) {
+            // Check if this was a significant increment to prevent spam
+            if (sanitizedAmount >= 100) {
+                 await User.findByIdAndUpdate(req.user.id, { $inc: { points: 2 } });
+            }
+        }
 
         res.status(200).json({
             success: true,

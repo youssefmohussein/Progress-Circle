@@ -197,15 +197,6 @@ const getMe = async (req, res) => {
         }
     }
 
-    // Score = totalFocusTime ONLY (completely separate from points)
-    const calculatedTotalScore = user.totalFocusTime || 0;
-
-    // Persist if it was wrong (migration for existing users)
-    if (user.totalScore !== calculatedTotalScore) {
-        user.totalScore = calculatedTotalScore;
-        await user.save();
-    }
-
     res.status(200).json({
         success: true,
         data: {
@@ -215,7 +206,7 @@ const getMe = async (req, res) => {
             avatar: user.avatar,
             avatarConfig: user.avatarConfig,
             points: user.points,
-            totalScore: calculatedTotalScore,
+            totalScore: user.totalScore || 0,
             streak: user.streak,
             streakHistory: user.streakHistory,
             streakFreezes: user.streakFreezes,

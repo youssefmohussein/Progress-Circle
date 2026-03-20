@@ -22,6 +22,22 @@ async function applyDelta(userId, accountId, delta) {
     await recomputeTotalMoney(userId);
 }
 
+// ─── Helper: award transaction points with daily cap ──────────────────────────
+async function awardTransactionPoints(userId) {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    
+    // Count transactions created today by this user
+    const todayCount = await Transaction.countDocuments({ 
+        user: userId, 
+        createdAt: { $gte: startOfToday } 
+    });
+    
+    if (todayCount < 5) {
+        await User.findByIdAndUpdate(userId, { $inc: { points: 2 } });
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // BORROW
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -55,6 +71,8 @@ exports.createBorrow = async (req, res, next) => {
             category: 'Borrow', fromWho, accountId: accountId || null,
             account: '', purpose: `Borrowed from ${fromWho}`
         });
+
+        await awardTransactionPoints(req.user._id);
 
         res.status(201).json({ success: true, data: borrow });
     } catch (err) { next(err); }
@@ -91,6 +109,8 @@ exports.recordReturn = async (req, res, next) => {
             accountId: deductFrom || null, account: '',
             purpose: `Returning borrowed money to ${borrow.fromWho}`
         });
+
+        await awardTransactionPoints(req.user._id);
 
         res.status(200).json({ success: true, data: borrow });
     } catch (err) { next(err); }
@@ -173,6 +193,8 @@ exports.payInstallment = async (req, res, next) => {
             purpose: `Installment payment: ${inst.name} (Month ${inst.payments.length}/${inst.totalMonths})`
         });
 
+        await awardTransactionPoints(req.user._id);
+
         res.status(200).json({ success: true, data: inst });
     } catch (err) { next(err); }
 };
@@ -237,6 +259,8 @@ exports.payBill = async (req, res, next) => {
             accountId: bill.accountId || null, account: '',
             purpose: `Bill paid: ${bill.name}`
         });
+
+        await awardTransactionPoints(req.user._id);
 
         res.status(200).json({ success: true, data: bill });
     } catch (err) { next(err); }
@@ -308,6 +332,8 @@ exports.confirmSalary = async (req, res, next) => {
             date: date ? new Date(date) : new Date(),
             purpose: 'Monthly salary received'
         });
+
+        await awardTransactionPoints(req.user._id);
 
         const updatedUser = await User.findById(req.user._id);
         res.status(201).json({ success: true, data: tx, user: updatedUser });
@@ -396,6 +422,8 @@ exports.buyInvestment = async (req, res, next) => {
             purpose: `Bought ${quantity} of ${name}`, currency: currency || acc.currency
         });
 
+        await awardTransactionPoints(req.user._id);
+
         res.status(201).json({ success: true, data: investment });
     } catch (err) { next(err); }
 };
@@ -437,6 +465,8 @@ exports.sellInvestment = async (req, res, next) => {
             purpose: `Sold ${qtyToSell} of ${inv.name}. P&L: ${pnl >= 0 ? '+' : ''}${pnl}`,
             currency: inv.purchaseCurrency
         });
+
+        await awardTransactionPoints(req.user._id);
 
         res.status(200).json({ success: true, data: inv, pnl });
     } catch (err) { next(err); }

@@ -314,6 +314,39 @@ const getAuditLogs = async (req, res, next) => {
 // @desc    Get public system status
 // @route   GET /api/admin/status
 // @access  Public
+// @desc    Recalculate scores for all users
+// @route   POST /api/admin/sync-scores
+// @access  Admin
+const recalculateScores = async (req, res, next) => {
+    try {
+        const users = await User.find({});
+        let successes = 0;
+        let failures = 0;
+
+        for (const user of users) {
+            try {
+                await user.save();
+                successes++;
+            } catch (err) {
+                console.error(`Failed to sync score for user ${user._id}:`, err.message);
+                failures++;
+            }
+        }
+
+        await AuditLog.create({
+            adminId: req.user._id,
+            actionType: 'SYNC_SCORES',
+            details: { userCount: users.length, successes, failures },
+            ipAddress: req.ip
+        });
+
+        res.status(200).json({ 
+            success: true, 
+            message: `Neural Rank Synchronization: ${successes} successful, ${failures} failed out of ${users.length} biological signatures.` 
+        });
+    } catch (error) { next(error); }
+};
+
 const getStatus = async (req, res, next) => {
     try {
         const settings = await GlobalSettings.getSettings();
@@ -327,4 +360,4 @@ const getStatus = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-module.exports = { getStatus, requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings, grantSubscription, getSubscriptionPricing, updateSubscriptionPricing, getDeepDiveUser, getAuditLogs };
+module.exports = { getStatus, requireAdmin, getStats, getUsers, resetPoints, deleteUser, updateUser, rewardAll, getSettings, updateSettings, grantSubscription, getSubscriptionPricing, updateSubscriptionPricing, getDeepDiveUser, getAuditLogs, recalculateScores };

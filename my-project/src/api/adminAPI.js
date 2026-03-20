@@ -25,4 +25,5 @@ export const adminAPI = {
     getPaymentLogs: (page = 1, limit = 50) => client.get(`/admin/analytics/payments?page=${page}&limit=${limit}`),
     getAuditLogs: (page = 1, limit = 50) => client.get(`/admin/audit-logs?page=${page}&limit=${limit}`),
     getUserDeepDive: (id) => client.get(`/admin/users/${id}/deep-dive`),
+    syncScores: () => client.post('/admin/sync-scores'),
 };
