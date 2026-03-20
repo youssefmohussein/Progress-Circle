@@ -227,12 +227,12 @@ exports.getGamificationData = async (req, res, next) => {
 // @access Private
 exports.saveAvatarConfig = async (req, res, next) => {
     try {
-        const { 
-            seed, head, face, facialHair, accessories, 
-            clothingColor, skinColor, headContrastColor, 
-            backgroundColor, farmTheme 
+        const {
+            seed, head, face, facialHair, accessories,
+            clothingColor, skinColor, headContrastColor,
+            backgroundColor, farmTheme
         } = req.body;
-        
+
         const user = await User.findById(req.user._id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -253,7 +253,7 @@ exports.saveAvatarConfig = async (req, res, next) => {
 
         for (const { cat, val } of toCheck) {
             if (val === undefined || val === null) continue;
-            
+
             // Resolve the actual ID from SHOP_ITEMS to handle custom IDs like gradients
             const shopItem = SHOP_ITEMS[cat]?.find(i => i.val === val);
             const itemId = shopItem ? shopItem.id : `${cat}_${val}`;

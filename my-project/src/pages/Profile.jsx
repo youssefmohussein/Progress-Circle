@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useSEO } from '../hooks/useSEO';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    User, Mail, Calendar, Trophy, Zap, Shield, 
+import {
+    User, Mail, Calendar, Trophy, Zap, Shield,
     Palette, Sun, Moon, Sparkles, ChevronRight,
     Music, Link2, ExternalLink, Check, Star, ShoppingBag, Sprout,
     Flame, Snowflake, Crown, TrendingUp, RotateCcw, Lock,
-    Download, FileText, FileSpreadsheet, RefreshCw, Database, 
+    Download, FileText, FileSpreadsheet, RefreshCw, Database,
     Users, Wallet, Activity, Salad, Trash2, AlertTriangle, Gift, Share2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -31,7 +31,7 @@ export function Profile() {
     const { gamData } = useGamification();
     useSEO('My Profile', 'Manage your ProgressCircle profile, toggle features, choose themes, and export your productivity data.');
     const [updating, setUpdating] = useState(false);
-    
+
     // Music Preferences Local States
     const [musicPlatform, setMusicPlatform] = useState(user?.musicPreferences?.platform || '');
     const [playlistUrl, setPlaylistUrl] = useState(user?.musicPreferences?.playlistUrl || '');
@@ -82,12 +82,12 @@ export function Profile() {
         try {
             // Update context immediately
             updateTheme(newPrefs);
-            
+
             // Sync with backend
             const res = await api.put('/users/profile', {
                 themePreferences: { ...theme, ...newPrefs }
             });
-            
+
             if (res.data?.success) {
                 setUser(res.data.data);
             }
@@ -181,11 +181,11 @@ export function Profile() {
                     </div>
                     <div className="flex-1">
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>
-                        
+
                         <div className="flex items-center gap-2 mb-1">
                             <p className="text-[10px] text-muted font-mono bg-white/5 px-2 py-0.5 rounded border border-white/5 flex items-center gap-2">
                                 ID: {user?._id || user?.id || 'ALPHA_SYNC'}
-                                <button 
+                                <button
                                     onClick={() => {
                                         const idToCopy = user?._id || user?.id;
                                         if (idToCopy) {
@@ -311,8 +311,8 @@ export function Profile() {
                                             background: isActive
                                                 ? `color-mix(in srgb, ${l.color} 22%, transparent)`
                                                 : isUnlocked
-                                                ? `color-mix(in srgb, ${l.color} 8%, transparent)`
-                                                : 'rgba(255,255,255,0.03)',
+                                                    ? `color-mix(in srgb, ${l.color} 8%, transparent)`
+                                                    : 'rgba(255,255,255,0.03)',
                                             color: isActive ? l.color : isUnlocked ? `color-mix(in srgb, ${l.color} 80%, white)` : '#555',
                                             border: `1px solid ${isActive ? `color-mix(in srgb, ${l.color} 40%, transparent)` : 'rgba(255,255,255,0.06)'}`,
                                         }}
@@ -335,16 +335,16 @@ export function Profile() {
             </div>
 
             {/* Referral System */}
-            <motion.div 
-                initial={{ opacity: 0, y: 10 }} 
-                animate={{ opacity: 1, y: 0 }} 
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="pc-card relative overflow-hidden bg-gradient-to-br from-primary/10 to-transparent border-primary/20"
             >
                 <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                     <Users size={80} />
                 </div>
-                
+
                 <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-primary/20 rounded-lg text-primary">
                         <Gift size={20} />
@@ -362,7 +362,7 @@ export function Profile() {
                             <span className="text-primary font-bold">{user.referralsCount || 0}/3 referrals</span>
                         </div>
                         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <motion.div 
+                            <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${Math.min(((user.referralsCount || 0) / 3) * 100, 100)}%` }}
                                 className="h-full bg-primary"
@@ -381,7 +381,7 @@ export function Profile() {
                             {`${window.location.origin}/register?ref=${user.referralToken || 'ALPHA'}`}
                         </p>
                     </div>
-                    <button 
+                    <button
                         onClick={() => {
                             navigator.clipboard.writeText(`${window.location.origin}/register?ref=${user.referralToken}`);
                             toast.success('Referral link copied to clipboard');
@@ -401,7 +401,7 @@ export function Profile() {
                         <h2 className="text-xl font-black" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Visual Themes</h2>
                     </div>
                     <div className="flex bg-white/5 rounded-xl p-1 gap-1">
-                        <button 
+                        <button
                             onClick={handleRestoreDefaults}
                             className="p-2 rounded-lg text-pc-muted hover:text-white transition-all"
                             title="Restore Defaults"
@@ -409,13 +409,13 @@ export function Profile() {
                             <RotateCcw size={14} />
                         </button>
                         <div className="w-[1px] h-4 bg-white/10 my-auto mx-1" />
-                        <button 
+                        <button
                             onClick={() => handleToggleMode('light')}
                             className={`p-2 rounded-lg transition-all ${!dark && !theme.bg ? 'bg-white text-black shadow-lg shadow-white/20' : 'text-pc-muted hover:text-white'}`}
                         >
                             <Sun size={14} />
                         </button>
-                        <button 
+                        <button
                             onClick={() => handleToggleMode('dark')}
                             className={`p-2 rounded-lg transition-all ${dark && !theme.bg ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-pc-muted hover:text-white'}`}
                         >
@@ -431,16 +431,15 @@ export function Profile() {
                             {universeThemes.map((t) => (
                                 <button
                                     key={t.name}
-                                    onClick={() => saveThemePreference({ 
-                                        primaryColor: t.primary, 
+                                    onClick={() => saveThemePreference({
+                                        primaryColor: t.primary,
                                         accentColor: t.accent,
                                         bg: t.bg,
                                         surface: t.surface,
                                         mode: 'dark'
                                     })}
-                                    className={`group relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all overflow-hidden ${
-                                        theme.primaryColor === t.primary ? 'bg-white/[0.07] border-primary/40 ring-1 ring-primary/40' : 'bg-white/5 border-transparent hover:border-white/20'
-                                    } border`}
+                                    className={`group relative flex flex-col items-center gap-3 p-4 rounded-2xl transition-all overflow-hidden ${theme.primaryColor === t.primary ? 'bg-white/[0.07] border-primary/40 ring-1 ring-primary/40' : 'bg-white/5 border-transparent hover:border-white/20'
+                                        } border`}
                                 >
                                     <div className="flex gap-2">
                                         <div className="w-5 h-5 rounded-full shadow-lg" style={{ background: t.primary }} />
@@ -515,7 +514,7 @@ export function Profile() {
                 </div>
 
                 {user.synergyEnabled && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-6 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 flex items-center justify-between gap-4"

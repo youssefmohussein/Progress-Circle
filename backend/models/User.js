@@ -242,17 +242,17 @@ userSchema.pre('save', async function (next) {
     const streakBonus = (this.streak || 0) * 100;
     const focusScore = this.totalFocusTime || 0;
     const squadScore = this.socialStats?.squadPoints || 0;
-    
+
     // Estimate milestones based on available data:
     // - Every 7 days of streak is a milestone (approx)
     // - Every 5000 points is a milestone
     // - Trees are awarded for focus milestones
-    const milestoneCount = Math.floor((this.streak || 0) / 7) 
+    const milestoneCount = Math.floor((this.streak || 0) / 7)
         + Math.floor((this.points || 0) / 5000)
         + (this.trees?.length || 0);
-    
+
     this.totalScore = streakBonus + focusScore + squadScore + (milestoneCount * 500);
-    
+
     next();
 });
 
@@ -274,6 +274,26 @@ userSchema.plugin(fieldEncryption, {
     secret: process.env.DATABASE_ENCRYPTION_KEY,
     saltGenerator: (secret) => secret.slice(0, 16),
 });
+
+// Decrypt fields after retrieval
+userSchema.post('init', (doc) => {
+    try {
+        doc.decryptFieldsSync();
+    } catch (err) {
+        // Already decrypted or failed
+    }
+});
+
+// Decrypt fields after save
+userSchema.post('save', (doc) => {
+    try {
+        doc.decryptFieldsSync();
+    } catch (err) {
+        // Already decrypted or failed
+    }
+});
+
+module.exports = mongoose.model('User', userSchema);
 
 // Decrypt fields after retrieval
 userSchema.post('init', (doc) => {

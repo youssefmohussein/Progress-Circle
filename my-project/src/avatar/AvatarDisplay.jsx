@@ -8,7 +8,7 @@ export function AvatarDisplay({ avatarConfig, size = 'md', className = '', showB
 
     // If userTheme is provided and we want to showBg, we could override the background here.
     // However, Open Peeps uses a simple hex code list for background colors.
-    
+
     // Generate SVG string synchronously via DiceBear
     const svgString = useMemo(() => {
         return generateAvatarSvg(configToRender);
@@ -31,10 +31,10 @@ export function AvatarDisplay({ avatarConfig, size = 'md', className = '', showB
     };
 
     return (
-        <div 
+        <div
             className={`rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center ${className}`}
-            style={{ 
-                width: px, 
+            style={{
+                width: px,
                 height: px,
                 background: getBackgroundStyle()
             }}

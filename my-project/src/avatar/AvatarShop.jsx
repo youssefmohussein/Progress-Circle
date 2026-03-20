@@ -45,7 +45,7 @@ export function AvatarShop() {
         if (gamData && gamData.avatarConfig && !previewConfig) {
             const cleanConfig = { ...avatarDefaults };
             const shopItems = gamData.shopItems || {};
-            
+
             for (const key of Object.keys(avatarDefaults)) {
                 const userVal = gamData.avatarConfig[key];
                 if (userVal !== undefined) {
@@ -78,7 +78,7 @@ export function AvatarShop() {
         setSaving(true);
         const newConfig = { ...previewConfig, [key]: value };
         setPreviewConfig(newConfig);
-        
+
         try {
             await saveAvatar(newConfig);
         } catch (e) {
@@ -135,24 +135,24 @@ export function AvatarShop() {
             <div className="flex flex-col items-center gap-4 p-6 rounded-2xl min-h-[220px] justify-center" style={{ background: 'var(--color-surface-2)' }}>
                 <AnimatePresence mode="wait">
                     {activeTab === 'farmTheme' ? (
-                        <motion.div 
+                        <motion.div
                             key="farm-preview"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="w-full max-w-md"
                         >
-                            <FarmScene 
-                                farmTheme={liveConfig.farmTheme} 
+                            <FarmScene
+                                farmTheme={liveConfig.farmTheme}
                                 trees={[
                                     { type: 'oak' }, { type: 'pine' }, { type: 'sapling' },
                                     { type: 'pine_rare' }, { type: 'golden' }, { type: 'pine' }
-                                ]} 
+                                ]}
                             />
                             <p className="text-center text-[10px] text-muted mt-2 uppercase tracking-widest font-bold">Farm Theme Preview</p>
                         </motion.div>
                     ) : (
-                        <motion.div 
+                        <motion.div
                             key="avatar-preview"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -164,7 +164,7 @@ export function AvatarShop() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-                
+
                 {/* Auto-save on equip is active, manual save button is no longer needed */}
             </div>
 
@@ -220,20 +220,20 @@ export function AvatarShop() {
                             >
                                 {/* Mini inline preview for colors or the character itself */}
                                 {activeTab === 'farmTheme' ? (
-                                    <div 
+                                    <div
                                         className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner"
                                         style={{ background: FARM_THEME_PREVIEWS[optValue]?.bg || 'var(--color-surface-3)' }}
                                     >
                                         {FARM_THEME_PREVIEWS[optValue]?.icon || '❓'}
                                     </div>
                                 ) : (activeTab === 'skinColor' || activeTab === 'headContrastColor' || activeTab === 'clothingColor' || activeTab === 'backgroundColor') ? (
-                                    <div 
-                                        className="w-10 h-10 rounded-full border-2 border-white/10" 
-                                        style={{ 
-                                            background: (optValue === 'transparent' || optValue.includes('gradient')) 
-                                                ? optValue 
-                                                : `#${optValue}` 
-                                        }} 
+                                    <div
+                                        className="w-10 h-10 rounded-full border-2 border-white/10"
+                                        style={{
+                                            background: (optValue === 'transparent' || optValue.includes('gradient'))
+                                                ? optValue
+                                                : `#${optValue}`
+                                        }}
                                     />
                                 ) : (
                                     <AvatarDisplay avatarConfig={previewOptConfig} size="sm" showBg={false} />
@@ -247,11 +247,10 @@ export function AvatarShop() {
                                     {/* Preview Button */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handlePreview(activeTab, optValue); }}
-                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${
-                                            isPreviewing 
-                                            ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200' 
+                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${isPreviewing
+                                            ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200'
                                             : 'border-white/10 text-muted hover:bg-white/5'
-                                        }`}
+                                            }`}
                                     >
                                         Preview
                                     </button>
