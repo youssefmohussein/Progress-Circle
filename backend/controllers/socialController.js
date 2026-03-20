@@ -138,6 +138,38 @@ exports.getFriends = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
+// ── UTILITIES ────────────────────────────────────────────────────────────────
+const calculateLeague = (xp) => {
+    if (xp >= 150000) return 'Master';
+    if (xp >= 50000) return 'Diamond';
+    if (xp >= 15000) return 'Platinum';
+    if (xp >= 5000) return 'Gold';
+    if (xp >= 1000) return 'Silver';
+    return 'Bronze';
+};
+
+const refreshSquadScore = async (roomId) => {
+    try {
+        const room = await SquadRoom.findById(roomId).populate('members.user', 'xp points totalScore');
+        if (!room) return;
+
+        const totalXP = room.members.reduce((sum, m) => sum + (m.user?.totalScore || m.user?.xp || m.user?.points || 0), 0);
+        room.squadXP = totalXP;
+        room.squadPoints = totalXP;
+        
+        const newLeague = calculateLeague(totalXP);
+        if (newLeague !== room.league) {
+            room.league = newLeague;
+            room.lastLeagueUpdate = new Date();
+        }
+
+        await room.save();
+        return room;
+    } catch (err) {
+        console.error('Squad Score Refresh Failed:', err);
+    }
+};
+
 // ── SQUAD ROOMS ──────────────────────────────────────────────────────────────
 
 // @desc    Create Room
@@ -164,6 +196,8 @@ exports.createRoom = async (req, res, next) => {
                 message: `${req.user.name} invited you to join the room: ${name}`
             });
         }
+
+        await refreshSquadScore(room._id);
 
         const populatedRoom = await SquadRoom.findById(room._id)
             .populate('host', 'name avatar')
@@ -217,11 +251,23 @@ exports.getRooms = async (req, res, next) => {
                 { 'invitedUsers': req.user._id }
             ]
         }).populate('host', 'name avatar')
-            .populate('members.user', 'name avatar avatarConfig')
+            .populate('members.user', 'name avatar avatarConfig xp points totalScore') // Added totalScore
             .populate('activeBattle')
-            .sort({ updatedAt: -1 });
+            .sort({ updatedAt: -1 })
+            .lean(); // Use lean for performance
 
-        res.status(200).json({ success: true, data: rooms });
+        // Dynamically calculate squadXP based on current members' XP
+        const formattedRooms = rooms.map(room => {
+            const totalXP = room.members.reduce((sum, m) => sum + (m.user?.totalScore || m.user?.xp || m.user?.points || 0), 0);
+            return {
+                ...room,
+                squadXP: totalXP,
+                squadPoints: totalXP,
+                league: calculateLeague(totalXP)
+            };
+        });
+
+        res.status(200).json({ success: true, data: formattedRooms });
     } catch (err) { next(err); }
 };
 
@@ -242,6 +288,7 @@ exports.acceptRoomInvite = async (req, res, next) => {
         room.invitedUsers = room.invitedUsers.filter(uid => uid.toString() !== req.user._id.toString());
         room.members.push({ user: req.user._id, status: 'idle' });
         await room.save();
+        await refreshSquadScore(room._id);
 
         // Update Notification
         await Notification.findOneAndUpdate(
@@ -296,6 +343,7 @@ exports.leaveRoom = async (req, res, next) => {
 
         room.members = room.members.filter(m => m.user.toString() !== req.user._id.toString());
         await room.save();
+        await refreshSquadScore(room._id);
 
         res.status(200).json({ success: true, message: "Left room." });
     } catch (err) { next(err); }
@@ -366,7 +414,13 @@ exports.sendRoomMessage = async (req, res, next) => {
 // @access  Private
 exports.getRoom = async (req, res, next) => {
     try {
-        const room = await SquadRoom.findById(req.params.id)
+        const room = await SquadRoom.findById(req.params.id);
+        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
+        
+        // Refresh score to ensure accuracy
+        await refreshSquadScore(room._id);
+        
+        const refreshedRoom = await SquadRoom.findById(room._id)
             .populate('host', 'name avatar')
             .populate('members.user', 'name avatar avatarConfig')
             .populate('messages.sender', 'name avatar avatarConfig')
@@ -383,9 +437,8 @@ exports.getRoom = async (req, res, next) => {
                     }
                 ]
             });
-            
-        if (!room) return res.status(404).json({ success: false, message: "Room not found." });
-        res.status(200).json({ success: true, data: room });
+
+        res.status(200).json({ success: true, data: refreshedRoom });
     } catch (err) { next(err); }
 };
 
@@ -510,27 +563,30 @@ exports.completeSquadSession = async (req, res, next) => {
 // @access  Private
 exports.getGlobalSquadLeaderboard = async (req, res, next) => {
     try {
-        const rooms = await SquadRoom.find({ isPrivate: false })
-            .populate('members.user', 'name avatar points socialStats totalFocusTime')
-            .populate('host', 'name avatar');
+        // Find all rooms and populate users to get accurate XP
+        const squads = await SquadRoom.find({})
+            .populate('members.user', 'xp points totalScore')
+            .lean();
 
-        const leaderboard = rooms.map(room => {
-            const totalXP = room.members.reduce((sum, m) => sum + (m.user?.xp || 0), 0);
-            const totalFocus = room.members.reduce((sum, m) => sum + (m.user?.totalFocusTime || 0), 0);
+        // Calculate current XP for each squad and format
+        const leaderboard = squads.map(room => {
+            const totalXP = room.members.reduce((sum, m) => sum + (m.user?.totalScore || m.user?.xp || m.user?.points || 0), 0);
             return {
-                _id: room._id,
-                name: room.name,
-                host: room.host,
+                ...room,
+                squadXP: totalXP,
+                squadPoints: totalXP, // compatibility
                 memberCount: room.members.length,
-                totalXP: totalXP,
-                totalFocus: totalFocus,
-                rankScore: totalXP + (totalFocus * 10) // Weighted score
+                league: calculateLeague(totalXP)
             };
         });
 
-        const sorted = leaderboard.sort((a, b) => b.rankScore - a.rankScore).slice(0, 10);
+        // Sort by XP
+        const sorted = leaderboard.sort((a, b) => b.squadXP - a.squadXP).slice(0, 50);
+        
+        // Add rankings
+        const ranked = sorted.map((s, idx) => ({ ...s, rank: idx + 1 }));
 
-        res.status(200).json({ success: true, data: sorted });
+        res.status(200).json({ success: true, data: ranked });
     } catch (err) { next(err); }
 };
 
@@ -903,14 +959,6 @@ exports.extendBattleTime = async (req, res, next) => {
     }
 };
 
-const calculateLeague = (xp) => {
-    if (xp >= 150000) return 'Master';
-    if (xp >= 50000) return 'Diamond';
-    if (xp >= 15000) return 'Platinum';
-    if (xp >= 5000) return 'Gold';
-    if (xp >= 1000) return 'Silver';
-    return 'Bronze';
-};
 
 // @desc    Toggle task status within battle
 // @route   PATCH /api/social/battle/toggle-task/:id
@@ -955,6 +1003,11 @@ exports.toggleTaskStatus = async (req, res, next) => {
                 message: `Target Neutralized: ${req.user.name} finished [${task.title}] - +${pointsAwarded} XP`,
                 timestamp: new Date()
             });
+
+            // If this is part of a room, refresh the room score
+            if (battle.roomId) {
+                await refreshSquadScore(battle.roomId);
+            }
         } else {
             participant.tasksCompleted = Math.max(0, participant.tasksCompleted - 1);
             participant.pointsEarned = Math.max(0, participant.pointsEarned - pointsAwarded);
@@ -964,34 +1017,13 @@ exports.toggleTaskStatus = async (req, res, next) => {
 
         // Update squad points & league
         if (battle.roomId) {
-            const SquadRoom = require('../models/SquadRoom');
-            const inc = newStatus === 'completed' ? pointsAwarded : -pointsAwarded;
+            await refreshSquadScore(battle.roomId);
             
-            const room = await SquadRoom.findById(battle.roomId);
-            if (room) {
-                room.squadXP = Math.max(0, (room.squadXP || 0) + inc);
-                room.squadPoints = room.squadXP; // keep in sync
-                
-                const newLeague = calculateLeague(room.squadXP);
-                if (newLeague !== room.league) {
-                    room.league = newLeague;
-                    room.lastLeagueUpdate = new Date();
-                    
-                    // Add to room messages as a system notification
-                    room.messages.push({
-                        sender: null,
-                        text: `SQUAD PROMOTED: This unit has ascended to the ${newLeague} League!`,
-                        createdAt: new Date()
-                    });
-                }
-                
-                await room.save();
-                
-                // Also update the individual user's total squad points for their personal stats card
-                await User.findByIdAndUpdate(req.user._id, {
-                    $inc: { 'socialStats.squadPoints': inc }
-                });
-            }
+            // Also update the individual user's total squad points for their personal stats card
+            const inc = newStatus === 'completed' ? pointsAwarded : -pointsAwarded;
+            await User.findByIdAndUpdate(req.user._id, {
+                $inc: { 'socialStats.squadPoints': inc }
+            });
         }
 
         res.status(200).json({ success: true, data: battle });
@@ -1206,25 +1238,4 @@ exports.deleteNotification = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Notification deleted.' });
     } catch (err) { next(err); }
 };
-// @desc    Get global squad leaderboard
-// @route   GET /api/social/leaderboard
-// @access  Private
-exports.getGlobalSquadLeaderboard = async (req, res, next) => {
-    try {
-        const squads = await SquadRoom.find({})
-            .sort({ squadXP: -1 })
-            .limit(50)
-            .select('name squadXP squadLevel members league lastLeagueUpdate')
-            .lean();
-
-        // Add memberCount and ranking
-        const formattedSquads = squads.map((s, index) => ({
-            ...s,
-            rank: index + 1,
-            memberCount: s.members.length,
-            squadPoints: s.squadXP // fallback for old frontend
-        }));
-
-        res.status(200).json({ success: true, data: formattedSquads });
-    } catch (err) { next(err); }
-};
+// getGlobalSquadLeaderboard moved and consolidated above

@@ -23,6 +23,7 @@ import api from '../api/client';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTheme } from '../context/ThemeContext';
+import { getLeague, getNextLeague, getLeagueProgress, LEAGUES } from '../utils/leagues';
 
 export function Profile() {
     const { user, setUser } = useAuth();
@@ -244,6 +245,88 @@ export function Profile() {
                     </div>
                 </div>
             </motion.div>
+
+            {/* League Status */}
+            {(() => {
+                const pts = user.points || 0;
+                const league = getLeague(pts);
+                const next = getNextLeague(pts);
+                const progress = getLeagueProgress(pts);
+                return (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.08 }}
+                        className="pc-card relative overflow-hidden"
+                        style={{ borderColor: `color-mix(in srgb, ${league.color} 30%, transparent)` }}
+                    >
+                        <div className="absolute top-0 right-0 p-4 opacity-[0.06] text-5xl pointer-events-none select-none">{league.emoji}</div>
+                        <div className="flex items-start gap-4">
+                            <div
+                                className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+                                style={{ background: `color-mix(in srgb, ${league.color} 18%, transparent)`, border: `1.5px solid color-mix(in srgb, ${league.color} 35%, transparent)` }}
+                            >
+                                {league.emoji}
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                    <h3 className="text-base font-black" style={{ color: league.color }}>{league.label} League</h3>
+                                    <span className="text-[10px] font-bold text-muted uppercase tracking-wider">· {pts.toLocaleString()} pts</span>
+                                </div>
+                                <p className="text-[11px] text-muted mb-3">{league.description}</p>
+
+                                {/* Progress bar */}
+                                {next ? (
+                                    <>
+                                        <div className="flex justify-between text-[10px] text-muted font-bold mb-1">
+                                            <span>Progress to {next.emoji} {next.label}</span>
+                                            <span style={{ color: next.color }}>{(next.min - pts).toLocaleString()} pts needed</span>
+                                        </div>
+                                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                                            <motion.div
+                                                className="h-full rounded-full"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progress * 100}%` }}
+                                                transition={{ duration: 1, ease: 'easeOut' }}
+                                                style={{ background: `linear-gradient(90deg, ${league.color}, ${next.color})` }}
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-[11px] font-black" style={{ color: league.color }}>🏆 Maximum League Achieved</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* All leagues ladder */}
+                        <div className="mt-5 flex flex-wrap gap-2">
+                            {LEAGUES.slice().reverse().map((l) => {
+                                const isActive = l.id === league.id;
+                                const isUnlocked = pts >= l.min;
+                                return (
+                                    <div
+                                        key={l.id}
+                                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider"
+                                        style={{
+                                            background: isActive
+                                                ? `color-mix(in srgb, ${l.color} 22%, transparent)`
+                                                : isUnlocked
+                                                ? `color-mix(in srgb, ${l.color} 8%, transparent)`
+                                                : 'rgba(255,255,255,0.03)',
+                                            color: isActive ? l.color : isUnlocked ? `color-mix(in srgb, ${l.color} 80%, white)` : '#555',
+                                            border: `1px solid ${isActive ? `color-mix(in srgb, ${l.color} 40%, transparent)` : 'rgba(255,255,255,0.06)'}`,
+                                        }}
+                                        title={`${l.label}: ${l.min.toLocaleString()} pts`}
+                                    >
+                                        {l.emoji} {l.label}
+                                        {isActive && <span className="w-1.5 h-1.5 rounded-full ml-0.5 animate-pulse" style={{ background: l.color }} />}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                );
+            })()}
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">

@@ -213,12 +213,16 @@ const userSchema = new mongoose.Schema(
                     auth: { type: String, required: true }
                 }
             }
-        ]
+        ],
+        totalScore: {
+            type: Number,
+            default: 0
+        }
     },
     { timestamps: true }
 );
 
-// Hash password before saving and generate referral token
+// Hash password before saving, generate referral token, and calculate total score
 userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 12);
@@ -228,6 +232,10 @@ userSchema.pre('save', async function (next) {
     if (!this.referralToken) {
         this.referralToken = Math.random().toString(36).substring(2, 10).toUpperCase();
     }
+
+    // Score is now completely separate from points.
+    // Score = total focus/study time (minutes) ONLY.
+    this.totalScore = this.totalFocusTime || 0;
     
     next();
 });

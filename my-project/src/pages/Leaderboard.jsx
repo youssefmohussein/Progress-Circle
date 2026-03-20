@@ -1,140 +1,332 @@
-import { motion } from 'framer-motion';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
-
-import { Trophy, Medal, Award, Flame, CheckSquare } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { Card } from '../components/Card';
-import { AvatarDisplay } from '../avatar/AvatarDisplay';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { getTreeMetadata } from '../utils/themeTreeMetadata';
 import { EmptyState } from '../components/EmptyState';
-import { PageInsight } from '../components/PageInsight';
+import { AvatarDisplay } from '../avatar/AvatarDisplay';
+import { getLeague, LEAGUES } from '../utils/leagues';
+import { Trophy, Flame, Target, Clock } from 'lucide-react';
 
-const MEDALS = [
-    { rank: 1, icon: Trophy, color: 'text-yellow-500', bg: 'from-yellow-400/20 to-amber-400/10', border: 'border-yellow-400/30', emoji: '🥇' },
-    { rank: 2, icon: Medal, color: 'text-gray-400', bg: 'from-gray-400/20 to-slate-300/10', border: 'border-gray-300/30', emoji: '🥈' },
-    { rank: 3, icon: Award, color: 'text-orange-600', bg: 'from-orange-500/20 to-amber-600/10', border: 'border-orange-400/30', emoji: '🥉' },
-];
+const LEAGUE_NEON = {
+    Master:   { ring: '#f59e0b', ring2: '#fbbf24', glow: 'rgba(245,158,11,0.4)' },
+    Diamond:  { ring: '#22d3ee', ring2: '#818cf8', glow: 'rgba(34,211,238,0.4)' },
+    Platinum: { ring: '#818cf8', ring2: '#a78bfa', glow: 'rgba(129,140,248,0.4)' },
+    Gold:     { ring: '#eab308', ring2: '#f59e0b', glow: 'rgba(234,179,8,0.4)' },
+    Silver:   { ring: '#94a3b8', ring2: '#cbd5e1', glow: 'rgba(148,163,184,0.3)' },
+    Bronze:   { ring: '#f97316', ring2: '#fb923c', glow: 'rgba(249,115,22,0.4)' },
+};
+
+function getPlanetSize(localRank) {
+    if (localRank === 1) return 90;
+    if (localRank === 2) return 74;
+    if (localRank === 3) return 64;
+    if (localRank === 4) return 56;
+    return 50;
+}
+
+function Stars() {
+    const stars = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
+        id: i, x: Math.random() * 100, y: Math.random() * 100,
+        size: Math.random() * 1.8 + 0.4, delay: Math.random() * 5, dur: 2 + Math.random() * 3,
+    })), []);
+    return (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+            {stars.map(s => (
+                <motion.div key={s.id} className="absolute rounded-full"
+                    style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.size, height: s.size, background: '#fff' }}
+                    animate={{ opacity: [0.1, 0.8, 0.1] }}
+                    transition={{ duration: s.dur, delay: s.delay, repeat: Infinity }} />
+            ))}
+        </div>
+    );
+}
+
+function OrbitRing({ size, r, c1, c2, duration, reverse, uid }) {
+    return (
+        <svg className="absolute pointer-events-none"
+            style={{ width: size * 2.4, height: size * 2.4, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
+            viewBox={`0 0 ${size * 2.4} ${size * 2.4}`}>
+            <defs>
+                <linearGradient id={`lg-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   stopColor={c1} stopOpacity="0" />
+                    <stop offset="40%"  stopColor={c1} stopOpacity="1" />
+                    <stop offset="60%"  stopColor={c2} stopOpacity="1" />
+                    <stop offset="100%" stopColor={c2} stopOpacity="0" />
+                </linearGradient>
+                <filter id={`gf-${uid}`} x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="1.5" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+            </defs>
+            <motion.ellipse
+                cx={size * 1.2} cy={size * 1.2}
+                rx={r} ry={size * 0.2}
+                fill="none"
+                stroke={`url(#lg-${uid})`}
+                strokeWidth="2.5"
+                filter={`url(#gf-${uid})`}
+                animate={{ rotate: reverse ? -360 : 360 }}
+                transition={{ duration, repeat: Infinity, ease: 'linear' }}
+                style={{ originX: `${size * 1.2}px`, originY: `${size * 1.2}px` }}
+            />
+        </svg>
+    );
+}
+
+function Planet({ entry, localRank, isMe }) {
+    const league = getLeague(entry.user?.points || 0);
+    const neon   = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
+    const size   = getPlanetSize(localRank);
+    const score  = (entry.user?.totalScore || entry.user?.points || 0).toLocaleString();
+    const orbitR = size * 0.92;
+    const uid1   = `${entry.user?.id || localRank}-a`;
+    const uid2   = `${entry.user?.id || localRank}-b`;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.5, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: localRank * 0.08, type: 'spring', bounce: 0.3 }}
+            className="flex flex-col items-center gap-1.5"
+        >
+            {/* Score */}
+            <motion.p
+                style={{ color: neon.ring, fontFamily: 'Manrope,sans-serif', fontSize: size * 0.19, fontWeight: 900, textShadow: `0 0 14px ${neon.ring}` }}
+                animate={{ y: [-3, 3, -3] }}
+                transition={{ duration: 3.2 + localRank * 0.3, repeat: Infinity, ease: 'easeInOut' }}
+            >
+                {score}
+            </motion.p>
+
+            {/* Planet + rings */}
+            <motion.div
+                className="relative flex items-center justify-center flex-shrink-0"
+                style={{ width: size * 2.4, height: size * 2.4 }}
+                animate={{ y: [-6, 6, -6] }}
+                transition={{ duration: 4.2 + localRank * 0.35, repeat: Infinity, ease: 'easeInOut' }}
+            >
+                <OrbitRing size={size} r={orbitR} c1={neon.ring} c2={neon.ring2} duration={7 + localRank * 0.8} uid={uid1} />
+                <OrbitRing size={size} r={orbitR * 0.85} c1={neon.ring2} c2={neon.ring} duration={5 + localRank * 0.6} reverse uid={uid2} />
+
+                {/* Planet body */}
+                <div className="absolute z-10 rounded-full overflow-hidden flex items-center justify-center"
+                    style={{
+                        width: size, height: size,
+                        background: `radial-gradient(circle at 35% 30%, #2a1060, #08040f)`,
+                        boxShadow: `0 0 ${size * 0.5}px ${neon.glow}, 0 0 ${size * 0.15}px ${neon.ring}55 inset`,
+                        border: `2px solid ${neon.ring}50`,
+                    }}>
+                    <AvatarDisplay
+                        avatarConfig={entry.user?.avatarConfig}
+                        userTheme={entry.user?.themePreferences}
+                        size={size >= 80 ? 'lg' : size >= 64 ? 'md' : 'sm'}
+                    />
+                    {/* Gloss highlight */}
+                    <div className="absolute rounded-full pointer-events-none"
+                        style={{ top: '8%', left: '12%', width: '40%', height: '26%', background: 'radial-gradient(circle, rgba(255,255,255,0.22), transparent)' }} />
+                </div>
+
+                {/* League badge */}
+                <div className="absolute z-20 rounded-full flex items-center justify-center"
+                    style={{
+                        bottom: '22%', right: '20%',
+                        width: size * 0.28, height: size * 0.28, fontSize: size * 0.14,
+                        background: '#0a0614',
+                        border: `2px solid ${neon.ring}`,
+                        boxShadow: `0 0 10px ${neon.ring}99`,
+                    }}>
+                    {league.emoji}
+                </div>
+            </motion.div>
+
+            {/* Name + rank */}
+            <div className="text-center" style={{ maxWidth: size * 2 }}>
+                <p className="font-bold text-white truncate leading-tight" style={{ fontSize: size * 0.17, fontFamily: 'Manrope,sans-serif' }}>
+                    {entry.user?.name}
+                    {isMe && <span style={{ color: 'var(--primary)', fontSize: size * 0.12 }}> (you)</span>}
+                </p>
+                <p style={{ color: neon.ring, fontSize: size * 0.14, fontWeight: 800 }}>
+                    🌐 #{entry.rank} globally
+                </p>
+            </div>
+        </motion.div>
+    );
+}
+
+function ListCard({ entry, isMe, index }) {
+    const league = getLeague(entry.user?.points || 0);
+    const neon   = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.03 }}
+            className={`flex items-center gap-3 p-3 rounded-xl border transition-all`}
+            style={{
+                background: 'rgba(255,255,255,0.032)',
+                borderColor: isMe ? neon.ring + '55' : 'rgba(255,255,255,0.06)',
+                boxShadow: isMe ? `0 0 0 1px ${neon.ring}33` : 'none',
+            }}
+        >
+            <div className="w-8 flex-shrink-0 text-right">
+                <span className="text-sm font-black" style={{ color: neon.ring }}>#{entry.rank}</span>
+            </div>
+            <AvatarDisplay avatarConfig={entry.user?.avatarConfig} userTheme={entry.user?.themePreferences} size="sm" />
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white truncate">
+                    {entry.user?.name}
+                    {isMe && <span className="ml-1 text-[10px]" style={{ color: 'var(--primary)' }}>(you)</span>}
+                </p>
+                <p className="text-[10px] flex items-center gap-2 mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <span className="flex items-center gap-0.5"><Target size={9} style={{ color: '#f59e0b' }}/>{(entry.user?.totalScore||entry.user?.points||0).toLocaleString()} score</span>
+                    <span className="flex items-center gap-0.5"><Flame size={9} style={{ color: '#f97316' }}/>{entry.user?.streak||0}d</span>
+                    <span className="flex items-center gap-0.5"><Clock size={9} style={{ color: '#22d3ee' }}/>{entry.user?.totalFocusTime||0}m</span>
+                </p>
+            </div>
+            <div className="text-right flex-shrink-0">
+                <p className="font-black text-sm" style={{ color: neon.ring, fontFamily: 'Manrope,sans-serif' }}>
+                    {(entry.user?.totalScore || entry.user?.points || 0).toLocaleString()}
+                </p>
+                <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>score</p>
+            </div>
+        </motion.div>
+    );
+}
+
+function TabBtn({ league, active, count, onClick }) {
+    const neon = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
+    return (
+        <button onClick={onClick}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex-shrink-0"
+            style={{
+                background: active ? `${neon.ring}25` : 'rgba(255,255,255,0.04)',
+                color: active ? neon.ring : 'rgba(255,255,255,0.3)',
+                border: `1px solid ${active ? neon.ring + '55' : 'rgba(255,255,255,0.07)'}`,
+                boxShadow: active ? `0 0 16px ${neon.glow}` : 'none',
+            }}>
+            {league.emoji} {league.label}
+            <span className="ml-0.5 opacity-50">({count})</span>
+        </button>
+    );
+}
 
 export function Leaderboard() {
     const { leaderboard } = useData();
     const { user } = useAuth();
-    useSEO('Global Rankings', 'See who leads the ProgressCircle leaderboard. Compete on tasks, streaks, and focus sessions.');
+    useSEO('Cosmic Arena', 'Global leaderboard — ranked by score.');
+
+    // Group by league, keeping global rank from backend (already sorted by totalScore)
+    const grouped = useMemo(() => {
+        if (!leaderboard) return {};
+        const g = {};
+        for (const entry of leaderboard) {
+            const l = getLeague(entry.user?.points || 0);
+            if (!g[l.id]) g[l.id] = { league: l, entries: [] };
+            g[l.id].entries.push(entry);
+        }
+        return g;
+    }, [leaderboard]);
+
+    const tabs = useMemo(() => LEAGUES.filter(l => grouped[l.id]).map(l => l.id), [grouped]);
+    const [activeTab, setActiveTab] = useState(null);
+    const currentTab = (activeTab && grouped[activeTab]) ? activeTab : tabs[0];
+
+    const myRank   = useMemo(() => leaderboard?.find(e => e.user?.id === user?.id)?.rank, [leaderboard, user]);
+    const myLeague = useMemo(() => getLeague(user?.points || 0), [user]);
+    const myNeon   = LEAGUE_NEON[myLeague?.id] || LEAGUE_NEON.Bronze;
 
     if (!leaderboard) return <LoadingSpinner />;
+    if (leaderboard.length === 0) return <EmptyState icon={Trophy} title="Cosmic Arena is empty" description="Score points by completing tasks to appear here!" />;
 
-    if (leaderboard.length === 0) {
-        return <EmptyState icon={Trophy} title="Leaderboard is empty" description="Be the first to score points by completing tasks and habits!" />;
-    }
+    const currentGroup = grouped[currentTab];
+    if (!currentGroup) return null;
 
-    const top3 = leaderboard.slice(0, 3);
-    const rest = leaderboard.slice(3);
-
-    // Reorder top3 for podium: [2nd, 1st, 3rd]
-    const podium = [top3[1], top3[0], top3[2]].filter(Boolean);
+    const top5    = currentGroup.entries.slice(0, 5);
+    const restArr = currentGroup.entries.slice(5);
 
     return (
-        <div className="space-y-6">
-            <div>
-                <div className="flex items-center gap-3">
-                    <h1 className="font-bold pc-gradient-text" style={{ fontFamily: 'Manrope, sans-serif', fontSize: 'clamp(1.5rem, 6vw, 1.875rem)' }}>Leaderboard</h1>
-                    <PageInsight 
-                        title="Global Hierarchy"
-                        intro="Measure your operational density against the global elite. Review real-time rankings based on focus minutes, task completion, and behavioral consistency."
-                        operations={[
-                            { title: 'Rank Synchronization', content: 'Comparative analysis of your focus energy against other top-tier operators.' },
-                            { title: 'Trajectory Monitoring', content: 'Track your movement within the global hierarchy across different timeframes.' },
-                            { title: 'Achievement Verification', content: 'Validate your milestones and earned status within the ProgressCircle ecosystem.' }
-                        ]}
-                        neuralTip="Observing the trajectories of top-tier operators can provide strategic insights into optimal focus-to-rest ratios."
-                    />
+        <div className="relative rounded-3xl overflow-hidden"
+            style={{ background: 'radial-gradient(ellipse at 50% 0%, #0e0628 0%, #040312 55%, #000 100%)', minHeight: '85vh' }}>
+            <Stars />
+
+            {/* Nebula glows */}
+            <div className="absolute top-0 left-0 w-96 h-80 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(129,140,248,0.1), transparent 70%)' }} />
+            <div className="absolute top-20 right-0 w-72 h-64 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(34,211,238,0.08), transparent 70%)' }} />
+
+            <div className="relative z-10 p-5 pb-8 space-y-5">
+
+                {/* Title */}
+                <div className="text-center pt-1">
+                    <h1 className="font-black" style={{
+                        fontFamily: 'Manrope,sans-serif', fontSize: 'clamp(1.5rem,5vw,2rem)',
+                        background: 'linear-gradient(90deg,#818cf8,#22d3ee,#f59e0b)',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    }}>
+                        🪐 Cosmic Arena
+                    </h1>
+                    <p className="text-[10px] mt-0.5 uppercase tracking-widest font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                        Top 50 operators · Ranked by score
+                    </p>
                 </div>
-                <p className="text-xs text-muted mt-1">Compete with your peers and rise to the top.</p>
+
+                {/* Your global rank banner */}
+                {myRank && (
+                    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                        className="mx-auto max-w-sm flex items-center justify-center gap-3 py-2.5 px-5 rounded-2xl"
+                        style={{ background: `${myNeon.ring}12`, border: `1px solid ${myNeon.ring}40` }}>
+                        <Trophy size={16} style={{ color: myNeon.ring }} />
+                        <p className="text-sm font-black text-white">
+                            Your rank: <span style={{ color: myNeon.ring }}>#{myRank}</span>
+                            <span className="font-normal text-white/40"> · {myLeague.emoji} {myLeague.label}</span>
+                        </p>
+                    </motion.div>
+                )}
+
+                {/* League tabs */}
+                <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                    {tabs.map(lid => (
+                        <TabBtn key={lid} league={grouped[lid].league} count={grouped[lid].entries.length}
+                            active={lid === currentTab} onClick={() => setActiveTab(lid)} />
+                    ))}
+                </div>
+
+                {/* Tab content */}
+                <AnimatePresence mode="wait">
+                    <motion.div key={currentTab}
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-6"
+                    >
+                        {/* Top 5 — cosmic planets */}
+                        <div className="flex flex-wrap justify-center gap-4 md:gap-6 py-4">
+                            {top5.map((entry, i) => (
+                                <Planet key={entry.user?.id || i} entry={entry} localRank={i + 1}
+                                    isMe={entry.user?.id === user?.id} />
+                            ))}
+                        </div>
+
+                        {/* Rank 6–50 — dark list */}
+                        {restArr.length > 0 && (
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                                    <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>Remaining Operators</p>
+                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                                </div>
+                                <div className="space-y-2">
+                                    {restArr.map((entry, i) => (
+                                        <ListCard key={entry.user?.id || i} entry={entry}
+                                            isMe={entry.user?.id === user?.id} index={i} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </div>
-
-            {/* Podium */}
-            {top3.length >= 1 && (
-                <div className="flex items-end justify-center gap-2 sm:gap-4">
-                    {podium.map((entry, i) => {
-                        if (!entry) return null;
-                        const isFirst = entry.rank === 1;
-                        const m = MEDALS[entry.rank - 1];
-                        const heights = { 1: 'h-28 sm:h-36', 2: 'h-22 sm:h-28', 3: 'h-18 sm:h-24' };
-                        const isMe = entry.user?.id === user?.id;
-                        return (
-                            <motion.div
-                                key={entry.user?.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                className={`flex flex-col items-center gap-1.5 sm:gap-2 ${isFirst ? 'order-2' : i === 0 ? 'order-1' : 'order-3'}`}
-                                style={{ minWidth: 0, flex: 1, maxWidth: 110 }}
-                            >
-                                <span className="text-lg sm:text-2xl">{m.emoji}</span>
-                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} userTheme={entry.user?.themePreferences} size={isFirst ? 'lg' : 'md'} />
-                                <div className="text-center max-w-full px-1">
-                                    <p className="text-xs font-bold truncate" style={{ color: 'var(--color-text)' }}>{entry.user?.name}{isMe && ' (you)'}</p>
-                                    <p className="text-[10px] text-[var(--primary)] font-semibold">{entry.user?.points} pts</p>
-                                    {entry.user?.treesCount > 0 && (
-                                        <p className="text-[10px] text-emerald-400">
-                                            {getTreeMetadata(entry.user.avatarConfig?.farmTheme, 'oak').icon} {entry.user.treesCount}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className={`w-full rounded-t-xl bg-gradient-to-t ${m.bg} border border-solid ${m.border} ${heights[entry.rank]} flex items-end justify-center pb-2`}>
-                                    <span className={`text-lg sm:text-2xl font-black ${m.color}`} style={{ fontFamily: 'Manrope, sans-serif' }}>#{entry.rank}</span>
-                                </div>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Full rankings */}
-            <Card>
-                <h2 className="text-lg font-bold mb-5" style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--color-text)' }}>Full Rankings</h2>
-                <div className="space-y-2">
-                    {leaderboard.map((entry, i) => {
-                        const isMe = entry.user?.id === user?.id;
-                        const m = MEDALS[entry.rank - 1];
-                        return (
-                            <motion.div
-                                key={entry.user?.id}
-                                initial={{ opacity: 0, x: -8 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.03 }}
-                                className={`flex items-center gap-3 p-2 sm:p-3 rounded-xl transition-colors ${isMe ? 'border-2 border-[var(--primary)]/40' : 'hover:opacity-90'
-                                    }`}
-                                style={{ background: isMe ? 'color-mix(in srgb, var(--primary) 8%, var(--color-surface-2))' : 'var(--color-surface-2)' }}
-                            >
-                                <div className="w-8 flex-shrink-0 flex justify-center">
-                                    {m ? <span className="text-xl">{m.emoji}</span> : <span className="text-sm font-bold text-muted">#{entry.rank}</span>}
-                                </div>
-                                <AvatarDisplay avatarConfig={entry.user?.avatarConfig} userTheme={entry.user?.themePreferences} size="sm" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                                        {entry.user?.name} {isMe && <span className="text-xs text-[var(--primary)] font-normal">(you)</span>}
-                                    </p>
-                                    <p className="text-xs text-muted flex items-center gap-2 mt-1">
-                                        <span className="flex items-center gap-1"><Flame size={10} className="text-orange-400" />{entry.user?.streak} days</span>
-                                        <span className="flex items-center gap-1"><CheckSquare size={10} className="text-[var(--primary)]" />{entry.user?.points} total</span>
-                                        {entry.user?.treesCount > 0 && (
-                                            <span className="text-emerald-400">
-                                                {getTreeMetadata(entry.user.avatarConfig?.farmTheme, 'oak').icon} {entry.user.treesCount}
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-base font-bold text-[var(--primary)]" style={{ fontFamily: 'Manrope, sans-serif' }}>{entry.user?.points}</p>
-                                    <p className="text-xs text-muted">points</p>
-                                </div>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-            </Card>
         </div>
     );
 }

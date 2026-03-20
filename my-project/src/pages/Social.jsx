@@ -338,7 +338,7 @@ export function Social() {
                                             <div>
                                                 <h4 className="font-bold text-white">{u.name}</h4>
                                                 <div className="flex items-center gap-3 text-[10px] text-muted font-black uppercase">
-                                                    <span className="text-indigo-400">{u.points} pts</span>
+                                                    <span className="text-indigo-400">{u.totalScore || u.points} score</span>
                                                     <span className="text-amber-500">{u.streak}d fire</span>
                                                 </div>
                                             </div>
@@ -385,8 +385,8 @@ export function Social() {
                                                 <h4 className="font-bold text-white text-lg">{f.name}</h4>
                                                 <div className="flex gap-4 mt-1">
                                                     <div className="text-center">
-                                                        <p className="text-[9px] text-muted uppercase font-black">Points</p>
-                                                        <p className="text-xs font-bold text-indigo-400">{f.points}</p>
+                                                        <p className="text-[9px] text-muted uppercase font-black">Score</p>
+                                                        <p className="text-xs font-bold text-indigo-400">{f.totalScore || f.points}</p>
                                                     </div>
                                                     <div className="text-center">
                                                         <p className="text-[9px] text-muted uppercase font-black">Streak</p>

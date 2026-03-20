@@ -111,7 +111,7 @@ export function SidebarContent({ onClose }) {
                     <AvatarDisplay avatarConfig={user.avatarConfig} size="sm" />
                     <div style={{ overflow: 'hidden' }}>
                         <p style={{ fontSize: 12, fontWeight: 600, color: dark ? '#fff' : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</p>
-                        <p style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>{user.points ?? 0} pts</p>
+                        <p style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>{user.totalScore || user.points || 0} score</p>
                     </div>
                 </Link>
             )}
@@ -292,7 +292,7 @@ function MoreDrawer({ onClose }) {
                         <AvatarDisplay avatarConfig={user.avatarConfig} size="sm" />
                         <div>
                             <p style={{ fontSize: 14, fontWeight: 700, color: dark ? '#fff' : 'var(--text)' }}>{user.name}</p>
-                            <p style={{ fontSize: 11, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>{user.points ?? 0} pts</p>
+                            <p style={{ fontSize: 11, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>{user.totalScore || user.points || 0} score</p>
                         </div>
                     </Link>
                 )}
