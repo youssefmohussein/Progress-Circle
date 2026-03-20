@@ -10,12 +10,12 @@ import { getLeague, LEAGUES } from '../utils/leagues';
 import { Trophy, Flame, Target, Clock } from 'lucide-react';
 
 const LEAGUE_NEON = {
-    Master:   { ring: '#f59e0b', ring2: '#fbbf24', glow: 'rgba(245,158,11,0.4)' },
-    Diamond:  { ring: '#22d3ee', ring2: '#818cf8', glow: 'rgba(34,211,238,0.4)' },
+    Master: { ring: '#f59e0b', ring2: '#fbbf24', glow: 'rgba(245,158,11,0.4)' },
+    Diamond: { ring: '#22d3ee', ring2: '#818cf8', glow: 'rgba(34,211,238,0.4)' },
     Platinum: { ring: '#818cf8', ring2: '#a78bfa', glow: 'rgba(129,140,248,0.4)' },
-    Gold:     { ring: '#eab308', ring2: '#f59e0b', glow: 'rgba(234,179,8,0.4)' },
-    Silver:   { ring: '#94a3b8', ring2: '#cbd5e1', glow: 'rgba(148,163,184,0.3)' },
-    Bronze:   { ring: '#f97316', ring2: '#fb923c', glow: 'rgba(249,115,22,0.4)' },
+    Gold: { ring: '#eab308', ring2: '#f59e0b', glow: 'rgba(234,179,8,0.4)' },
+    Silver: { ring: '#94a3b8', ring2: '#cbd5e1', glow: 'rgba(148,163,184,0.3)' },
+    Bronze: { ring: '#f97316', ring2: '#fb923c', glow: 'rgba(249,115,22,0.4)' },
 };
 
 function getPlanetSize(localRank) {
@@ -43,46 +43,53 @@ function Stars() {
     );
 }
 
-function OrbitRing({ size, r, c1, c2, duration, reverse, uid }) {
+function OrbitRing({ size, c1, c2, duration, reverse, uid }) {
     return (
-        <svg className="absolute pointer-events-none"
-            style={{ width: size * 2.4, height: size * 2.4, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
-            viewBox={`0 0 ${size * 2.4} ${size * 2.4}`}>
-            <defs>
-                <linearGradient id={`lg-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%"   stopColor={c1} stopOpacity="0" />
-                    <stop offset="40%"  stopColor={c1} stopOpacity="1" />
-                    <stop offset="60%"  stopColor={c2} stopOpacity="1" />
-                    <stop offset="100%" stopColor={c2} stopOpacity="0" />
-                </linearGradient>
-                <filter id={`gf-${uid}`} x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="1.5" result="b"/>
-                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-            </defs>
-            <motion.ellipse
-                cx={size * 1.2} cy={size * 1.2}
-                rx={r} ry={size * 0.2}
-                fill="none"
-                stroke={`url(#lg-${uid})`}
-                strokeWidth="2.5"
-                filter={`url(#gf-${uid})`}
-                animate={{ rotate: reverse ? -360 : 360 }}
-                transition={{ duration, repeat: Infinity, ease: 'linear' }}
-                style={{ originX: `${size * 1.2}px`, originY: `${size * 1.2}px` }}
-            />
-        </svg>
+        <div className="absolute pointer-events-none"
+             style={{ 
+                 width: size * 1.6, height: size * 1.6, 
+                 left: '50%', top: '50%', 
+                 transform: 'translate(-50%, -50%) perspective(1000px) rotateX(68deg)',
+                 zIndex: 5
+             }}>
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                <defs>
+                    <motion.linearGradient 
+                        id={`lg-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%"
+                        animate={{ gradientTransform: `rotate(${reverse ? -360 : 360}, 0.5, 0.5)` }}
+                        transition={{ duration, repeat: Infinity, ease: 'linear' }}
+                    >
+                        <stop offset="0%"   stopColor={c1} />
+                        <stop offset="30%"  stopColor={c2} />
+                        <stop offset="50%"  stopColor={c1} />
+                        <stop offset="70%"  stopColor={c2} />
+                        <stop offset="100%" stopColor={c1} />
+                    </motion.linearGradient>
+                    <filter id={`gf-${uid}`}>
+                        <feGaussianBlur stdDeviation="2.5" result="blur" />
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <circle
+                    cx="50" cy="50" r="46"
+                    fill="none"
+                    stroke={`url(#lg-${uid})`}
+                    strokeWidth="3.5"
+                    filter={`url(#gf-${uid})`}
+                />
+            </svg>
+        </div>
     );
 }
 
 function Planet({ entry, localRank, isMe }) {
     const league = getLeague(entry.user?.totalScore || 0);
-    const neon   = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
-    const size   = getPlanetSize(localRank);
-    const score  = (entry.user?.totalScore || entry.user?.points || 0).toLocaleString();
+    const neon = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
+    const size = getPlanetSize(localRank);
+    const score = (entry.user?.totalScore || entry.user?.points || 0).toLocaleString();
     const orbitR = size * 0.92;
-    const uid1   = `${entry.user?.id || localRank}-a`;
-    const uid2   = `${entry.user?.id || localRank}-b`;
+    const uid1 = `${entry.user?.id || localRank}-a`;
+    const uid2 = `${entry.user?.id || localRank}-b`;
 
     return (
         <motion.div
@@ -101,22 +108,25 @@ function Planet({ entry, localRank, isMe }) {
             </motion.p>
 
             {/* Planet + rings */}
-            <motion.div
-                className="relative flex items-center justify-center flex-shrink-0"
-                style={{ width: size * 2.4, height: size * 2.4 }}
-                animate={{ y: [-6, 6, -6] }}
-                transition={{ duration: 4.2 + localRank * 0.35, repeat: Infinity, ease: 'easeInOut' }}
+            <div className="relative flex items-center justify-center flex-shrink-0"
+                style={{ width: size * 1.8, height: size * 1.6 }}
             >
-                <OrbitRing size={size} r={orbitR} c1={neon.ring} c2={neon.ring2} duration={7 + localRank * 0.8} uid={uid1} />
-                <OrbitRing size={size} r={orbitR * 0.85} c1={neon.ring2} c2={neon.ring} duration={5 + localRank * 0.6} reverse uid={uid2} />
+                {/* Back Ring (z-index < 10) - Top Half + overlap */}
+                <div className="absolute inset-0 pointer-events-none" 
+                     style={{ transform: 'rotateZ(-18deg)', zIndex: 5, clipPath: 'inset(0 0 49% 0)' }}>
+                    <div className="absolute inset-0 overflow-visible">
+                        <OrbitRing size={size} c1={neon.ring} c2={neon.ring2} duration={12} uid={uid1} />
+                    </div>
+                </div>
 
                 {/* Planet body */}
-                <div className="absolute z-10 rounded-full overflow-hidden flex items-center justify-center"
+                <div className="absolute rounded-full flex items-center justify-center"
                     style={{
                         width: size, height: size,
                         background: `radial-gradient(circle at 35% 30%, #2a1060, #08040f)`,
-                        boxShadow: `0 0 ${size * 0.5}px ${neon.glow}, 0 0 ${size * 0.15}px ${neon.ring}55 inset`,
-                        border: `2px solid ${neon.ring}50`,
+                        boxShadow: `0 0 ${size * 0.4}px ${neon.glow}, 0 0 ${size * 0.25}px ${neon.ring} inset`,
+                        border: `2px solid ${neon.ring}`,
+                        zIndex: 10,
                     }}>
                     <AvatarDisplay
                         avatarConfig={entry.user?.avatarConfig}
@@ -128,18 +138,25 @@ function Planet({ entry, localRank, isMe }) {
                         style={{ top: '8%', left: '12%', width: '40%', height: '26%', background: 'radial-gradient(circle, rgba(255,255,255,0.22), transparent)' }} />
                 </div>
 
+                {/* Front Ring (z-index > 10) - Bottom Half + overlap */}
+                <div className="absolute inset-0 pointer-events-none" 
+                     style={{ transform: 'rotateZ(-18deg)', zIndex: 15, clipPath: 'inset(49% 0 0 0)' }}>
+                    <OrbitRing size={size} c1={neon.ring} c2={neon.ring2} duration={12} uid={uid1} />
+                </div>
+
                 {/* League badge */}
-                <div className="absolute z-20 rounded-full flex items-center justify-center"
+                <div className="absolute flex items-center justify-center rounded-full"
                     style={{
-                        bottom: '22%', right: '20%',
-                        width: size * 0.28, height: size * 0.28, fontSize: size * 0.14,
+                        bottom: '2%', right: '28%',
+                        width: size * 0.32, height: size * 0.32, fontSize: size * 0.16,
                         background: '#0a0614',
-                        border: `2px solid ${neon.ring}`,
-                        boxShadow: `0 0 10px ${neon.ring}99`,
+                        border: `2.5px solid ${neon.ring}`,
+                        boxShadow: `0 0 12px ${neon.ring}`,
+                        zIndex: 20
                     }}>
                     {league.emoji}
                 </div>
-            </motion.div>
+            </div>
 
             {/* Name + rank */}
             <div className="text-center" style={{ maxWidth: size * 2 }}>
@@ -162,7 +179,7 @@ function Planet({ entry, localRank, isMe }) {
 
 function ListCard({ entry, isMe, index }) {
     const league = getLeague(entry.user?.totalScore || 0);
-    const neon   = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
+    const neon = LEAGUE_NEON[league.id] || LEAGUE_NEON.Bronze;
     return (
         <motion.div
             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
@@ -188,8 +205,8 @@ function ListCard({ entry, isMe, index }) {
                     <span className="opacity-60 text-[8px]">🌐 #{entry.rank} globally</span>
                 </p>
                 <p className="text-[8px] flex items-center gap-2 mt-1 opacity-40">
-                    <span className="flex items-center gap-0.5"><Target size={8} style={{ color: '#f59e0b' }}/>{(entry.user?.totalScore||entry.user?.points||0).toLocaleString()} score</span>
-                    <span className="flex items-center gap-0.5"><Flame size={8} style={{ color: '#f97316' }}/>{entry.user?.streak||0}d</span>
+                    <span className="flex items-center gap-0.5"><Target size={8} style={{ color: '#f59e0b' }} />{(entry.user?.totalScore || entry.user?.points || 0).toLocaleString()} score</span>
+                    <span className="flex items-center gap-0.5"><Flame size={8} style={{ color: '#f97316' }} />{entry.user?.streak || 0}d</span>
                 </p>
             </div>
             <div className="text-right flex-shrink-0">
@@ -240,22 +257,22 @@ export function Leaderboard() {
     const [activeTab, setActiveTab] = useState(null);
     const currentTab = (activeTab && grouped[activeTab]) ? activeTab : tabs[0];
 
-    const myRank   = useMemo(() => leaderboard?.find(e => e.user?.id === user?.id)?.rank, [leaderboard, user]);
+    const myRank = useMemo(() => leaderboard?.find(e => e.user?.id === user?.id)?.rank, [leaderboard, user]);
     const myLeague = useMemo(() => getLeague(user?.totalScore || 0), [user]);
     const myLeagueRank = useMemo(() => {
         if (!grouped[myLeague.id]) return null;
         const idx = grouped[myLeague.id].entries.findIndex(e => e.user?.id === user?.id);
         return idx !== -1 ? idx + 1 : null;
     }, [grouped, myLeague.id, user?.id]);
-    const myNeon   = LEAGUE_NEON[myLeague?.id] || LEAGUE_NEON.Bronze;
+    const myNeon = LEAGUE_NEON[myLeague?.id] || LEAGUE_NEON.Bronze;
 
     if (!leaderboard) return <LoadingSpinner />;
-    if (leaderboard.length === 0) return <EmptyState icon={Trophy} title="Cosmic Arena is empty" description="Score points by completing tasks to appear here!" />;
+    if (leaderboard.length === 0) return <EmptyState icon={Trophy} title="Leaderboard is empty" description="Score points by completing tasks to appear here!" />;
 
     const currentGroup = grouped[currentTab];
     if (!currentGroup) return null;
 
-    const top5    = currentGroup.entries.slice(0, 5);
+    const top5 = currentGroup.entries.slice(0, 5);
     const restArr = currentGroup.entries.slice(5);
 
     return (
@@ -278,7 +295,7 @@ export function Leaderboard() {
                         background: 'linear-gradient(90deg,#818cf8,#22d3ee,#f59e0b)',
                         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     }}>
-                        🪐 Cosmic Arena
+                        🪐 Leaderboard
                     </h1>
                     <p className="text-[10px] mt-0.5 uppercase tracking-widest font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>
                         Top 50 operators · Ranked by score
@@ -291,16 +308,16 @@ export function Leaderboard() {
                         className="mx-auto max-w-lg flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3 px-6 rounded-2xl"
                         style={{ background: `${myNeon.ring}12`, border: `1px solid ${myNeon.ring}40` }}>
                         <div className="flex items-center gap-2">
-                             <Trophy size={16} style={{ color: myNeon.ring }} />
-                             <p className="text-sm font-black text-white">
+                            <Trophy size={16} style={{ color: myNeon.ring }} />
+                            <p className="text-sm font-black text-white">
                                 Global: <span style={{ color: myNeon.ring }}>#{myRank}</span>
-                             </p>
+                            </p>
                         </div>
                         <div className="flex items-center gap-2 border-l border-white/10 pl-6">
-                             <span className="text-sm">{myLeague.emoji}</span>
-                             <p className="text-sm font-black text-white">
+                            <span className="text-sm">{myLeague.emoji}</span>
+                            <p className="text-sm font-black text-white">
                                 {myLeague.label}: <span style={{ color: myNeon.ring }}>#{myLeagueRank || '?'}</span>
-                             </p>
+                            </p>
                         </div>
                     </motion.div>
                 )}
