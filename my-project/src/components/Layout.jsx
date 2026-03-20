@@ -78,10 +78,11 @@ export function Layout({ children }) {
                         Progress<span style={{ color: dark ? '#fff' : 'var(--primary)', textShadow: dark ? '0 2px 4px rgba(0,0,0,0.2)' : '0 0 1px rgba(0,0,0,0.1)' }}>Circle</span>
                     </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
+                    <NotificationCenter />
                     <button 
                         onClick={() => setIsMobileMenuOpen(true)}
-                        style={{ background: 'none', border: 'none', color: dark ? '#fff' : 'var(--text)', cursor: 'pointer', padding: '8px' }}
+                        style={{ background: 'none', border: 'none', color: dark ? '#fff' : 'var(--text)', cursor: 'pointer', padding: '4px' }}
                     >
                         <Menu size={24} />
                     </button>
@@ -108,6 +109,8 @@ export function Layout({ children }) {
                         >
                             <Zap size={14} fill="currentColor" /> Quick Focus
                         </Link>
+                        <div className="w-px h-6 bg-border/20 mx-2" />
+                        <NotificationCenter />
                     </div>
                     {/*
                       Mobile: px-4 pt-5 pb-24 (pb clears the fixed bottom nav)

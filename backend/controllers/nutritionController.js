@@ -19,6 +19,26 @@ exports.getDailyNutrition = async (req, res, next) => {
             });
         }
 
+        // DAILY HYDRATION SYNC ALERT
+        if (nutrition.waterIntake < 2000) {
+            const { createSystemNotification } = require('./notificationController');
+            const Notification = require('../models/Notification');
+            const now = new Date();
+            const existing = await Notification.findOne({
+                recipient: req.user.id,
+                type: 'water_goal_missed',
+                createdAt: { $gt: new Date(now.getTime() - (12 * 60 * 60 * 1000)) } // Notify every 12h
+            });
+
+            if (!existing) {
+                await createSystemNotification(
+                    req.user.id, 'water_goal_missed',
+                    `HYDRATION WARNING: Current water intake is below neural optimization levels. Immediate hydration required.`,
+                    nutrition.date
+                );
+            }
+        }
+
         res.status(200).json({
             success: true,
             data: nutrition,

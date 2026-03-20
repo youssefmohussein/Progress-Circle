@@ -62,6 +62,31 @@ const getTasks = async (req, res, next) => {
             }
         }
 
+        // OVERDUE CHECK
+        const overdueTasks = tasks.filter(t => 
+            t.status !== 'completed' && 
+            t.deadline && 
+            new Date(t.deadline) < now
+        );
+
+        for (const ot of overdueTasks) {
+            const existing = await Notification.findOne({
+                recipient: req.user._id,
+                type: 'task_overdue',
+                refId: ot._id,
+                createdAt: { $gt: new Date(now.getTime() - (24 * 60 * 60 * 1000)) } // Notify once per day
+            });
+
+            if (!existing) {
+                await createSystemNotification(
+                    req.user._id,
+                    'task_overdue',
+                    `MISSION OVERDUE: Task "${ot.title}" has exceeded its deadline. Immediate corrective action required.`,
+                    ot._id
+                );
+            }
+        }
+
         res.status(200).json({ success: true, data: tasks });
     } catch (error) {
         next(error);

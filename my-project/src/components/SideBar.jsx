@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar } from './Avatar';
 import { AvatarDisplay } from '../avatar/AvatarDisplay';
-import { NotificationCenter } from './NotificationCenter';
+
 
 const moreNavItems = [
     { path: '/savings', icon: Wallet, label: 'Finance', key: 'savingsEnabled' },
@@ -85,7 +85,6 @@ export function SidebarContent({ onClose }) {
                     <p style={{ fontSize: '11px', color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)', marginTop: 2 }}>Productivity Suite</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <NotificationCenter />
                     {onClose && (
                         <button onClick={onClose} style={{ background: 'none', border: 'none', color: dark ? 'rgba(255,255,255,0.5)' : 'var(--muted)', cursor: 'pointer', padding: 4 }}>
                             <X size={20} />

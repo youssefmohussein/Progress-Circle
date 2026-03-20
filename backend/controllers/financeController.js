@@ -171,6 +171,21 @@ exports.getFinanceInsights = async (req, res, next) => {
             if (burnRatio > 0.8) {
                 insight = `Warning: You have spent ${(burnRatio * 100).toFixed(0)}% of your base salary this month.`;
                 healthScore -= 30;
+
+                // Budget Alert
+                const { createSystemNotification } = require('./notificationController');
+                const Notification = require('../models/Notification');
+                const existing = await Notification.findOne({
+                    recipient: userId,
+                    type: 'budget_exceeded',
+                    createdAt: { $gt: new Date(now.getTime() - (24 * 60 * 60 * 1000)) }
+                });
+                if (!existing) {
+                    await createSystemNotification(
+                        userId, 'budget_exceeded',
+                        `FINANCIAL CRITICAL: Monthly burn has exceeded 80% threshold. Immediate budget recalibration required.`
+                    );
+                }
             } else if (burnRatio < 0.5) {
                 insight = "You are saving over 50% of your income! Excellent capital retention.";
                 healthScore += 10;
