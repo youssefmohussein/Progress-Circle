@@ -21,6 +21,9 @@ const TYPE_CONFIG = {
     financial_goal_alert:    { icon: Sparkles,    color: 'var(--accent)', label: 'GOAL UPDATE', path: '/savings' },
     battle_invite:           { icon: Zap,          color: 'var(--primary)', label: 'BATTLE INVITE', path: '/squad' },
     neural_milestone_unlocked: { icon: Sparkles,   color: 'var(--accent)', label: 'MILESTONE', path: '/profile' },
+    referral_success:        { icon: Users,       color: '#a3e635', label: 'NEURAL LINK', path: '/profile' },
+    premium_reward:          { icon: Sparkles,    color: '#fbbf24', label: 'UPGRADE SYNC', path: '/profile' },
+    welcome:                 { icon: Info,        color: 'var(--primary)', label: 'WELCOME OPERATIVE', path: '/' },
     default:                 { icon: Info,        color: 'var(--muted)', label: 'NEURAL LOG', path: '/' }
 };
 

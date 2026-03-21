@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSEO } from '../hooks/useSEO';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,6 +40,16 @@ export function Landing() {
     });
 
     useSEO('ProgressCircle | Modern Productivity & Habit Tracking', 'A clean, high-performance ecosystem for focusing on what matters. Track tasks, build habits, and grow your digital legacy.');
+    const location = useLocation();
+
+    // Capture referral code from URL
+    const query = new URLSearchParams(location.search);
+    const ref = query.get('ref');
+
+    const handleGetStarted = () => {
+        const path = ref ? `/login?mode=register&ref=${ref}` : '/login';
+        navigate(path);
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -110,9 +120,9 @@ export function Landing() {
                     </div>
 
                     <div className="hidden md:flex items-center gap-6">
-                        <Link to="/login" className="text-sm font-medium text-white/50 hover:text-white transition-colors">Sign In</Link>
+                        <Link to={ref ? `/login?ref=${ref}` : "/login"} className="text-sm font-medium text-white/50 hover:text-white transition-colors">Sign In</Link>
                         <button
-                            onClick={() => navigate('/login')}
+                            onClick={handleGetStarted}
                             className="relative group px-6 py-2.5 bg-white text-[#0B0B0F] text-sm font-bold rounded-full overflow-hidden transition-all hover:scale-[1.03] active:scale-[0.98] shadow-xl shadow-white/5"
                         >
                             <span className="relative z-10">Get Started</span>
@@ -140,8 +150,8 @@ export function Landing() {
                                 <a href="#ecosystem" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium">Ecosystem</a>
                                 <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium">Pricing</a>
                                 <hr className="border-white/5" />
-                                <Link to="/login" className="text-xl font-medium text-indigo-400">Sign In</Link>
-                                <button onClick={() => navigate('/login')} className="w-full py-4 bg-white text-[#0B0B0F] rounded-2xl font-bold text-lg">Get Started</button>
+                                <Link to={ref ? `/login?ref=${ref}` : "/login"} onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium text-indigo-400">Sign In</Link>
+                                <button onClick={handleGetStarted} className="w-full py-4 bg-white text-[#0B0B0F] rounded-2xl font-bold text-lg">Get Started</button>
                             </div>
                         </motion.div>
                     )}
@@ -193,7 +203,7 @@ export function Landing() {
                             className="flex flex-col sm:flex-row items-center justify-center gap-6"
                         >
                             <button
-                                onClick={() => navigate('/login')}
+                                onClick={handleGetStarted}
                                 className="group relative w-full sm:w-auto px-10 py-4.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full font-bold text-lg shadow-2xl shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -342,7 +352,7 @@ export function Landing() {
                                 period="EGP / forever"
                                 features={FEATURES.map(f => ({ label: f.label, value: f.free }))}
                                 btnText="Get Started"
-                                onAction={() => navigate('/login')}
+                                onAction={handleGetStarted}
                             />
                             <PricingCard
                                 title="Elite Premium"
@@ -351,7 +361,7 @@ export function Landing() {
                                 featured
                                 features={FEATURES.map(f => ({ label: f.label, value: f.premium }))}
                                 btnText="Go Premium"
-                                onAction={() => navigate('/login')}
+                                onAction={handleGetStarted}
                             />
                         </div>
                     </div>
@@ -369,7 +379,7 @@ export function Landing() {
                                 Join our circle of high-performers today and begin your digital expansion.
                             </p>
                             <button
-                                onClick={() => navigate('/login')}
+                                onClick={handleGetStarted}
                                 className="px-12 py-5 bg-white text-[#0B0B0F] rounded-full font-bold text-xl hover:scale-105 hover:bg-neutral-100 transition-all duration-300 shadow-2xl shadow-white/10 active:scale-95"
                             >
                                 Get Started Free

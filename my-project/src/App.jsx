@@ -76,6 +76,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/landing" element={isAuthenticated ? <Navigate to="/" /> : <Landing />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
+      <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
       <Route path="/maintenance" element={<Maintenance />} />
 
       <Route path="/" element={

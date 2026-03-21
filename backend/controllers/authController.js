@@ -80,6 +80,14 @@ const register = async (req, res, next) => {
         }
 
         const token = generateToken(user._id);
+
+        // Send Welcome Notification
+        await createSystemNotification(
+            user._id,
+            'welcome',
+            `Welcome to the Circle, ${user.name}. Your neural interface is now active. Focus well.`
+        );
+
         res.status(201).json({
             success: true,
             message: 'Account created successfully',
