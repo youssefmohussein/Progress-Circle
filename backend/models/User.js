@@ -39,10 +39,23 @@ const userSchema = new mongoose.Schema(
             headContrastColor: { type: String, default: '2c1b18' },
             backgroundColor: { type: String, default: 'transparent' },
             farmTheme: { type: String, default: 'classic' },
+            
+            // Premium Identity Aesthetics
+            title: { type: String, default: 'Novice' },
+            avatarAura: { type: String, default: 'none' },
+            operationalMode: { type: String, default: 'none' },
+            
+            // Productivity Utilities & Companions
+            ambientTrack: { type: String, default: 'none' },
+            companionPet: { type: String, default: 'none' }
         },
         inventory: {
             type: [String],
             default: [],
+        },
+        powerups: {
+            streakFreezes: { type: Number, default: 0 },
+            doubleXpUntil: { type: Date, default: null }
         },
         trees: {
             type: [

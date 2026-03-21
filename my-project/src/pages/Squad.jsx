@@ -438,7 +438,7 @@ export function Squad() {
                                                 <div key={n._id} className="relative group">
                                                     <div className={`p-3 rounded-xl border ${n.status === 'pending' ? 'bg-primary/5 border-primary/20' : 'bg-surface2 border-border/5 opacity-60'}`}>
                                                         <div className="flex gap-3">
-                                                            <AvatarDisplay avatarConfig={n.sender?.avatarConfig} size="xs" />
+                                                            <AvatarDisplay avatarConfig={n.sender?.avatarConfig} size="xs" showTitle={true} />
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex justify-between items-start">
                                                                     <p className="text-xs font-bold leading-tight line-clamp-2 pr-4">{n.message}</p>
@@ -510,7 +510,7 @@ export function Squad() {
                 {friends.map((friend) => (
                     <div key={friend._id} className="flex-shrink-0 flex flex-col items-center gap-1 group">
                         <div className="relative">
-                            <AvatarDisplay avatarConfig={friend.avatarConfig} size="sm" />
+                            <AvatarDisplay avatarConfig={friend.avatarConfig} size="sm" showTitle={true} />
                             <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-bg ${Math.random() > 0.5 ? 'bg-emerald-500' : 'bg-surface3'
                                 }`} />
                         </div>
@@ -522,7 +522,7 @@ export function Squad() {
 
                 {requests.length > 0 && requests.map((req) => (
                     <div key={req._id} className="flex-shrink-0 bg-primary/5 border border-primary/20 rounded-2xl p-2 flex items-center gap-3">
-                        <AvatarDisplay avatarConfig={req.sender.avatarConfig} size="xs" />
+                        <AvatarDisplay avatarConfig={req.sender.avatarConfig} size="xs" showTitle={true} />
                         <div>
                             <p className="text-[10px] font-bold leading-tight">{req.sender.name}</p>
                             <div className="flex gap-2 mt-1">
@@ -650,7 +650,7 @@ export function Squad() {
                                                 <div className="flex items-center gap-3 mb-4">
                                                     <div className="flex -space-x-2">
                                                         {room.members.slice(0, 3).map(m => (
-                                                            m.user && <AvatarDisplay key={m.user?._id || m.user} avatarConfig={m.user.avatarConfig || m.user?.avatarConfig} size="xs" />
+                                                            m.user && <AvatarDisplay key={m.user?._id || m.user} avatarConfig={m.user.avatarConfig || m.user?.avatarConfig} size="xs" showTitle={true} />
                                                         ))}
                                                     </div>
                                                     <span className="text-[10px] text-muted font-bold">{room.members.length} Squad Members</span>
@@ -744,7 +744,7 @@ export function Squad() {
                                         ) : (
                                             messages.map((msg, i) => msg.sender && (
                                                 <div key={i} className={`flex gap-3 ${msg.sender._id === user._id ? 'flex-row-reverse' : ''}`}>
-                                                    <AvatarDisplay avatarConfig={msg.sender.avatarConfig} size="xs" />
+                                                    <AvatarDisplay avatarConfig={msg.sender.avatarConfig} size="xs" showTitle={true} />
                                                     <div className={`max-w-[75%] p-3.5 rounded-2xl text-sm ${msg.sender._id === user._id
                                                             ? 'bg-primary text-white rounded-tr-none shadow-lg shadow-primary/10'
                                                             : 'bg-surface2 text-text rounded-tl-none border border-border/5'

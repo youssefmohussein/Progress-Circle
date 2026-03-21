@@ -18,7 +18,11 @@ const CATEGORIES = [
     { key: 'skinColor', label: 'Skin Tone', icon: '🎨' },
     { key: 'headContrastColor', label: 'Hair Color', icon: '🖌️' },
     { key: 'backgroundColor', label: 'Background', icon: '🌅' },
-    { key: 'farmTheme', label: 'Farm Themes', icon: '🚜' }
+    { key: 'farmTheme', label: 'Farm Themes', icon: '🚜' },
+    { key: 'title', label: 'Titles', icon: '🏷️' },
+    { key: 'operationalMode', label: 'Protocols', icon: '📡' },
+    { key: 'avatarAura', label: 'Auras', icon: '🌟' },
+    { key: 'companionPet', label: 'Pets', icon: '🐾' }
 ];
 
 const FARM_THEME_PREVIEWS = {
@@ -29,6 +33,19 @@ const FARM_THEME_PREVIEWS = {
     newyork: { bg: '#94a3b8', icon: '🏙️' },
     kyoto: { bg: '#fecdd3', icon: '🌸' },
     oasis: { bg: '#7dd3fc', icon: '🌴' }
+};
+
+const PET_PREVIEWS = {
+    none: '❌', pixelCat: '🐱', owl: '🦉', roboDog: '🤖', dragon: '🐉', fox: '🦊'
+};
+const TRACK_PREVIEWS = {
+    none: '❌'
+};
+const PROTOCOL_PREVIEWS = {
+    none: '🌐', zen: '🧘', overdrive: '⚡', void: '🌌'
+};
+const AURA_PREVIEWS = {
+    none: 'transparent', blueGlow: '#3b82f6', goldenFlame: '#f59e0b', purpleVoid: '#8b5cf6', matrixRain: '#10b981', emeraldPulse: '#059669'
 };
 
 export function AvatarShop() {
@@ -159,7 +176,7 @@ export function AvatarShop() {
                             exit={{ opacity: 0, scale: 0.95 }}
                         >
                             <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}>
-                                <AvatarDisplay avatarConfig={liveConfig} size="xl" previewMode={true} />
+                                <AvatarDisplay avatarConfig={liveConfig} size="xl" previewMode={true} showTitle={true} />
                             </motion.div>
                         </motion.div>
                     )}
@@ -195,7 +212,7 @@ export function AvatarShop() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.18 }}
                     className="grid gap-3"
-                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}
+                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(115px, 1fr))' }}
                 >
                     {items.map((item, i) => {
                         const optValue = item.val;
@@ -211,58 +228,88 @@ export function AvatarShop() {
                                 key={`${item.id}`}
                                 whileHover={{ y: -2 }}
                                 onClick={() => handlePreview(activeTab, optValue)}
-                                className="relative flex flex-col items-center gap-2 p-3 rounded-2xl cursor-pointer transition-all"
+                                className="relative flex flex-col items-center p-2.5 rounded-2xl cursor-pointer transition-all h-full min-h-[185px]"
                                 style={{
                                     background: isPreviewing ? 'rgba(99,102,241,0.15)' : 'var(--color-surface-2)',
                                     border: isPreviewing ? '2px solid #6366f1' : '2px solid transparent',
                                     opacity: isOwned ? 1 : 0.9,
                                 }}
                             >
-                                {/* Mini inline preview for colors or the character itself */}
-                                {activeTab === 'farmTheme' ? (
-                                    <div
-                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner"
-                                        style={{ background: FARM_THEME_PREVIEWS[optValue]?.bg || 'var(--color-surface-3)' }}
-                                    >
-                                        {FARM_THEME_PREVIEWS[optValue]?.icon || '❓'}
-                                    </div>
-                                ) : (activeTab === 'skinColor' || activeTab === 'headContrastColor' || activeTab === 'clothingColor' || activeTab === 'backgroundColor') ? (
-                                    <div
-                                        className="w-10 h-10 rounded-full border-2 border-white/10"
-                                        style={{
-                                            background: (optValue === 'transparent' || optValue.includes('gradient'))
-                                                ? optValue
-                                                : `#${optValue}`
-                                        }}
-                                    />
-                                ) : (
-                                    <AvatarDisplay avatarConfig={previewOptConfig} size="sm" showBg={false} />
-                                )}
+                                {/* Preview / Icon Section */}
+                                <div className="h-10 flex items-center justify-center mb-1.5">
+                                    {activeTab === 'farmTheme' ? (
+                                        <div
+                                            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner"
+                                            style={{ background: FARM_THEME_PREVIEWS[optValue]?.bg || 'var(--color-surface-3)' }}
+                                        >
+                                            {FARM_THEME_PREVIEWS[optValue]?.icon || '❓'}
+                                        </div>
+                                    ) : activeTab === 'companionPet' ? (
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner bg-black/20">
+                                            {PET_PREVIEWS[optValue] || '❓'}
+                                        </div>
+                                    ) : activeTab === 'operationalMode' ? (
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-inner bg-black/20">
+                                            {PROTOCOL_PREVIEWS[optValue] || '❓'}
+                                        </div>
+                                    ) : activeTab === 'avatarAura' ? (
+                                        <div
+                                            className="w-10 h-10 rounded-full border border-white/10"
+                                            style={{ boxShadow: optValue !== 'none' ? `0 0 15px ${AURA_PREVIEWS[optValue]}` : 'none', background: 'var(--color-surface-3)' }}
+                                        />
+                                    ) : item.badge ? (
+                                        <div className="w-10 h-10 rounded-md flex items-center justify-center text-[10px] font-black uppercase text-indigo-300 bg-black/20">
+                                            {item.badge}
+                                        </div>
+                                    ) : (activeTab === 'skinColor' || activeTab === 'headContrastColor' || activeTab === 'clothingColor' || activeTab === 'backgroundColor') ? (
+                                        <div
+                                            className="w-10 h-10 rounded-full border-2 border-white/10"
+                                            style={{
+                                                background: (optValue === 'transparent' || optValue.includes('gradient'))
+                                                    ? optValue
+                                                    : `#${optValue}`
+                                            }}
+                                        />
+                                    ) : (
+                                        <AvatarDisplay avatarConfig={previewOptConfig} size="sm" showBg={false} />
+                                    )}
+                                </div>
 
-                                <p className="text-[10px] font-semibold text-center mt-1 truncate w-full" style={{ color: 'var(--color-text)' }}>
-                                    {item.name}
-                                </p>
+                                {/* Text Info Section */}
+                                <div className="flex-1 flex flex-col items-center justify-start text-center mb-2">
+                                    <p className="text-[10px] font-bold line-clamp-2 w-full leading-tight" style={{ color: 'var(--color-text)' }}>
+                                        {item.name}
+                                    </p>
+                                    {item.desc && (
+                                        <p className="text-[8px] text-muted-foreground leading-tight px-1 mt-1 opacity-70 line-clamp-3">
+                                            {item.desc}
+                                        </p>
+                                    )}
+                                </div>
 
-                                <div className="flex flex-col gap-1.5 w-full mt-1">
+                                {/* Action Buttons Container */}
+                                <div className="flex flex-col gap-1 w-full mt-auto">
                                     {/* Preview Button */}
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); handlePreview(activeTab, optValue); }}
-                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${isPreviewing
-                                            ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200'
-                                            : 'border-white/10 text-muted hover:bg-white/5'
-                                            }`}
-                                    >
-                                        Preview
-                                    </button>
+                                            onClick={(e) => { e.stopPropagation(); handlePreview(activeTab, optValue); }}
+                                            className={`text-[9px] font-semibold px-2 py-1 rounded-lg border transition-all ${isPreviewing
+                                                ? 'bg-indigo-500 border-indigo-500 text-white shadow-sm'
+                                                : 'border-white/10 hover:border-white/30 text-muted'
+                                                }`}
+                                        >
+                                            Preview
+                                        </button>
 
                                     {isSaved ? (
-                                        <span className="text-[10px] font-bold text-emerald-400 flex items-center justify-center gap-0.5 py-0.5">
-                                            <Check size={10} /> Saved
-                                        </span>
+                                        <div className="h-6 flex items-center justify-center">
+                                            <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-0.5">
+                                                <Check size={10} /> Saved
+                                            </span>
+                                        </div>
                                     ) : isOwned ? (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleEquip(activeTab, optValue); }}
-                                            className="text-[10px] font-semibold px-2 py-0.5 rounded-lg text-white"
+                                            className="text-[9px] font-semibold h-6 rounded-lg text-white shadow-sm"
                                             style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                                         >
                                             Equip
@@ -271,7 +318,7 @@ export function AvatarShop() {
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleBuy(item.id, item.price); }}
                                             disabled={buying === item.id || gamData.points < item.price}
-                                            className="text-[10px] font-semibold px-2 py-0.5 rounded-lg text-white disabled:opacity-50"
+                                            className="text-[9px] font-bold h-6 rounded-lg text-white disabled:opacity-50 shadow-sm"
                                             style={{ background: gamData.points >= item.price ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : '#6b7280' }}
                                         >
                                             {buying === item.id ? '...' : `${item.price} pts`}

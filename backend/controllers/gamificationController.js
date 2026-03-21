@@ -40,7 +40,57 @@ const avatarOptions = {
         "linear-gradient(135deg, #fbbf24, #d97706)", // Sunset Gold
         "linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4)" // Rainbow Vapor
     ],
-    farmTheme: ["classic", "winter", "cyberpunk", "desert", "newyork", "kyoto", "oasis"]
+    farmTheme: [
+        { name: "Classic Green", val: "classic", badge: "BASE", price: 0 },
+        { name: "Glacial Clarity", val: "winter", badge: "COLD", price: 250, desc: "Cooling the mind for pure logic." },
+        { name: "Neon Overload", val: "cyberpunk", badge: "NEON", price: 250, desc: "Pushing focus to the digital limit." },
+        { name: "Arid Discipline", val: "desert", badge: "DRY", price: 250, desc: "Resilience in the face of scarcity." },
+        { name: "Concrete Titan", val: "newyork", badge: "MET", price: 250, desc: "The unstoppable drive of the city." },
+        { name: "Zen Harmony", val: "kyoto", badge: "ZEN", price: 250, desc: "Finding center in falling blossoms." },
+        { name: "Mirage Oasis", val: "oasis", badge: "LUSH", price: 250, desc: "A hidden sanctuary for the mind." }
+    ],
+    
+    // Premium Gamification
+    title: [
+        { name: "Initiate of the Circle", val: "Initiate of the Circle", badge: "INIT", price: 0, desc: "The first step into a larger world of focus." },
+        { name: "Shadow of Concentration", val: "Shadow of Concentration", badge: "NIN", price: 150, desc: "Mastering the art of silent, unseen productivity." },
+        { name: "Grand Architect", val: "Grand Architect", badge: "ARC", price: 150, desc: "Designing monuments of focus in the mind." },
+        { name: "Subterranean Diver", val: "Subterranean Diver", badge: "DEEP", price: 150, desc: "Descending into the deepest layers of creative thought." },
+        { name: "Nocturnal Sentinel", val: "Nocturnal Sentinel", badge: "NIGHT", price: 150, desc: "Guardian of the midnight oil." },
+        { name: "Phlogiston Weaver", val: "Phlogiston Weaver", badge: "ALC", price: 250, desc: "Transmuting raw effort into pure output." },
+        { name: "Entropy Defier", val: "Entropy Defier", badge: "VOID", price: 500, desc: "Resisting the chaos of distraction." },
+        { name: "Quantum Synchronizer", val: "Quantum Synchronizer", badge: "SCI", price: 750, desc: "Alignment across all planes of focus." },
+        { name: "The Time Alchemist", val: "The Time Alchemist", badge: "LEG", price: 1000, desc: "Bending seconds into minutes." },
+        { name: "Singularity Architect", val: "Singularity Architect", badge: "ARC", price: 1250, desc: "The creator of concentrated reality." },
+        { name: "Void Walker", val: "Void Walker", badge: "VOID", price: 1500, desc: "He who walks where time stands still." },
+        { name: "Monastic Ascetic", val: "Monastic Ascetic", badge: "ZEN", price: 2000, desc: "Absolute detachment through singular purpose." },
+        { name: "Apex Elite", val: "Apex Elite", badge: "ELITE", price: 2500, desc: "The summit of human productivity." }
+    ],
+    operationalMode: [
+        { name: "Standard", val: "none", badge: "STD", price: 0 },
+        { name: "Zen Protocol", val: "zen", badge: "ZEN", price: 500, desc: "Calming visual pulse for deep clarity." },
+        { name: "Overdrive", val: "overdrive", badge: "OVD", price: 750, desc: "Neon scanlines for high-intensity focus." },
+        { name: "Void Protocol", val: "void", badge: "VOID", price: 1000, desc: "Complete isolation. Silence the noise." }
+    ],
+    avatarAura: [
+        { name: "No Aura", val: "none", badge: "OFF", price: 0 },
+        { name: "Luminescent Barrier", val: "blueGlow", badge: "DEF", price: 500, desc: "A shield of pure mental energy." },
+        { name: "Solar Radiance", val: "goldenFlame", badge: "SOL", price: 500, desc: "Burn with the intensity of focused suns." },
+        { name: "Abyssal Echo", val: "purpleVoid", badge: "VOID", price: 500, desc: "The silence of the deep universe." },
+        { name: "Neural Stream", val: "matrixRain", badge: "SYS", price: 750, desc: "Processing reality at lightning speeds." },
+        { name: "Gaia's Rhythm", val: "emeraldPulse", badge: "LIFE", price: 750, desc: "Sustain focus through natural resonance." }
+    ],
+    ambientTrack: [
+        { name: "No Track", val: "none", badge: "OFF", price: 0 }
+    ],
+    companionPet: [
+        { name: "No Companion", val: "none", badge: "OFF", price: 0 },
+        { name: "Quantum Feline", val: "pixelCat", badge: "OBS", price: 800, desc: "Focusing across multiple realities." },
+        { name: "Sentinel of Wisdom", val: "owl", badge: "EYE", price: 800, desc: "Seeing what others miss." },
+        { name: "Cyber Guardian", val: "roboDog", badge: "BOT", price: 800, desc: "Precision loyalty." },
+        { name: "Mythic Seraph", val: "dragon", badge: "LEG", price: 1500, desc: "A legendary companion for great tasks." },
+        { name: "Cunning Wraith", val: "fox", badge: "SLY", price: 800, desc: "Agility in absolute concentration." }
+    ]
 };
 
 const GRADIENT_NAMES = {
@@ -63,22 +113,27 @@ const FREE_CATEGORIES = ['skinColor', 'clothingColor', 'headContrastColor', 'bac
 
 const SHOP_ITEMS = {};
 for (const [cat, items] of Object.entries(avatarOptions)) {
-    SHOP_ITEMS[cat] = items.map((val, idx) => {
+    SHOP_ITEMS[cat] = items.map((item, idx) => {
+        const isObject = typeof item === 'object';
+        const val = isObject ? item.val : item;
+        const name = isObject ? item.name : formatName(val);
+        const badge = isObject ? item.badge : (cat === 'title' ? (val === 'Novice' ? 'NOV' : 'PRO') : null);
+        const desc = isObject ? item.desc : null;
+        
         const isGradient = cat === 'backgroundColor' && val.includes('gradient');
+        const defaultPrice = (idx === 0 || val === '' || (FREE_CATEGORIES.includes(cat) && !isGradient)) ? 0 : 150;
+        const price = isObject ? item.price : defaultPrice;
+
         return {
             id: isGradient ? `backgroundColor_mix_${idx}` : `${cat}_${val}`,
-            name: formatName(val),
-            price: (idx === 0 || val === '' || (FREE_CATEGORIES.includes(cat) && !isGradient)) ? 0 : 150, // default/empty/colors are free, gradients are 150
-            val: val
+            name,
+            price,
+            val,
+            badge,
+            desc
         };
     });
 }
-
-// Ensure powerups remain available natively
-SHOP_ITEMS.powerups = [
-    { id: 'powerup_freeze', name: 'Streak Freeze', price: 500, desc: 'Protects your streak if you miss a day.' }
-];
-
 
 // Flat list of all items for easy lookup
 const ALL_ITEMS = Object.values(SHOP_ITEMS).flat();
@@ -214,6 +269,7 @@ exports.getGamificationData = async (req, res, next) => {
                 trees: user.trees || [],
                 shopItems: SHOP_ITEMS,
                 milestones,
+                powerups: user.powerups || {},
                 userPlan: user.plan,
             },
         });
@@ -230,7 +286,8 @@ exports.saveAvatarConfig = async (req, res, next) => {
         const {
             seed, head, face, facialHair, accessories,
             clothingColor, skinColor, headContrastColor,
-            backgroundColor, farmTheme
+            backgroundColor, farmTheme, title, operationalMode,
+            avatarAura, companionPet
         } = req.body;
 
         const user = await User.findById(req.user._id);
@@ -248,7 +305,11 @@ exports.saveAvatarConfig = async (req, res, next) => {
             { cat: 'skinColor', val: skinColor },
             { cat: 'headContrastColor', val: headContrastColor },
             { cat: 'backgroundColor', val: backgroundColor },
-            { cat: 'farmTheme', val: farmTheme }
+            { cat: 'farmTheme', val: farmTheme },
+            { cat: 'title', val: title },
+            { cat: 'operationalMode', val: operationalMode },
+            { cat: 'avatarAura', val: avatarAura },
+            { cat: 'companionPet', val: companionPet }
         ];
 
         for (const { cat, val } of toCheck) {
@@ -283,31 +344,47 @@ exports.buyItem = async (req, res, next) => {
         if (item.price === 0) return res.status(400).json({ success: false, message: 'This item is free – claim it from milestones.' });
 
         const user = await User.findById(req.user._id);
-        const inventory = Array.from(new Set([...DEFAULT_FREE_ITEMS, ...(user.inventory || [])]));
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-        if (inventory.includes(itemId)) {
-            return res.status(400).json({ success: false, message: 'You already own this item.' });
-        }
         if (user.points < item.price) {
             return res.status(400).json({ success: false, message: `Not enough points. Need ${item.price}, you have ${user.points}.` });
         }
 
+        const isPowerUp = itemId.startsWith('powerup_');
+        const inventory = Array.from(new Set([...DEFAULT_FREE_ITEMS, ...(user.inventory || [])]));
 
-        if (itemId === 'powerup_freeze') {
-            if (user.plan !== 'premium') {
-                return res.status(403).json({ success: false, message: 'Streak Freezes are a Premium-only feature.' });
-            }
-            user.points -= item.price;
-            user.streakFreezes += 1;
-            await user.save();
-        } else {
-            user.points -= item.price;
-            if (!user.inventory) user.inventory = [];
-            user.inventory.push(itemId);
-            await user.save();
+        if (!isPowerUp && inventory.includes(itemId)) {
+            return res.status(400).json({ success: false, message: 'You already own this item.' });
         }
 
-        res.status(200).json({ success: true, data: { itemId, pointsSpent: item.price } });
+        // Apply Purchase
+        user.points -= item.price;
+
+        if (isPowerUp) {
+            if (itemId === 'powerup_freeze') {
+                user.powerups.streakFreezes = (user.powerups.streakFreezes || 0) + 1;
+            } else if (itemId === 'powerup_double_xp') {
+                const now = new Date();
+                const currentEnd = (user.powerups.doubleXpUntil && user.powerups.doubleXpUntil > now) 
+                    ? new Date(user.powerups.doubleXpUntil) 
+                    : now;
+                user.powerups.doubleXpUntil = new Date(currentEnd.getTime() + (24 * 60 * 60 * 1000));
+            }
+        } else {
+            user.inventory.push(itemId);
+        }
+
+        await user.save();
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Purchase successful',
+            data: { 
+                inventory: user.inventory,
+                powerups: user.powerups,
+                points: user.points 
+            } 
+        });
     } catch (err) {
         next(err);
     }

@@ -177,7 +177,7 @@ export function Profile() {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pc-card">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
                     <div className="relative">
-                        <AvatarDisplay avatarConfig={gamData?.avatarConfig} size="xl" />
+                        <AvatarDisplay avatarConfig={gamData?.avatarConfig} size="xl" showTitle={true} />
                     </div>
                     <div className="flex-1">
                         <h2 style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--text)', fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: 700 }}>{user.name}</h2>

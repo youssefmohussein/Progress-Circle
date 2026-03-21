@@ -8,5 +8,10 @@ export const avatarDefaults = {
     skinColor: 'ffdbb4',
     headContrastColor: '2c1b18',
     backgroundColor: 'f3f4f6',
-    farmTheme: 'classic'
+    farmTheme: 'classic',
+    title: 'Initiate of the Circle',
+    operationalMode: 'none',
+    avatarAura: 'none',
+    ambientTrack: 'none',
+    companionPet: 'none'
 };

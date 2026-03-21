@@ -132,6 +132,7 @@ function Planet({ entry, localRank, isMe }) {
                         avatarConfig={entry.user?.avatarConfig}
                         userTheme={entry.user?.themePreferences}
                         size={size >= 80 ? 'lg' : size >= 64 ? 'md' : 'sm'}
+                        showTitle={true}
                     />
                     {/* Gloss highlight */}
                     <div className="absolute rounded-full pointer-events-none"

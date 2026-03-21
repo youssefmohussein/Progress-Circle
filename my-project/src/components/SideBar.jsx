@@ -107,7 +107,7 @@ export function SidebarContent({ onClose }) {
                     }}
                     className="hover:scale-[1.01] active:scale-[0.99]"
                 >
-                    <AvatarDisplay avatarConfig={user.avatarConfig} size="sm" />
+                    <AvatarDisplay avatarConfig={user.avatarConfig} size="sm" showTitle={true} />
                     <div style={{ overflow: 'hidden' }}>
                         <p style={{ fontSize: 12, fontWeight: 600, color: dark ? '#fff' : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</p>
                         <div className="flex items-center gap-3">
