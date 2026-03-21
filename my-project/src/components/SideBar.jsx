@@ -95,14 +95,14 @@ export function SidebarContent({ onClose }) {
 
             {/* User card - Clickable to Profile */}
             {user && (
-                <Link 
+                <Link
                     id="tour-profile"
                     to="/profile"
                     onClick={onClose}
-                    style={{ 
-                        margin: '8px 12px', padding: '8px 12px', 
-                        background: dark ? 'rgba(255,255,255,0.06)' : 'var(--surface2)', 
-                        borderRadius: '0.75rem', display: 'flex', alignItems: 'center', 
+                    style={{
+                        margin: '8px 12px', padding: '8px 12px',
+                        background: dark ? 'rgba(255,255,255,0.06)' : 'var(--surface2)',
+                        borderRadius: '0.75rem', display: 'flex', alignItems: 'center',
                         gap: 8, textDecoration: 'none', transition: 'all 0.2s'
                     }}
                     className="hover:scale-[1.01] active:scale-[0.99]"
@@ -111,14 +111,14 @@ export function SidebarContent({ onClose }) {
                     <div style={{ overflow: 'hidden' }}>
                         <p style={{ fontSize: 12, fontWeight: 600, color: dark ? '#fff' : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</p>
                         <div className="flex items-center gap-3">
-                            <motion.p 
+                            <motion.p
                                 key={user.totalScore}
                                 initial={{ scale: 0.95 }} animate={{ scale: 1 }}
                                 style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}
                             >
                                 <span className="font-bold text-pc-primary">{(user.totalScore || user.points || 0).toLocaleString()}</span> Score
                             </motion.p>
-                            <motion.p 
+                            <motion.p
                                 key={user.points}
                                 initial={{ scale: 0.95 }} animate={{ scale: 1 }}
                                 style={{ fontSize: 10, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}
@@ -217,11 +217,11 @@ export function SidebarContent({ onClose }) {
                 }}>
                     <HelpCircle size={17} /> How It Works
                 </Link>
-                <button 
+                <button
                     onClick={() => {
                         window.dispatchEvent(new Event('start-tutorial'));
                         if (onClose) onClose();
-                    }} 
+                    }}
                     style={{
                         display: 'flex', alignItems: 'center', gap: 10, width: '100%',
                         padding: '9px 14px', borderRadius: '0.75rem', background: dark ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--primary-light)',
@@ -294,11 +294,11 @@ function MoreDrawer({ onClose }) {
                 <div style={{ width: 36, height: 4, background: dark ? 'rgba(255,255,255,0.2)' : 'var(--border)', borderRadius: 99, margin: '4px auto 12px' }} />
 
                 {user && (
-                    <Link 
+                    <Link
                         to="/profile"
                         onClick={onClose}
-                        style={{ 
-                            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px 14px', 
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px 14px',
                             borderBottom: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--border)',
                             textDecoration: 'none'
                         }}
@@ -307,14 +307,14 @@ function MoreDrawer({ onClose }) {
                         <div>
                             <p style={{ fontSize: 14, fontWeight: 700, color: dark ? '#fff' : 'var(--text)' }}>{user.name}</p>
                             <div className="flex items-center gap-4">
-                                <motion.p 
+                                <motion.p
                                     key={user.totalScore}
                                     initial={{ scale: 0.95 }} animate={{ scale: 1 }}
                                     style={{ fontSize: 11, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}
                                 >
                                     <span className="font-bold text-pc-primary">{(user.totalScore || user.points || 0).toLocaleString()}</span> Score
                                 </motion.p>
-                                <motion.p 
+                                <motion.p
                                     key={user.points}
                                     initial={{ scale: 0.95 }} animate={{ scale: 1 }}
                                     style={{ fontSize: 11, color: dark ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}

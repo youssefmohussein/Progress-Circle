@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
     Bell, Trash2, ShieldAlert, Zap, Users, Info, Flame,
     X, Wallet, Salad, Repeat, Target, Sparkles, AlertCircle
 } from 'lucide-react';
@@ -10,28 +10,28 @@ import api from '../api/client';
 import { useTheme } from '../context/ThemeContext';
 
 const TYPE_CONFIG = {
-    task_deadline:             { icon: ShieldAlert, color: 'var(--primary)',  label: 'NEURAL WARNING',      path: '/tasks'     },
-    task_overdue:              { icon: AlertCircle, color: '#ef4444',         label: 'MISSION OVERDUE',     path: '/tasks'     },
-    streak_warning:            { icon: Flame,       color: '#fb923c',         label: 'CONSISTENCY SYNC',    path: '/habits'    },
-    habit_missed:              { icon: Repeat,      color: '#f472b6',         label: 'HABIT DEFICIT',       path: '/habits'    },
-    nutrition_sync:            { icon: Salad,       color: '#4ade80',         label: 'FUEL UPDATE',         path: '/nutrition' },
-    nutrition_deficit:         { icon: Target,      color: '#fbbf24',         label: 'METABOLIC ALERT',     path: '/nutrition' },
-    water_goal_missed:         { icon: Zap,         color: 'var(--accent)',   label: 'HYDRATION SYNC',      path: '/nutrition' },
-    budget_exceeded:           { icon: Wallet,      color: '#fcd34d',         label: 'CAPITAL DANGER',      path: '/savings'   },
-    financial_goal_alert:      { icon: Sparkles,    color: 'var(--accent)',   label: 'GOAL UPDATE',         path: '/savings'   },
-    battle_invite:             { icon: Zap,         color: 'var(--primary)',  label: 'BATTLE INVITE',       path: '/squad'     },
-    neural_milestone_unlocked: { icon: Sparkles,    color: 'var(--accent)',   label: 'MILESTONE',           path: '/profile'   },
-    referral_success:          { icon: Users,       color: '#a3e635',         label: 'NEURAL LINK',         path: '/profile'   },
-    premium_reward:            { icon: Sparkles,    color: '#fbbf24',         label: 'UPGRADE SYNC',        path: '/profile'   },
-    welcome:                   { icon: Info,        color: 'var(--primary)',  label: 'WELCOME OPERATIVE',   path: '/'          },
-    default:                   { icon: Info,        color: 'var(--muted)',    label: 'NEURAL LOG',          path: '/'          },
+    task_deadline: { icon: ShieldAlert, color: 'var(--primary)', label: 'NEURAL WARNING', path: '/tasks' },
+    task_overdue: { icon: AlertCircle, color: '#ef4444', label: 'MISSION OVERDUE', path: '/tasks' },
+    streak_warning: { icon: Flame, color: '#fb923c', label: 'CONSISTENCY SYNC', path: '/habits' },
+    habit_missed: { icon: Repeat, color: '#f472b6', label: 'HABIT DEFICIT', path: '/habits' },
+    nutrition_sync: { icon: Salad, color: '#4ade80', label: 'FUEL UPDATE', path: '/nutrition' },
+    nutrition_deficit: { icon: Target, color: '#fbbf24', label: 'METABOLIC ALERT', path: '/nutrition' },
+    water_goal_missed: { icon: Zap, color: 'var(--accent)', label: 'HYDRATION SYNC', path: '/nutrition' },
+    budget_exceeded: { icon: Wallet, color: '#fcd34d', label: 'CAPITAL DANGER', path: '/savings' },
+    financial_goal_alert: { icon: Sparkles, color: 'var(--accent)', label: 'GOAL UPDATE', path: '/savings' },
+    battle_invite: { icon: Zap, color: 'var(--primary)', label: 'BATTLE INVITE', path: '/squad' },
+    neural_milestone_unlocked: { icon: Sparkles, color: 'var(--accent)', label: 'MILESTONE', path: '/profile' },
+    referral_success: { icon: Users, color: '#a3e635', label: 'NEURAL LINK', path: '/profile' },
+    premium_reward: { icon: Sparkles, color: '#fbbf24', label: 'UPGRADE SYNC', path: '/profile' },
+    welcome: { icon: Info, color: 'var(--primary)', label: 'WELCOME OPERATIVE', path: '/' },
+    default: { icon: Info, color: 'var(--muted)', label: 'NEURAL LOG', path: '/' },
 };
 
 // Panel enters/exits with a fast tween — no spring physics overhead
 const PANEL_VARIANTS = {
     hidden: { x: '100%' },
     visible: { x: 0, transition: { type: 'tween', duration: 0.22, ease: [0.25, 0.1, 0.25, 1] } },
-    exit:   { x: '100%', transition: { type: 'tween', duration: 0.18, ease: [0.4, 0, 1, 1] } },
+    exit: { x: '100%', transition: { type: 'tween', duration: 0.18, ease: [0.4, 0, 1, 1] } },
 };
 
 export function NotificationCenter() {
@@ -100,10 +100,10 @@ export function NotificationCenter() {
 
     return (
         <div className="relative">
-            <button 
+            <button
                 onClick={() => setIsOpen(true)}
                 className="p-2.5 rounded-xl transition-colors relative"
-                style={{ 
+                style={{
                     color: 'var(--text)',
                     background: 'rgba(var(--primary-rgb), 0.05)',
                     border: '1px solid var(--border)'
@@ -121,16 +121,16 @@ export function NotificationCenter() {
                 {isOpen && (
                     <>
                         {/* Overlay — no backdrop-blur, just a semi-transparent tint */}
-                        <motion.div 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.15 }}
-                            className="fixed inset-0 z-50 bg-black/50" 
-                            onClick={() => setIsOpen(false)} 
+                            className="fixed inset-0 z-50 bg-black/50"
+                            onClick={() => setIsOpen(false)}
                         />
 
-                        <motion.div 
+                        <motion.div
                             variants={PANEL_VARIANTS}
                             initial="hidden"
                             animate="visible"
@@ -144,9 +144,9 @@ export function NotificationCenter() {
                                     <h2 className="text-base font-black tracking-tighter italic" style={{ fontFamily: 'Manrope, sans-serif' }}>NOTIFICATION CENTER</h2>
                                     <p className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-60" style={{ color: 'var(--primary)', fontFamily: 'Manrope, sans-serif' }}>Powering your progress</p>
                                 </div>
-                                <button 
-                                    onClick={() => setIsOpen(false)} 
-                                    className="p-1.5 hover:bg-[var(--surface2)] rounded-full transition-colors" 
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-1.5 hover:bg-[var(--surface2)] rounded-full transition-colors"
                                     style={{ color: 'var(--muted)' }}
                                 >
                                     <X size={17} />
@@ -156,7 +156,7 @@ export function NotificationCenter() {
                             {/* Actions */}
                             {notifications.length > 0 && (
                                 <div className="px-4 py-1.5 flex justify-end flex-shrink-0 border-b border-[var(--border)]/40">
-                                    <button 
+                                    <button
                                         onClick={deleteAll}
                                         className="text-[8px] font-black uppercase tracking-widest transition-colors flex items-center gap-1 px-2 py-1 rounded-md border border-rose-500/20 hover:bg-rose-500/10 text-rose-500"
                                         style={{ fontFamily: 'Manrope, sans-serif' }}
@@ -186,17 +186,16 @@ export function NotificationCenter() {
                                         const Icon = config.icon;
                                         const isPending = n.status === 'pending';
                                         return (
-                                            <div 
+                                            <div
                                                 key={n._id}
-                                                className={`group relative flex gap-2.5 p-2.5 rounded-lg border cursor-pointer transition-colors ${
-                                                    isPending 
-                                                        ? 'bg-[var(--surface2)] border-[var(--border)]' 
+                                                className={`group relative flex gap-2.5 p-2.5 rounded-lg border cursor-pointer transition-colors ${isPending
+                                                        ? 'bg-[var(--surface2)] border-[var(--border)]'
                                                         : 'bg-transparent border-transparent opacity-55'
-                                                }`}
+                                                    }`}
                                                 onClick={() => handleNotificationClick(n)}
                                             >
                                                 {/* Icon */}
-                                                <div 
+                                                <div
                                                     className="h-8 w-8 flex-shrink-0 rounded-lg flex items-center justify-center border border-[var(--border)]"
                                                     style={{ background: 'var(--surface)' }}
                                                 >
@@ -220,7 +219,7 @@ export function NotificationCenter() {
                                                 </div>
 
                                                 {/* Delete button */}
-                                                <button 
+                                                <button
                                                     onClick={(e) => { e.stopPropagation(); deleteOne(n._id); }}
                                                     className="absolute right-2 top-2 p-1 hover:bg-rose-500/10 rounded-md text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
@@ -229,9 +228,9 @@ export function NotificationCenter() {
 
                                                 {/* Unread dot */}
                                                 {isPending && (
-                                                    <div 
-                                                        className="absolute right-2.5 bottom-2.5 w-1.5 h-1.5 rounded-full" 
-                                                        style={{ background: 'var(--primary)' }} 
+                                                    <div
+                                                        className="absolute right-2.5 bottom-2.5 w-1.5 h-1.5 rounded-full"
+                                                        style={{ background: 'var(--primary)' }}
                                                     />
                                                 )}
                                             </div>

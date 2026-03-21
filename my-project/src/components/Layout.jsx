@@ -58,9 +58,9 @@ export function Layout({ children }) {
                     <Link to="/pricing" style={{ color: '#fef08a', textDecoration: 'underline', marginLeft: '8px' }}>Manage</Link>
                 </div>
             )}
-            
+
             {/* Mobile Header */}
-            <header 
+            <header
                 className="flex lg:hidden items-center justify-between px-4"
                 style={{
                     height: '60px',
@@ -80,7 +80,7 @@ export function Layout({ children }) {
                 </div>
                 <div className="flex items-center gap-4">
                     <NotificationCenter />
-                    <button 
+                    <button
                         onClick={() => setIsMobileMenuOpen(true)}
                         style={{ background: 'none', border: 'none', color: dark ? '#fff' : 'var(--text)', cursor: 'pointer', padding: '4px' }}
                     >
@@ -93,7 +93,7 @@ export function Layout({ children }) {
                 <Sidebar onQuickAdd={() => setQuickAddOpen(true)} />
                 <main style={{ flex: 1, minWidth: 0, position: 'relative', height: '100%', overflowY: 'auto' }} className="lg:ml-64">
                     {/* Desktop Header */}
-                    <div className="hidden lg:flex items-center justify-end px-8 py-4 gap-4 sticky top-0 z-30" 
+                    <div className="hidden lg:flex items-center justify-end px-8 py-4 gap-4 sticky top-0 z-30"
                         style={{ background: 'var(--bg)', borderBottom: dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid var(--border)' }}>
                         <Link
                             id="tour-quick-focus"
