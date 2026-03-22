@@ -12,24 +12,25 @@ export function Modal({ open, onClose, title, children, maxWidth = '480px' }) {
                     onClick={onClose}
                     style={{
                         position: 'fixed', inset: 0, zIndex: 100,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
                         padding: '1.5rem',
-                        background: 'rgba(0,0,0,0.65)',
-                        backdropFilter: 'blur(12px)',
+                        background: 'rgba(0,0,0,0.85)',
+                        overflowY: 'auto',
                     }}
                 >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 30 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                        transition={{ duration: 0.2 }}
                         onClick={(e) => e.stopPropagation()}
                         className="pc-card"
                         style={{ 
                             width: '100%', 
                             maxWidth, 
+                            margin: 'auto',
                             position: 'relative',
-                            background: 'rgba(23, 23, 23, 0.8)',
+                            background: '#12121A',
                             border: '1px solid rgba(255, 255, 255, 0.08)',
                             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
                         }}

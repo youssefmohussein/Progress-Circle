@@ -8,10 +8,41 @@ const BodyMetric = require('../models/BodyMetric');
 const PDFDocument = require('pdfkit');
 const { Parser } = require('json2csv');
 
-// Helper to draw a rounded rectangle with a gradient-like fill (solid for simplicity in PDFkit)
-const drawCard = (doc, x, y, width, height, radius, color) => {
-    doc.roundedRect(x, y, width, height, radius)
-       .fill(color);
+// Helper for AI/Neural Feedback Generation
+const generateNeuralFeedback = (tasks, habits, sessions) => {
+    let feedback = [];
+    
+    // Task Feedback
+    const completedTasks = tasks.filter(t => t.status === 'completed').length;
+    const taskCompletionRate = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+    
+    if (taskCompletionRate >= 80) {
+        feedback.push("Task completion velocity is exceptional. Neural pathways are firing efficiently.");
+    } else if (taskCompletionRate >= 50) {
+        feedback.push("Steady operational output detected. Recommend standardizing daily mission priorities.");
+    } else {
+        feedback.push("Task sync rate is sub-optimal. Re-align daily objectives to regain momentum.");
+    }
+
+    // Focus Feedback
+    const totalFocusMins = sessions.filter(s => s.type === 'focus').reduce((acc, s) => acc + (s.duration || 0), 0);
+    if (totalFocusMins > 300) {
+        feedback.push("Deep work capacity is at absolute peak performance. Biological exhaustion risk: Low-to-Moderate.");
+    } else if (totalFocusMins > 100) {
+        feedback.push("Solid foundation of cognitive isolation. Recommend extending deep work intervals by 15%.");
+    } else {
+        feedback.push("Cognitive isolation extremely limited. High interference detected. Initiate focus defense protocols.");
+    }
+
+    // Habit Feedback
+    const activeHabits = habits.filter(h => h.streak >= 3).length;
+    if (activeHabits >= 3) {
+        feedback.push("Biological routines firmly anchored. Automated subroutines functioning perfectly.");
+    } else {
+        feedback.push("Routine instability detected. Focus on anchoring at least 2 primary habits before expanding.");
+    }
+
+    return feedback;
 };
 
 // @desc    Export user data to a high-fidelity professional PDF report
@@ -22,7 +53,7 @@ exports.exportPDF = async (req, res, next) => {
         const userId = req.user.id;
         const user = req.user;
 
-        // Fetch user data - Ensuring we use Decrypted fields via hooks
+        // Fetch user data
         const tasks = await Task.find({ userId }).sort('-createdAt');
         const habits = await Habit.find({ userId }).sort('-streak');
         const sessions = await Session.find({ userId }).sort('-createdAt');
@@ -31,15 +62,8 @@ exports.exportPDF = async (req, res, next) => {
         const transactions = await Transaction.find({ user: userId }).sort('-date').limit(10);
         const metrics = await BodyMetric.find({ user: userId }).sort('-date').limit(3);
 
-        // Statistics calculation
-        const completedTasks = tasks.filter(t => t.status === 'completed').length;
-        const totalTasks = tasks.length;
-        const syncPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-        const focusMinutes = sessions.filter(s => s.type === 'focus').reduce((acc, s) => acc + (s.duration || 0), 0);
-        const topHabit = habits.length > 0 ? habits[0] : null;
-
         const doc = new PDFDocument({ 
-            margin: 0, // Manual margins for full design control
+            margin: 0,
             size: 'A4',
             bufferPages: true 
         });
@@ -49,248 +73,203 @@ exports.exportPDF = async (req, res, next) => {
         res.setHeader('Content-type', 'application/pdf');
         doc.pipe(res);
 
-        // --- THEME PALETTE ---
-        const DARK_BG = '#0b0d12';
+        // --- PALETTE ---
+        const BG = '#0B0B0F';
+        const SURFACE = '#12121A';
+        const BORDER = '#1f1f2e';
         const PRIMARY = '#6366f1';
-        const SECONDARY = '#8b5cf6';
-        const TEXT_BRIGHT = '#ffffff';
-        const TEXT_DIM = '#94a3b8';
-        const BORDER = '#1e293b';
-        const SUCCESS = '#10b981';
+        const ACCENT = '#a855f7';
+        const TEXT = '#F8FAFC';
+        const MUTED = '#64748B';
 
-        // --- PAGE 1: COVER PAGE ---
-        doc.rect(0, 0, 612, 792).fill(DARK_BG);
+        const drawSurface = (x, y, w, h) => {
+            doc.roundedRect(x, y, w, h, 8).fillAndStroke(SURFACE, BORDER);
+        };
+
+        const drawLine = (y) => {
+            doc.moveTo(40, y).lineTo(555, y).lineWidth(0.5).strokeColor(BORDER).stroke();
+        };
+
+        const drawProgressBar = (x, y, w, percent, color) => {
+            doc.roundedRect(x, y, w, 4, 2).fill(BORDER);
+            doc.roundedRect(x, y, (percent / 100) * w, 4, 2).fill(color);
+        };
+
+        // PAGE 1: COVER
+        doc.rect(0, 0, 595.28, 841.89).fill(BG);
         
-        // Background decorative patterns
-        doc.fillColor(PRIMARY).opacity(0.1);
-        doc.path('M 0 0 L 612 200 L 612 0 Z').fill();
-        doc.path('M 0 792 L 612 592 L 612 792 Z').fill();
+        // Huge watermark
+        doc.fillColor(PRIMARY).opacity(0.03).fontSize(140).font('Helvetica-Bold').text('PROGRESS', 0, 250, { align: 'center' });
+        doc.text('CIRCLE', { align: 'center' });
         doc.opacity(1);
 
-        doc.fillColor(PRIMARY).fontSize(40).font('Helvetica-Bold').text('PROGRESS', 0, 300, { align: 'center', characterSpacing: 5 });
-        doc.fillColor(TEXT_BRIGHT).fontSize(40).font('Helvetica-Bold').text('CIRCLE', { align: 'center', characterSpacing: 5 });
-        
-        doc.moveDown(1);
-        doc.rect(250, doc.y, 112, 2).fill(SECONDARY);
-        doc.moveDown(2);
-
-        doc.fillColor(TEXT_DIM).fontSize(12).font('Helvetica').text('NEURAL PERFORMANCE ARCHIVE', { align: 'center', characterSpacing: 2 });
-        doc.moveDown(0.5);
-        doc.fillColor(TEXT_BRIGHT).fontSize(14).text(`PREPARED FOR: ${user.name.toUpperCase()}`, { align: 'center' });
-        
-        doc.fontSize(10).fillColor(TEXT_DIM).text(`SYNC DATE: ${new Date().toLocaleDateString()}`, 0, 700, { align: 'center' });
-
-        // --- PAGE 2: EXECUTIVE DASHBOARD ---
-        doc.addPage();
-        doc.rect(0, 0, 612, 792).fill(DARK_BG);
-
-        // Header
-        doc.fillColor(PRIMARY).fontSize(18).font('Helvetica-Bold').text('EXECUTIVE OVERVIEW', 50, 50);
-        doc.rect(50, 75, 512, 1).fill(BORDER);
-
-        // Stats Box Section
-        const statsY = 100;
-        
-        // Sync Rate Card
-        drawCard(doc, 50, statsY, 160, 100, 15, '#151824');
-        doc.fillColor(PRIMARY).fontSize(28).font('Helvetica-Bold').text(`${syncPercentage}%`, 70, statsY + 30);
-        doc.fillColor(TEXT_DIM).fontSize(9).font('Helvetica').text('NEURAL SYNC RATE', 70, statsY + 65);
-
-        // Focus Card
-        drawCard(doc, 226, statsY, 160, 100, 15, '#151824');
-        doc.fillColor(SECONDARY).fontSize(28).font('Helvetica-Bold').text(`${focusMinutes}`, 246, statsY + 30);
-        doc.fillColor(TEXT_DIM).fontSize(9).font('Helvetica').text('TOTAL FOCUS MINS', 246, statsY + 65);
-
-        // Streak Card
-        drawCard(doc, 402, statsY, 160, 100, 15, '#151824');
-        doc.fillColor(SUCCESS).fontSize(28).font('Helvetica-Bold').text(`${topHabit ? topHabit.streak : 0}`, 422, statsY + 30);
-        doc.fillColor(TEXT_DIM).fontSize(9).font('Helvetica').text('MAX STREAK LENGTH', 422, statsY + 65);
-
-        // Habit Progress Visualization
-        doc.moveDown(10);
-        doc.fillColor(PRIMARY).fontSize(14).font('Helvetica-Bold').text('CONSISTENCY LOOPS (HABITS)');
-        doc.moveDown(1);
-
-        if (habits.length > 0) {
-            habits.slice(0, 5).forEach(h => {
-                const habitY = doc.y;
-                doc.fillColor(TEXT_BRIGHT).fontSize(11).font('Helvetica-Bold').text(h.name, 50);
-                doc.fillColor(TEXT_DIM).fontSize(8).font('Helvetica').text(`${h.streak} DAY STREAK`, 50, habitY + 15);
-                
-                // Draw Streak Bar
-                const maxBarWidth = 300;
-                const barWidth = Math.min((h.streak / 30) * maxBarWidth, maxBarWidth);
-                doc.rect(260, habitY + 5, maxBarWidth, 10).fill('#1e293b');
-                doc.rect(260, habitY + 5, Math.max(barWidth, 5), 10).fill(SECONDARY);
-                doc.moveDown(2);
-            });
-        } else {
-            doc.fillColor(TEXT_DIM).fontSize(10).font('Helvetica-Oblique').text('No habit synchronization data available.', 50);
+        // Grid lines (cyber aesthetic)
+        for(let i=0; i<850; i+=40) {
+            doc.moveTo(0, i).lineTo(595, i).lineWidth(0.5).strokeColor(PRIMARY).strokeOpacity(0.05).stroke();
+            doc.moveTo(i, 0).lineTo(i, 842).strokeColor(PRIMARY).strokeOpacity(0.05).stroke();
         }
+        doc.strokeOpacity(1);
 
-        // --- PAGE 3: DETAILED NODE LOGS ---
+        // Title
+        doc.fillColor(TEXT).fontSize(42).font('Helvetica-Bold').text('NEURAL', 40, 150, { characterSpacing: 2 });
+        doc.fillColor(PRIMARY).fontSize(42).font('Helvetica-Bold').text('ARCHIVE', 40, 195, { characterSpacing: 2 });
+        
+        doc.fillColor(MUTED).fontSize(10).font('Helvetica-Bold').text('CONFIDENTIAL BIOLOGICAL & OPERATIONAL REPORT', 40, 245, { characterSpacing: 2 });
+        doc.rect(40, 265, 60, 3).fill(ACCENT);
+        
+        // Subject info
+        doc.fillColor(TEXT).fontSize(14).font('Helvetica-Bold').text(`SUBJECT: ${user.name.toUpperCase()}`, 40, 650);
+        doc.fillColor(MUTED).fontSize(10).font('Helvetica').text(`ID: ${user.id || 'ALPHA-PROTOCOL'}`, 40, 670);
+        doc.fillColor(PRIMARY).fontSize(10).font('Helvetica-Bold').text(`SYNC DATE: ${new Date().toISOString().split('T')[0]}`, 40, 690);
+        
+        doc.rect(40, 750, 515, 1).fill(BORDER);
+        doc.fillColor(MUTED).fontSize(8).font('Helvetica').text('DISTRIBUTION: AUTHORIZED EYES ONLY // PROGRESS CIRCLE P-V1', 40, 765, { characterSpacing: 1 });
+
+        // PAGE 2: EXECUTIVE SUMMARY & AI FEEDBACK
         doc.addPage();
-        doc.rect(0, 0, 612, 792).fill(DARK_BG);
-        doc.fillColor(PRIMARY).fontSize(18).font('Helvetica-Bold').text('NEURAL NODE LOGS (TASKS)', 50, 50);
-        doc.rect(50, 75, 512, 1).fill(BORDER);
+        doc.rect(0, 0, 595.28, 841.89).fill(BG);
+        
+        doc.fillColor(PRIMARY).fontSize(8).font('Helvetica-Bold').text('01 // OVERVIEW & INTELLIGENCE', 40, 40, { characterSpacing: 2 });
+        doc.fillColor(TEXT).fontSize(24).text('EXECUTIVE SUMMARY', 40, 60);
+        drawLine(100);
 
-        // Table Header
-        const tableY = 100;
-        doc.fillColor(TEXT_DIM).fontSize(9).font('Helvetica-Bold');
-        doc.text('ID', 50, tableY);
-        doc.text('OBJECTIVE', 100, tableY);
-        doc.text('STATUS', 400, tableY);
-        doc.text('PRIORITY', 480, tableY);
-        doc.moveDown(1.5);
-        doc.rect(50, tableY + 15, 512, 1).fill(BORDER);
+        // AI Feedback Block
+        doc.fillColor(MUTED).fontSize(10).font('Helvetica-Bold').text('ASTRA AI INTELLIGENCE FEED', 40, 120, { characterSpacing: 1 });
+        drawSurface(40, 140, 515, 130);
+        
+        const feedback = generateNeuralFeedback(tasks, habits, sessions);
+        let fy = 160;
+        feedback.forEach((f) => {
+            doc.fillColor(PRIMARY).fontSize(10).font('Helvetica-Bold').text(`>`, 60, fy);
+            doc.fillColor(TEXT).fontSize(10).font('Helvetica').text(f, 75, fy, { width: 450, lineGap: 4 });
+            fy += 35;
+        });
+
+        // Top line stats
+        doc.fillColor(MUTED).fontSize(10).font('Helvetica-Bold').text('GLOBAL PERFORMANCE METRICS', 40, 290, { characterSpacing: 1 });
+        
+        const completedTasks = tasks.filter(t => t.status === 'completed').length;
+        const taskCompletionRate = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+        const totalFocus = sessions.filter(s => s.type === 'focus').reduce((acc, s) => acc + (s.duration || 0), 0);
+        const maxStreak = habits.length > 0 ? Math.max(...habits.map(h => h.streak)) : 0;
+
+        drawSurface(40, 310, 160, 100);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('SYNC VELOCITY', 55, 330, { characterSpacing: 1 });
+        doc.fillColor(TEXT).fontSize(32).font('Helvetica-Bold').text(`${taskCompletionRate.toFixed(0)}%`, 55, 355);
+
+        drawSurface(215, 310, 160, 100);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('DEEP FOCUS (MINS)', 230, 330, { characterSpacing: 1 });
+        doc.fillColor(ACCENT).fontSize(32).font('Helvetica-Bold').text(`${totalFocus}`, 230, 355);
+
+        drawSurface(390, 310, 165, 100);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('MAX STREAK (DAYS)', 405, 330, { characterSpacing: 1 });
+        doc.fillColor('#10b981').fontSize(32).font('Helvetica-Bold').text(`${maxStreak}`, 405, 355);
+
+        // PAGE 3: MISSIONS / TASKS
+        doc.addPage();
+        doc.rect(0, 0, 595.28, 841.89).fill(BG);
+        doc.fillColor(PRIMARY).fontSize(8).font('Helvetica-Bold').text('02 // OPERATIONS', 40, 40, { characterSpacing: 2 });
+        doc.fillColor(TEXT).fontSize(24).text('MISSIONS LOG', 40, 60);
+        drawLine(100);
+
+        let ty = 125;
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('OBJECTIVE (TASK)', 40, ty, { characterSpacing: 1 });
+        doc.text('STATUS', 400, ty, { characterSpacing: 1 });
+        doc.text('PRIORITY', 490, ty, { characterSpacing: 1 });
+        ty += 20;
 
         tasks.slice(0, 20).forEach((t, i) => {
-            if (doc.y > 700) {
+            if(ty > 750) {
                 doc.addPage();
-                doc.rect(0, 0, 612, 792).fill(DARK_BG);
-                doc.y = 50;
+                doc.rect(0, 0, 595.28, 841.89).fill(BG);
+                ty = 50;
             }
-            const currentY = doc.y;
+            if (i % 2 === 0) doc.roundedRect(30, ty - 8, 535, 25, 4).fill(SURFACE);
             
-            // Alternating row background
-            if (i % 2 === 0) {
-                doc.fillColor('#151824').rect(50, currentY - 5, 512, 25).fill();
-            }
-
-            doc.fillColor(TEXT_DIM).fontSize(8).font('Helvetica').text(`${i + 1}`, 50, currentY);
-            doc.fillColor(TEXT_BRIGHT).fontSize(10).font('Helvetica-Bold').text(t.title || 'NULL_NODE', 100, currentY, { width: 280, lineBreak: false });
-            
-            const isComp = t.status === 'completed';
-            doc.fillColor(isComp ? SUCCESS : '#f59e0b').fontSize(8).font('Helvetica-Bold').text(isComp ? 'DONE' : 'ACTIVE', 400, currentY);
-            doc.fillColor(TEXT_DIM).fontSize(8).font('Helvetica').text((t.priority || 'MED').toUpperCase(), 480, currentY);
-            
-            doc.moveDown(1.5);
+            const isDone = t.status === 'completed';
+            doc.fillColor(TEXT).fontSize(10).font('Helvetica-Bold').text(t.title || 'UNKNOWN_NODE', 40, ty, { width: 340, height: 12, lineBreak: false });
+            doc.fillColor(isDone ? '#10b981' : '#f59e0b').font('Helvetica-Bold').text(isDone ? 'COMPLETE' : 'ACTIVE', 400, ty);
+            doc.fillColor(MUTED).text((t.priority || 'MED').toUpperCase(), 490, ty);
+            ty += 30;
         });
 
-        // --- PAGE 4: BIOLOGICAL FUEL & COLLABORATION ---
+        // PAGE 4: HABITS
         doc.addPage();
-        doc.rect(0, 0, 612, 792).fill(DARK_BG);
-        
-        // Nutrition Section
-        doc.fillColor(PRIMARY).fontSize(16).font('Helvetica-Bold').text('BIOLOGICAL FUEL ANALYSIS', 50, 50);
-        doc.rect(50, 75, 512, 1).fill(BORDER);
-        
-        let nutY = 100;
+        doc.rect(0, 0, 595.28, 841.89).fill(BG);
+        doc.fillColor(PRIMARY).fontSize(8).font('Helvetica-Bold').text('03 // BIOLOGY & CONTINUITY', 40, 40, { characterSpacing: 2 });
+        doc.fillColor(TEXT).fontSize(24).text('ROUTINES & METRICS', 40, 60);
+        drawLine(100);
+
+        doc.fillColor(MUTED).fontSize(10).font('Helvetica-Bold').text('ANCHORED SUBROUTINES (HABITS)', 40, 120, { characterSpacing: 1 });
+        let hy = 145;
+        if(habits.length > 0) {
+            habits.slice(0, 8).forEach(h => {
+                doc.fillColor(TEXT).fontSize(10).font('Helvetica-Bold').text(h.name, 40, hy);
+                doc.fillColor(MUTED).fontSize(9).font('Helvetica').text(`${h.streak} Day Streak`, 40, hy + 15);
+                drawProgressBar(200, hy + 5, 355, Math.min((h.streak / 66) * 100, 100), ACCENT);
+                hy += 45;
+            });
+        } else {
+            doc.fillColor(MUTED).fontSize(10).font('Helvetica-Oblique').text('No habit routines established.', 40, hy);
+            hy += 45;
+        }
+
+        hy += 30;
+        doc.fillColor(MUTED).fontSize(10).font('Helvetica-Bold').text('PHYSIOLOGICAL FUEL (NUTRITION & METRICS)', 40, hy, { characterSpacing: 1 });
+        hy += 25;
         if (nutritionLogs.length > 0) {
-            nutritionLogs.forEach((log, i) => {
-                const dayTotals = log.meals.reduce((acc, m) => ({
-                    cals: acc.cals + m.calories,
-                    prot: acc.prot + m.protein
-                }), { cals: 0, prot: 0 });
-
-                drawCard(doc, 50, nutY, 512, 40, 10, '#151824');
-                doc.fillColor(TEXT_BRIGHT).fontSize(9).font('Helvetica-Bold').text(log.date, 70, nutY + 15);
-                doc.fillColor(TEXT_DIM).fontSize(8).text(`${dayTotals.cals} KCAL // ${dayTotals.prot}g PROT // ${log.waterIntake}ml HYDRATION`, 180, nutY + 15);
-                nutY += 50;
+            nutritionLogs.slice(0, 5).forEach((log) => {
+                const dayCals = log.meals.reduce((acc, m) => acc + m.calories, 0);
+                const dayProt = log.meals.reduce((acc, m) => acc + m.protein, 0);
+                drawSurface(40, hy, 515, 45);
+                doc.fillColor(TEXT).fontSize(10).font('Helvetica-Bold').text(log.date || 'Unknown Date', 60, hy + 17);
+                doc.fillColor(PRIMARY).fontSize(11).text(`${dayCals} KCAL  //  ${dayProt}G PROTEIN  //  ${log.waterIntake || 0}ML H2O`, 250, hy + 17);
+                hy += 55;
             });
         } else {
-            doc.fillColor(TEXT_DIM).fontSize(10).font('Helvetica-Oblique').text('No biometry logs detected for this cycle.', 50, 100);
-            nutY = 130;
+            doc.fillColor(MUTED).fontSize(10).font('Helvetica-Oblique').text('No physiological logs recorded.', 40, hy);
         }
 
-        // Synergy Section
-        doc.moveDown(2);
-        doc.fillColor(SECONDARY).fontSize(16).font('Helvetica-Bold').text('COLLABORATIVE RESONANCE', 50, nutY + 20);
-        doc.rect(50, nutY + 45, 512, 1).fill(BORDER);
+        // PAGE 5: FINANCIAL & SOCIAL LEDGER
+        doc.addPage();
+        doc.rect(0, 0, 595.28, 841.89).fill(BG);
+        doc.fillColor(PRIMARY).fontSize(8).font('Helvetica-Bold').text('04 // RESOURCES & SYNERGY', 40, 40, { characterSpacing: 2 });
+        doc.fillColor(TEXT).fontSize(24).text('LEDGER & ALLIANCES', 40, 60);
+        drawLine(100);
+
+        // Finance
+        const finY = 120;
+        drawSurface(40, finY, 250, 90);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('CASH BALANCE', 60, finY + 20, { characterSpacing: 1 });
+        doc.fillColor('#10b981').fontSize(24).font('Helvetica-Bold').text(`$${user.cashBalance?.toLocaleString() || 0}`, 60, finY + 45);
+
+        drawSurface(305, finY, 250, 90);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('CREDIT BALANCE', 325, finY + 20, { characterSpacing: 1 });
+        doc.fillColor(TEXT).fontSize(24).font('Helvetica-Bold').text(`$${user.creditBalance?.toLocaleString() || 0}`, 325, finY + 45);
+
+        // Social
+        let socY = finY + 110;
+        doc.fillColor(MUTED).fontSize(10).font('Helvetica-Bold').text('COLLABORATIVE SYNERGY METRICS', 40, socY, { characterSpacing: 1 });
+        socY += 25;
         
-        let synY = nutY + 65;
-        drawCard(doc, 50, synY, 160, 60, 12, '#151824');
-        doc.fillColor(SECONDARY).fontSize(18).text(`${user.socialStats?.synergyPoints || 0}`, 70, synY + 15);
-        doc.fillColor(TEXT_DIM).fontSize(8).text('SYNERGY POINTS', 70, synY + 40);
+        drawSurface(40, socY, 160, 90);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('SYNERGY POINTS', 55, socY + 20, { characterSpacing: 1 });
+        doc.fillColor(PRIMARY).fontSize(24).font('Helvetica-Bold').text(`${user.socialStats?.synergyPoints || 0}`, 55, socY + 45);
 
-        drawCard(doc, 226, synY, 160, 60, 12, '#151824');
-        doc.fillColor(TEXT_BRIGHT).fontSize(18).text(`${user.socialStats?.battlesWon || 0}`, 246, synY + 15);
-        doc.fillColor(TEXT_DIM).fontSize(8).text('ARENA VICTORIES', 246, synY + 40);
+        drawSurface(215, socY, 160, 90);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('ARENA VICTORIES', 230, socY + 20, { characterSpacing: 1 });
+        doc.fillColor(TEXT).fontSize(24).font('Helvetica-Bold').text(`${user.socialStats?.battlesWon || 0}`, 230, socY + 45);
 
-        drawCard(doc, 402, synY, 160, 60, 12, '#151824');
-        doc.fillColor(TEXT_BRIGHT).fontSize(18).text(`${user.socialStats?.orbsSent || 0}`, 422, synY + 15);
-        doc.fillColor(TEXT_DIM).fontSize(8).text('ORBS DISPATCHED', 422, synY + 40);
+        drawSurface(390, socY, 165, 90);
+        doc.fillColor(MUTED).fontSize(9).font('Helvetica-Bold').text('ORBS DISPATCHED', 405, socY + 20, { characterSpacing: 1 });
+        doc.fillColor(TEXT).fontSize(24).font('Helvetica-Bold').text(`${user.socialStats?.orbsSent || 0}`, 405, socY + 45);
 
-        // --- PAGE 5: FINANCIAL INTELLIGENCE ---
-        doc.addPage();
-        doc.rect(0, 0, 612, 792).fill(DARK_BG);
-        doc.fillColor(SUCCESS).fontSize(18).font('Helvetica-Bold').text('FINANCIAL INTELLIGENCE', 50, 50);
-        doc.rect(50, 75, 512, 1).fill(BORDER);
-
-        const finY = 100;
-        drawCard(doc, 50, finY, 250, 80, 15, '#151824');
-        doc.fillColor(TEXT_DIM).fontSize(8).text('CASH BALANCE', 70, finY + 20);
-        doc.fillColor(TEXT_BRIGHT).fontSize(20).text(`$${user.cashBalance?.toLocaleString() || 0}`, 70, finY + 40);
-
-        drawCard(doc, 312, finY, 250, 80, 15, '#151824');
-        doc.fillColor(TEXT_DIM).fontSize(8).text('CREDIT BALANCE', 332, finY + 20);
-        doc.fillColor(TEXT_BRIGHT).fontSize(20).text(`$${user.creditBalance?.toLocaleString() || 0}`, 332, finY + 40);
-
-        doc.moveDown(6);
-        doc.fillColor(TEXT_DIM).fontSize(10).font('Helvetica-Bold').text('RECENT TRANSACTIONS (NEURAL LEDGER)', 50);
-        doc.moveDown(1);
-
-        transactions.forEach((tx, i) => {
-            const currentTxY = doc.y;
-            doc.fillColor(BORDER).rect(50, currentTxY - 5, 512, 25).fill();
-            doc.fillColor(TEXT_BRIGHT).fontSize(9).text(tx.category || 'General', 60, currentTxY);
-            doc.fillColor(tx.type === 'income' ? SUCCESS : '#f87171').fontSize(9).text(`${tx.type === 'income' ? '+' : '-'}$${tx.amount}`, 480, currentTxY, { align: 'right', width: 70 });
-            doc.moveDown(1.5);
-        });
-
-        // --- PAGE 6: PHYSICAL WELLNESS METRICS ---
-        doc.addPage();
-        doc.rect(0, 0, 612, 792).fill(DARK_BG);
-        doc.fillColor(PRIMARY).fontSize(18).font('Helvetica-Bold').text('PHYSICAL WELLNESS METRICS', 50, 50);
-        doc.rect(50, 75, 512, 1).fill(BORDER);
-
-        if (metrics.length > 0) {
-            let metY = 100;
-            metrics.forEach((m, i) => {
-                drawCard(doc, 50, metY, 512, 120, 15, '#151824');
-                doc.fillColor(TEXT_BRIGHT).fontSize(10).font('Helvetica-Bold').text(`SYNC DATE: ${m.date.toLocaleDateString()}`, 70, metY + 15);
-                
-                // Grid of metrics
-                doc.fillColor(TEXT_DIM).fontSize(8).font('Helvetica');
-                doc.text('WEIGHT', 70, metY + 45);
-                doc.fillColor(TEXT_BRIGHT).fontSize(12).text(`${m.weight || '--'} kg`, 70, metY + 60);
-
-                doc.fillColor(TEXT_DIM).text('BODY FAT', 170, metY + 45);
-                doc.fillColor(TEXT_BRIGHT).text(`${m.bodyFat || '--'}%`, 170, metY + 60);
-
-                doc.fillColor(TEXT_DIM).text('MUSCLE MASS', 270, metY + 45);
-                doc.fillColor(TEXT_BRIGHT).text(`${m.muscleMass || '--'}%`, 270, metY + 60);
-
-                doc.fillColor(TEXT_DIM).text('BMR', 370, metY + 45);
-                doc.fillColor(TEXT_BRIGHT).text(`${m.bmr || '--'} kcal`, 370, metY + 60);
-
-                doc.fontSize(7).fillColor(TEXT_DIM).text(`STATURE LOG: S:${m.stomach || '--'}cm // A:${m.arm || '--'}cm // L:${m.leg || '--'}cm`, 70, metY + 95);
-
-                metY += 140;
-            });
-        } else {
-            doc.fillColor(TEXT_DIM).fontSize(10).font('Helvetica-Oblique').text('No physical body metrics synced in the current epoch.', 50, 100);
-        }
-
-        // --- GLOBAL FOOTER ---
+        // FOOTER (Apply perfectly to all pages)
         const range = doc.bufferedPageRange();
         for (let i = range.start; i < range.start + range.count; i++) {
             doc.switchToPage(i);
-            
-            // Branding Watermark
-            if (i > 0) {
-                doc.fontSize(80).font('Helvetica-Bold').fillColor(PRIMARY).opacity(0.02).text('CIRCLE', 50, 300, { align: 'center' });
-                doc.opacity(1);
-            }
-
-            // Footer Text
-            doc.rect(50, 750, 512, 1).fill(BORDER);
-            doc.fontSize(8).fillColor(TEXT_DIM).font('Helvetica').text(
-                `PROGRESS CIRCLE // NEURAL DATA ARCHIVE // PAGE ${i + 1} OF ${range.count}`,
-                50,
-                765,
-                { align: 'center', characterSpacing: 1 }
-            );
+            doc.moveTo(40, 810).lineTo(555, 810).lineWidth(0.5).strokeColor(BORDER).strokeOpacity(1).stroke();
+            doc.fillColor(MUTED).fontSize(7).font('Helvetica-Bold').text(`PROGRESS CIRCLE // NEURAL DATA ARCHIVE // ${i + 1} OF ${range.count}`, 40, 820, { align: 'center', characterSpacing: 2 });
         }
 
         doc.end();
