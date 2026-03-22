@@ -14,6 +14,7 @@ export function CategoryManager({ open, onClose }) {
     const [editCat, setEditCat] = useState(null);
     const [form, setForm] = useState({ name: '', color: COLORS[0], icon: 'Tag' });
     const [saving, setSaving] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     const handleSave = async () => {
         if (!form.name.trim()) return toast.error('Name is required');
@@ -40,17 +41,24 @@ export function CategoryManager({ open, onClose }) {
         setForm({ name: cat.name, color: cat.color, icon: cat.icon });
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this category? Tasks using it will lose their category.')) return;
+    const handleDelete = (id) => {
+        setConfirmDelete(id);
+    };
+
+    const confirmDeleteCategory = async () => {
+        if (!confirmDelete) return;
         try {
-            await deleteCategory(id);
+            await deleteCategory(confirmDelete);
             toast.success('Category deleted');
+            setConfirmDelete(null);
         } catch (error) {
             toast.error('Failed to delete category');
+            setConfirmDelete(null);
         }
     };
 
     return (
+        <>
         <Modal open={open} onClose={onClose} title="Manage Categories">
             <div className="space-y-6">
                 {/* Form */}
@@ -118,5 +126,17 @@ export function CategoryManager({ open, onClose }) {
                 </div>
             </div>
         </Modal>
+
+        <Modal open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title="Delete Category?">
+            <div className="space-y-4">
+                <p className="text-sm text-muted">Are you sure you want to delete this category? Tasks using it will lose their category.</p>
+                <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.2em] bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 text-center flex items-center justify-center gap-2">⚠️ This action cannot be undone.</p>
+                <div className="flex gap-3 pt-2">
+                    <button className="flex-1 py-3 px-4 rounded-xl font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all shadow-sm" onClick={confirmDeleteCategory}>Delete Category</button>
+                    <button className="flex-1 py-3 px-4 rounded-xl font-bold bg-muted/10 text-white hover:bg-muted/20 transition-all border border-border" onClick={() => setConfirmDelete(null)}>Cancel</button>
+                </div>
+            </div>
+        </Modal>
+        </>
     );
 }

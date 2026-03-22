@@ -423,7 +423,7 @@ export function Squad() {
                 {friends.map((friend) => (
                     <div key={friend._id} className="flex-shrink-0 flex flex-col items-center gap-1 group">
                         <div className="relative">
-                            <AvatarDisplay avatarConfig={friend.avatarConfig} size="sm" showTitle={true} />
+                            <AvatarDisplay avatarConfig={friend.avatarConfig} size="sm" showTitle={false} showPet={false} />
                             <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-bg ${Math.random() > 0.5 ? 'bg-emerald-500' : 'bg-surface3'
                                 }`} />
                         </div>
@@ -435,7 +435,7 @@ export function Squad() {
 
                 {requests.length > 0 && requests.map((req) => (
                     <div key={req._id} className="flex-shrink-0 bg-primary/5 border border-primary/20 rounded-2xl p-2 flex items-center gap-3">
-                        <AvatarDisplay avatarConfig={req.sender.avatarConfig} size="xs" showTitle={true} />
+                        <AvatarDisplay avatarConfig={req.sender.avatarConfig} size="xs" showTitle={false} showPet={false} />
                         <div>
                             <p className="text-[10px] font-bold leading-tight">{req.sender.name}</p>
                             <div className="flex gap-2 mt-1">
@@ -563,7 +563,7 @@ export function Squad() {
                                                 <div className="flex items-center gap-3 mb-4">
                                                     <div className="flex -space-x-2">
                                                         {room.members.slice(0, 3).map(m => (
-                                                            m.user && <AvatarDisplay key={m.user?._id || m.user} avatarConfig={m.user.avatarConfig || m.user?.avatarConfig} size="xs" showTitle={true} />
+                                                            m.user && <AvatarDisplay key={m.user?._id || m.user} avatarConfig={m.user.avatarConfig || m.user?.avatarConfig} size="xs" showTitle={false} showPet={false} />
                                                         ))}
                                                     </div>
                                                     <span className="text-[10px] text-muted font-bold">{room.members.length} Squad Members</span>

@@ -228,7 +228,7 @@ export function AvatarShop() {
                                 key={`${item.id}`}
                                 whileHover={{ y: -2 }}
                                 onClick={() => handlePreview(activeTab, optValue)}
-                                className="relative flex flex-col items-center p-2.5 rounded-2xl cursor-pointer transition-all h-full min-h-[185px]"
+                                className="relative flex flex-col items-center p-2.5 rounded-2xl cursor-pointer transition-all"
                                 style={{
                                     background: isPreviewing ? 'rgba(99,102,241,0.15)' : 'var(--color-surface-2)',
                                     border: isPreviewing ? '2px solid #6366f1' : '2px solid transparent',

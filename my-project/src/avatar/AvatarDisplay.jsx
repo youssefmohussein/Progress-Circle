@@ -12,7 +12,8 @@ export function AvatarDisplay({
     showBg = true, 
     userTheme = null, 
     previewMode = false,
-    showTitle = false 
+    showTitle = false,
+    showPet = true
 }) {
     // Merge provided config with defaults to ensure all keys exist
     const configToRender = { ...avatarDefaults, ...(avatarConfig || {}) };
@@ -86,7 +87,7 @@ export function AvatarDisplay({
                     <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_20px_rgba(139,92,246,0.3)]" />
                 )}
             </div>
-            {configToRender.companionPet && configToRender.companionPet !== 'none' && PET_EMOJIS[configToRender.companionPet] && (
+            {configToRender.companionPet && configToRender.companionPet !== 'none' && PET_EMOJIS[configToRender.companionPet] && showPet && (
                 <div 
                     className="absolute z-10 drop-shadow-lg flex items-center justify-center pointer-events-none animate-bounce"
                     style={{ 

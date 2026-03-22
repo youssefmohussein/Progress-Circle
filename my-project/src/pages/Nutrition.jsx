@@ -120,7 +120,7 @@ export function Nutrition() {
             >
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                        <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20">
                             <Salad size={24} />
                         </div>
                         <div>
@@ -139,13 +139,13 @@ export function Nutrition() {
                             </div>
                             <div className="flex items-center gap-3 mt-1">
                                 <div className="flex items-center gap-1 text-xs font-bold text-muted bg-surface2 px-2 py-1 rounded-lg border border-border/5">
-                                    <CalendarIcon size={12} className="text-indigo-400" />
+                                    <CalendarIcon size={12} className="text-primary" />
                                     {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                                 </div>
                                 {!isToday && (
                                     <button 
                                         onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                                        className="text-[10px] uppercase font-black text-indigo-500 hover:text-indigo-400 tracking-widest"
+                                        className="text-[10px] uppercase font-black text-primary hover:text-primary tracking-widest"
                                     >
                                         Return to Today
                                     </button>
@@ -174,7 +174,7 @@ export function Nutrition() {
 
                     <button 
                         onClick={() => setShowAddMeal(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20"
+                        className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20"
                     >
                         <Plus size={18} /> Add Neural Fuel
                     </button>
@@ -183,12 +183,12 @@ export function Nutrition() {
                 {/* Macro Dashboard */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                     <div className="p-4 rounded-2xl bg-surface2 border border-border/10">
-                        <div className="flex items-center gap-2 mb-2 text-indigo-400">
+                        <div className="flex items-center gap-2 mb-2 text-primary">
                             <Flame size={16} /> <span className="text-[10px] font-bold uppercase tracking-wider">Calories</span>
                         </div>
                         <div className="text-xl font-black">{totals.calories} <span className="text-[10px] text-muted font-normal">/ {target} kcal</span></div>
                         <div className="h-1.5 bg-border/20 rounded-full mt-2 overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${calProgress}%` }} className="h-full bg-indigo-500" />
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${calProgress}%` }} className="h-full bg-primary" />
                         </div>
                     </div>
                     <div className="p-4 rounded-2xl bg-surface2 border border-border/10">
@@ -219,7 +219,7 @@ export function Nutrition() {
                 {/* Meal History */}
                 <div className="lg:col-span-2 space-y-4">
                     <div className="flex items-center justify-between px-2">
-                        <h3 className="font-bold flex items-center gap-2"><Utensils size={18} className="text-indigo-400" /> Meal Archive</h3>
+                        <h3 className="font-bold flex items-center gap-2"><Utensils size={18} className="text-primary" /> Meal Archive</h3>
                         <span className="text-xs text-muted">{nutritionData?.meals.length} entries detected</span>
                     </div>
 
@@ -237,14 +237,14 @@ export function Nutrition() {
                                 className="pc-card p-4 flex items-center justify-between group"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-surface2 flex items-center justify-center text-indigo-400 border border-border/10">
+                                    <div className="w-10 h-10 rounded-full bg-surface2 flex items-center justify-center text-primary border border-border/10">
                                         <Clock size={18} />
                                     </div>
                                     <div>
                                         <p className="font-bold text-sm tracking-tight">{meal.name}</p>
                                         <div className="flex items-center gap-3 mt-0.5">
                                             <span className="text-[10px] font-medium text-muted">{meal.time}</span>
-                                            <span className="text-[10px] font-black text-indigo-400">{meal.calories} KCAL</span>
+                                            <span className="text-[10px] font-black text-primary">{meal.calories} KCAL</span>
                                         </div>
                                     </div>
                                 </div>
@@ -269,16 +269,16 @@ export function Nutrition() {
                 {/* Sidebar Controls */}
                 <div className="space-y-6">
                     {/* Water Tracker Card */}
-                    <div className="pc-card p-5 bg-gradient-to-br from-indigo-500/5 to-transparent border-indigo-500/10">
+                    <div className="pc-card p-5 bg-gradient-to-br from-primary/5 to-transparent border-primary/10">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-sm flex items-center gap-2 text-indigo-400"><Droplets size={16} /> Hydration Sync</h3>
-                            <span className="text-xs font-black text-indigo-500">{((nutritionData?.waterIntake || 0) / 2000 * 100).toFixed(0)}%</span>
+                            <h3 className="font-bold text-sm flex items-center gap-2 text-primary"><Droplets size={16} /> Hydration Sync</h3>
+                            <span className="text-xs font-black text-primary">{((nutritionData?.waterIntake || 0) / 2000 * 100).toFixed(0)}%</span>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                            <button onClick={() => handleWaterUpdate(250)} className="p-3 rounded-xl bg-surface2 border border-border/10 hover:border-indigo-500/50 transition-all text-xs font-bold text-center">
+                            <button onClick={() => handleWaterUpdate(250)} className="p-3 rounded-xl bg-surface2 border border-border/10 hover:border-primary/50 transition-all text-xs font-bold text-center">
                                 +250ml <br/> <span className="text-[9px] text-muted font-normal">Glass</span>
                             </button>
-                            <button onClick={() => handleWaterUpdate(500)} className="p-3 rounded-xl bg-surface2 border border-border/10 hover:border-indigo-500/50 transition-all text-xs font-bold text-center">
+                            <button onClick={() => handleWaterUpdate(500)} className="p-3 rounded-xl bg-surface2 border border-border/10 hover:border-primary/50 transition-all text-xs font-bold text-center">
                                 +500ml <br/> <span className="text-[9px] text-muted font-normal">Bottle</span>
                             </button>
                         </div>
@@ -303,7 +303,7 @@ export function Nutrition() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                        className="bg-surface pc-card p-6 w-full max-w-md shadow-2xl border-indigo-500/30"
+                        className="bg-surface pc-card p-6 w-full max-w-md shadow-2xl border-primary/30"
                     >
                         <h3 className="text-xl font-black mb-6 flex items-center gap-2">
                             Add Neural Fuel Node
@@ -314,7 +314,7 @@ export function Nutrition() {
                                 <input 
                                     autoFocus
                                     required
-                                    className="w-full bg-surface2 border border-border/10 p-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition-all"
+                                    className="w-full bg-surface2 border border-border/10 p-3 rounded-xl text-sm outline-none focus:border-primary transition-all"
                                     placeholder="e.g. Pre-Focus Protein Bowl"
                                     value={newMeal.name}
                                     onChange={e => setNewMeal({...newMeal, name: e.target.value})}
@@ -383,7 +383,7 @@ export function Nutrition() {
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="flex-[2] p-3 bg-indigo-500 rounded-xl font-bold text-sm text-white hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20"
+                                    className="flex-[2] p-3 bg-primary rounded-xl font-bold text-sm text-white hover:bg-primary transition-all shadow-lg shadow-primary/20"
                                 >
                                     Integrate Node
                                 </button>

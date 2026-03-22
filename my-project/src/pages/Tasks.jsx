@@ -169,6 +169,7 @@ export function Tasks() {
     const [editTask, setEditTask] = useState(null);
     const [expandedTasks, setExpandedTasks] = useState(new Set());
     const [saving, setSaving] = useState(false);
+    const [confirmDeleteTask, setConfirmDeleteTask] = useState(null);
     const [showConfetti, setShowConfetti] = useState(null); // null | 'regular' | 'big'
     const filterBarRef = useRef(null);
     const trackRef = useRef(null);
@@ -247,12 +248,17 @@ export function Tasks() {
         } catch { toast.error('Failed to update task'); }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this task?')) return;
+    const handleDelete = (id) => {
+        setConfirmDeleteTask(id);
+    };
+
+    const confirmTaskDeletion = async () => {
+        if (!confirmDeleteTask) return;
         try {
-            await deleteTask(id);
+            await deleteTask(confirmDeleteTask);
             toast.success('Task deleted');
         } catch { toast.error('Failed to delete task'); }
+        setConfirmDeleteTask(null);
     };
 
     const openCreateModal = (isBig = false, parentId = null) => {
@@ -426,7 +432,8 @@ export function Tasks() {
             )}
 
             <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editTask ? "Edit Task" : (form.isBigTask ? "New Project" : "New Task")}>
-                <div className="space-y-5">
+                <div className="max-h-[70vh] overflow-y-auto px-1 custom-scrollbar">
+                    <div className="space-y-5">
                     <div>
                         <label className="block text-[11px] font-black text-muted uppercase tracking-[0.15em] mb-2">Title</label>
                         <input className="pc-input text-lg font-bold" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g., Computer Science 101" />
@@ -604,6 +611,7 @@ export function Tasks() {
                         <Button variant="secondary" onClick={() => setModalOpen(false)}>Back</Button>
                     </div>
                 </div>
+                </div>
             </Modal>
 
             <Confetti 
@@ -612,6 +620,17 @@ export function Tasks() {
                 onComplete={() => setShowConfetti(null)} 
             />
             <CategoryManager open={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} />
+
+            <Modal open={!!confirmDeleteTask} onClose={() => setConfirmDeleteTask(null)} title="Delete Task?">
+                <div className="space-y-4">
+                    <p className="text-sm text-muted">Are you sure you want to delete this task?</p>
+                    <p className="text-[11px] font-black text-rose-500 uppercase tracking-[0.2em] bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 text-center flex items-center justify-center gap-2">⚠️ This action cannot be undone.</p>
+                    <div className="flex gap-3 pt-2">
+                        <button className="flex-1 py-3 px-4 rounded-xl font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all shadow-sm" onClick={confirmTaskDeletion}>Delete Task</button>
+                        <button className="flex-1 py-3 px-4 rounded-xl font-bold bg-muted/10 text-white hover:bg-muted/20 transition-all border border-border" onClick={() => setConfirmDeleteTask(null)}>Cancel</button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

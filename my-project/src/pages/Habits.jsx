@@ -12,17 +12,12 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Confetti } from '../components/Confetti';
 import { toast } from 'sonner';
 
-/* ─── Color palette for habit cards ─────────────────────────── */
-const HABIT_COLORS = [
-    { accent: '#22c55e', bg: 'rgba(34,197,94,0.12)', ring: 'rgba(34,197,94,0.25)', label: 'green' },
-    { accent: '#a855f7', bg: 'rgba(168,85,247,0.12)', ring: 'rgba(168,85,247,0.25)', label: 'purple' },
-    { accent: '#06b6d4', bg: 'rgba(6,182,212,0.12)', ring: 'rgba(6,182,212,0.25)', label: 'cyan' },
-    { accent: '#f97316', bg: 'rgba(249,115,22,0.12)', ring: 'rgba(249,115,22,0.25)', label: 'orange' },
-    { accent: '#ec4899', bg: 'rgba(236,72,153,0.12)', ring: 'rgba(236,72,153,0.25)', label: 'pink' },
-    { accent: '#eab308', bg: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.25)', label: 'yellow' },
-    { accent: '#3b82f6', bg: 'rgba(59,130,246,0.12)', ring: 'rgba(59,130,246,0.25)', label: 'blue' },
-    { accent: '#ef4444', bg: 'rgba(239,68,68,0.12)', ring: 'rgba(239,68,68,0.25)', label: 'red' },
-];
+const themeColorScheme = {
+    accent: 'var(--primary)',
+    bg: 'rgba(var(--primary-rgb), 0.12)',
+    ring: 'rgba(var(--primary-rgb), 0.25)',
+    label: 'theme'
+};
 
 /* ─── Extract first emoji from string ────────────────────────── */
 const extractEmoji = (text) => {
@@ -211,10 +206,10 @@ const YearlyHeatmap = memo(function YearlyHeatmap({ habits }) {
     const getColor = (intensity) => {
         if (intensity < 0) return 'rgba(255, 255, 255, 0.01)';
         if (intensity === 0) return 'rgba(255, 255, 255, 0.04)';
-        if (intensity <= 0.25) return 'rgba(99, 102, 241, 0.25)';
-        if (intensity <= 0.5) return 'rgba(99, 102, 241, 0.5)';
-        if (intensity <= 0.75) return 'rgba(99, 102, 241, 0.75)';
-        return '#818cf8'; // vibrant indigo
+        if (intensity <= 0.25) return 'rgba(var(--primary-rgb), 0.25)';
+        if (intensity <= 0.5) return 'rgba(var(--primary-rgb), 0.5)';
+        if (intensity <= 0.75) return 'rgba(var(--primary-rgb), 0.75)';
+        return 'var(--primary)'; // vibrant theme primary
     };
 
     const CELL = 12;
@@ -242,9 +237,9 @@ const YearlyHeatmap = memo(function YearlyHeatmap({ habits }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <div style={{
                         width: 40, height: 40, borderRadius: 12,
-                        background: 'rgba(99,102,241,0.1)',
+                        background: 'rgba(var(--primary-rgb),0.1)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#6366f1', border: '1px solid rgba(99,102,241,0.2)',
+                        color: 'var(--primary)', border: '1px solid rgba(var(--primary-rgb),0.2)',
                     }}>
                         <Calendar size={20} />
                     </div>
@@ -825,7 +820,7 @@ export function Habits() {
                         <HabitCard
                             key={habit.id}
                             habit={habit}
-                            colorScheme={HABIT_COLORS[i % HABIT_COLORS.length]}
+                            colorScheme={themeColorScheme}
                             index={i}
                             onToggle={handleToggle}
                             onDelete={handleDelete}

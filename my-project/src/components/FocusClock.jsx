@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const TECHNIQUES = [
     { id: 'pomodoro', name: 'Pomodoro', work: 25, break: 5, icon: Zap, color: 'text-rose-500', isPremium: false },
-    { id: '52-17', name: '52/17 Rule', work: 52, break: 17, icon: Target, color: 'text-indigo-500', isPremium: true },
+    { id: '52-17', name: '52/17 Rule', work: 52, break: 17, icon: Target, color: 'text-primary', isPremium: true },
     { id: '90-min', name: '90 Minute', work: 90, break: 15, icon: Coffee, color: 'text-amber-500', isPremium: true },
     { id: 'deep', name: 'Deep Work', work: 62, break: 0, icon: Target, color: 'text-emerald-500', isPremium: true },
     { id: 'flow', name: 'Infinite Flow', work: 0, break: 0, icon: RefreshCcw, color: 'text-blue-500', isPremium: false },
@@ -26,7 +26,7 @@ const NeuralSelect = ({ label, value, options, onChange, placeholder = "Select o
             <label className="text-[9px] font-black uppercase tracking-widest text-white/30 pl-1">{label}</label>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full bg-white/[0.03] border border-white/5 p-3 rounded-2xl text-[11px] font-bold text-white flex items-center justify-between hover:bg-white/5 transition-all outline-none focus:border-indigo-500/40"
+                className="w-full bg-white/[0.03] border border-white/5 p-3 rounded-2xl text-[11px] font-bold text-white flex items-center justify-between hover:bg-white/5 transition-all outline-none focus:border-primary/40"
             >
                 <span className={selectedOption ? "text-white" : "text-white/40"}>
                     {selectedOption ? selectedOption.label : placeholder}
@@ -53,7 +53,7 @@ const NeuralSelect = ({ label, value, options, onChange, placeholder = "Select o
                                             setIsOpen(false);
                                         }}
                                         className={`w-full text-left px-4 py-3 text-[11px] font-bold transition-colors border-b border-white/[0.02] last:border-0 ${
-                                            value === opt.value ? 'bg-indigo-500 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
+                                            value === opt.value ? 'bg-primary text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
                                         }`}
                                     >
                                         {opt.label}
@@ -164,7 +164,7 @@ export const FocusClock = () => {
             <motion.div 
                 drag 
                 dragMomentum={false}
-                className="relative bg-black/60 backdrop-blur-3xl border border-white/10 rounded-full p-8 shadow-2xl flex flex-col items-center justify-center cursor-grab active:cursor-grabbing group hover:border-indigo-500/50 transition-colors"
+                className="relative bg-black/60 backdrop-blur-3xl border border-white/10 rounded-full p-8 shadow-2xl flex flex-col items-center justify-center cursor-grab active:cursor-grabbing group hover:border-primary/50 transition-colors"
                 whileHover={{ scale: 1.02 }}
             >
                 {/* Drag Indicator */}
@@ -178,7 +178,7 @@ export const FocusClock = () => {
                         {selectedTechnique.id !== 'flow' && (
                             <motion.circle
                                 cx="50%" cy="50%" r="45%"
-                                className="stroke-indigo-500 fill-none drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                                className="stroke-primary fill-none drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]"
                                 strokeWidth="4" strokeLinecap="round"
                                 initial={{ pathLength: 1 }}
                                 animate={{ pathLength: timeLeft / (selectedTechnique.work * 60) }}
@@ -218,7 +218,7 @@ export const FocusClock = () => {
 
     return (
         <Card className="relative overflow-hidden p-0 w-full bg-[#0b0c14]/80 border-white/5 shadow-2xl transition-all duration-700">
-            <div className={`absolute top-0 left-0 w-1 lg:w-2 lg:h-full h-full ${activeSession ? 'bg-indigo-500' : 'bg-white/5'}`} />
+            <div className={`absolute top-0 left-0 w-1 lg:w-2 lg:h-full h-full ${activeSession ? 'bg-primary' : 'bg-white/5'}`} />
 
             <div className="p-8 lg:p-16">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:gap-20">
@@ -231,8 +231,8 @@ export const FocusClock = () => {
                                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Protocol</h3>
                             </div>
                             {activeSession && (
-                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Active</span>
                                 </div>
                             )}
@@ -254,7 +254,7 @@ export const FocusClock = () => {
                                             cx="50%"
                                             cy="50%"
                                             r="45%"
-                                            className="stroke-indigo-500/80 fill-none"
+                                            className="stroke-primary/80 fill-none"
                                             strokeWidth="3"
                                             strokeLinecap="round"
                                             initial={{ pathLength: 1 }}
@@ -268,7 +268,7 @@ export const FocusClock = () => {
                                         key={timeLeft}
                                         initial={{ filter: 'blur(4px)', opacity: 0.8 }}
                                         animate={{ filter: 'blur(0px)', opacity: 1 }}
-                                        className="text-6xl lg:text-9xl font-black italic tracking-tighter font-manrope pc-gradient-text"
+                                        className="text-6xl lg:text-9xl font-black italic tracking-tighter font-manrope text-white drop-shadow-lg"
                                     >
                                         {fmt(timeLeft)}
                                     </motion.span>
@@ -279,7 +279,7 @@ export const FocusClock = () => {
                             </div>
                             
                             {/* Ambient Glow behind Timer */}
-                            <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[100px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                            <div className="absolute inset-0 bg-primary/5 rounded-full blur-[100px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                         </div>
                     </div>
 
@@ -289,8 +289,8 @@ export const FocusClock = () => {
                         <div className="space-y-6">
                             <div className="hidden lg:flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-indigo-500/10 rounded-lg">
-                                        <Target size={20} className="text-indigo-400" />
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <Target size={20} className="text-primary" />
                                     </div>
                                     <div>
                                         <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">Select Protocol</h3>
@@ -312,7 +312,7 @@ export const FocusClock = () => {
                                         }}
                                         className={`relative flex flex-col items-center gap-3 p-4 rounded-3xl border transition-all duration-300 group ${
                                             selectedTechnique.id === t.id 
-                                            ? 'bg-white/10 border-indigo-500/50 text-white shadow-xl shadow-indigo-500/10' 
+                                            ? 'bg-white/10 border-primary/50 text-white shadow-xl shadow-primary/10' 
                                             : 'bg-white/[0.02] border-white/5 text-white/40 hover:bg-white/5'
                                         }`}
                                     >
@@ -326,7 +326,7 @@ export const FocusClock = () => {
                                         </div>
                                         <span className="text-[9px] font-black uppercase tracking-tighter text-center">{t.name}</span>
                                         {selectedTechnique.id === t.id && (
-                                            <motion.div layoutId="activeTech" className="absolute -bottom-1 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                                            <motion.div layoutId="activeTech" className="absolute -bottom-1 w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
                                         )}
                                     </button>
                                 ))}
@@ -350,7 +350,7 @@ export const FocusClock = () => {
                                         <input 
                                             type="number" 
                                             min="1" max="10" 
-                                            className="w-full bg-white/[0.03] border border-white/5 p-3 rounded-2xl text-[11px] font-bold text-white outline-none focus:border-indigo-500/40 transition-all pr-12"
+                                            className="w-full bg-white/[0.03] border border-white/5 p-3 rounded-2xl text-[11px] font-bold text-white outline-none focus:border-primary/40 transition-all pr-12"
                                             value={totalCycles}
                                             onChange={(e) => setTotalCycles(Number(e.target.value))}
                                         />
@@ -362,7 +362,7 @@ export const FocusClock = () => {
                             <div className="space-y-2">
                                 <label className="text-[9px] font-black uppercase tracking-widest text-white/30 pl-1">Operative Notes</label>
                                 <textarea 
-                                    className="w-full bg-white/[0.03] border border-white/5 p-5 rounded-[2rem] text-sm font-medium text-white/80 outline-none focus:border-indigo-500/40 transition-all resize-none min-h-[120px] lg:min-h-[160px] scrollbar-hide"
+                                    className="w-full bg-white/[0.03] border border-white/5 p-5 rounded-[2rem] text-sm font-medium text-white/80 outline-none focus:border-primary/40 transition-all resize-none min-h-[120px] lg:min-h-[160px] scrollbar-hide"
                                     placeholder="Document your focus sequence insights..."
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
@@ -374,9 +374,9 @@ export const FocusClock = () => {
                         <div className="pt-4 lg:pt-0">
                             <button
                                 onClick={handleStart}
-                                className="w-full py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] transition-all shadow-2xl shadow-indigo-600/20 flex items-center justify-center gap-4 active:scale-[0.98] group"
+                                className="w-full py-6 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] transition-all shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)] flex items-center justify-center gap-4 active:scale-[0.98] group backdrop-blur-md"
                             >
-                                <Play size={18} fill="white" className="group-hover:translate-x-0.5 transition-transform" /> 
+                                <Play size={18} fill="currentColor" className="group-hover:translate-x-0.5 transition-transform" /> 
                                 Initialize Neural Sequence
                             </button>
                         </div>
@@ -385,8 +385,8 @@ export const FocusClock = () => {
                 </div>
             </div>
             
-            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
         </Card>
     );
 };

@@ -21,8 +21,8 @@ export function Unlockables() {
             </div>
 
             {/* Summary row */}
-            <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))', border: '1px solid rgba(99,102,241,0.2)' }}>
-                <Trophy size={24} className="text-yellow-400" />
+            <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.12), rgba(var(--primary-rgb),0.04))', border: '1px solid rgba(var(--primary-rgb),0.2)' }}>
+                <Trophy size={24} className="text-primary" />
                 <div>
                     <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
                         {milestones.filter(m => m.unlocked).length} / {milestones.length} Milestones Unlocked
@@ -44,14 +44,14 @@ export function Unlockables() {
                             className="p-4 rounded-2xl relative overflow-hidden"
                             style={{
                                 background: m.unlocked
-                                    ? 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.06))'
+                                    ? 'linear-gradient(135deg, rgba(var(--primary-rgb),0.1), rgba(var(--primary-rgb),0.04))'
                                     : 'var(--color-surface-2)',
-                                border: m.unlocked ? '1.5px solid rgba(251,191,36,0.4)' : '1.5px solid transparent',
+                                border: m.unlocked ? '1.5px solid rgba(var(--primary-rgb),0.4)' : '1.5px solid transparent',
                             }}
                         >
                             {/* Glow effect when unlocked */}
                             {m.unlocked && (
-                                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at top left, rgba(251,191,36,0.08), transparent 70%)' }} />
+                                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at top left, rgba(var(--primary-rgb),0.15), transparent 70%)' }} />
                             )}
 
                             <div className="flex items-start gap-3">
@@ -60,13 +60,13 @@ export function Unlockables() {
                                     <div className="flex items-center justify-between gap-2">
                                         <p className="text-sm font-bold truncate" style={{ color: 'var(--color-text)' }}>{m.label}</p>
                                         {m.unlocked && (
-                                            <span className="text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full shrink-0">
+                                            <span className="text-[10px] font-bold text-primary bg-[rgba(var(--primary-rgb),0.1)] px-2 py-0.5 rounded-full shrink-0">
                                                 ✓ Unlocked
                                             </span>
                                         )}
                                     </div>
                                     <p className="text-[11px] text-muted mt-0.5">{m.description}</p>
-                                    <p className="text-[11px] text-indigo-400 mt-1 font-medium">🎁 {m.reward}</p>
+                                    <p className="text-[11px] text-primary mt-1 font-medium">🎁 {m.reward}</p>
 
                                     {/* Progress bar */}
                                     <div className="mt-2 space-y-1">
@@ -82,8 +82,8 @@ export function Unlockables() {
                                                 className="h-full rounded-full"
                                                 style={{
                                                     background: m.unlocked
-                                                        ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-                                                        : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                                                        ? 'var(--primary)'
+                                                        : 'rgba(var(--primary-rgb), 0.7)',
                                                 }}
                                             />
                                         </div>
