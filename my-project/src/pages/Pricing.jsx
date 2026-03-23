@@ -37,9 +37,15 @@ export default function Pricing() {
     const [promoMessage, setPromoMessage] = useState('');
     const [monthlyPrice, setMonthlyPrice] = useState(149);
     const [yearlyPrice, setYearlyPrice] = useState(1299);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [copiedMethod, setCopiedMethod] = useState('');
     const { user, refreshUser } = useAuth();
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
+
+    const INSTAPAY_HANDLE = "progresscircle@instapay"; // Placeholder, change as needed
+    const TELDA_HANDLE = "@progresscircle"; // Placeholder, change as needed
+    const INSTAGRAM_URL = "https://instagram.com/progress_circle"; // Placeholder
 
     useEffect(() => {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -57,25 +63,16 @@ export default function Pricing() {
     const yearlyPerMonth = (yearlyPrice / 12).toFixed(0);
     const savings = Math.round(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100);
 
-    const handleUpgrade = async () => {
+    const handleUpgradeClick = () => {
         if (!user) { navigate('/login'); return; }
-        setLoading(true);
-        setError('');
-        try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-            const res = await fetch(`${apiUrl}/subscription/create-order`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ billingCycle: cycle }),
-            });
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Failed to initiate payment.');
-            window.location.href = data.iframeUrl;
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+        setShowPaymentModal(true);
+    };
+
+    const copyToClipboard = (text, method) => {
+        navigator.clipboard.writeText(text);
+        setCopiedMethod(method);
+        toast.success(`${method} handle copied to clipboard!`);
+        setTimeout(() => setCopiedMethod(''), 2000);
     };
 
     const handleCancelSubscription = async () => {
@@ -289,14 +286,15 @@ export default function Pricing() {
                             )}
                             <button
                                 className="cta-btn premium-btn"
-                                onClick={handleUpgrade}
-                                disabled={loading}
+                                onClick={handleUpgradeClick}
+                                style={{
+                                    background: 'linear-gradient(135deg, #a855f7, #6366f1)',
+                                    boxShadow: '0 0 20px rgba(168,85,247,0.4)'
+                                }}
                             >
-                                {loading ? 'Redirecting…' : user?.subscriptionPriceOverrideCents
-                                    ? `Pay ${Math.round(user.subscriptionPriceOverrideCents / 100)} EGP via PayMob`
-                                    : `Upgrade via PayMob`}
+                                Upgrade Premium
                             </button>
-                            <p className="payment-note">🔒 Secure payment via PayMob · Cancel anytime</p>
+                            <p className="payment-note" style={{ opacity: 0.7, marginTop: '12px' }}>🔒 Manual Secure Payment · Cancel anytime</p>
                         </>
                     )}
 
@@ -340,8 +338,90 @@ export default function Pricing() {
             </div>
 
             <div className="pricing-footer">
-                <p>🔒 Payments processed securely by <strong>PayMob</strong> · No credit card stored on our servers</p>
+                <p>🔒 Manual Payment Process · Guaranteed secure unlocks</p>
             </div>
+
+            {/* Manual Payment Modal */}
+            {showPaymentModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                    <div 
+                        className="bg-[#111318] p-8 w-full max-w-md rounded-3xl relative overflow-hidden"
+                        style={{ boxShadow: '0 0 40px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                        {/* Glow effects */}
+                        <div className="absolute -left-20 -top-20 w-40 h-40 bg-purple-500/10 blur-[60px] pointer-events-none"></div>
+                        <div className="absolute -right-20 -bottom-20 w-40 h-40 bg-indigo-500/10 blur-[60px] pointer-events-none"></div>
+
+                        <div className="relative z-10">
+                            <h3 className="text-2xl font-black mb-2 text-white tracking-tight">Unlock Premium</h3>
+                            <p className="text-sm text-white/60 mb-8 font-medium leading-relaxed">
+                                Transfer <strong className="text-white">{cycle === 'monthly' ? monthlyPrice : yearlyPrice} EGP</strong> to either method below, then send us a screenshot on Instagram to instantly receive your unlock Promo Code.
+                            </p>
+
+                            <div className="space-y-4 mb-8">
+                                {/* Instapay Card */}
+                                <div className="p-4 rounded-2xl bg-white/5 border border-purple-500/20 hover:border-purple-500/40 transition-colors backdrop-blur-sm group">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] uppercase font-black tracking-widest text-purple-400 mb-0.5">Instapay</p>
+                                                <p className="text-sm font-bold text-white tracking-wide">{INSTAPAY_HANDLE}</p>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => copyToClipboard(INSTAPAY_HANDLE, 'Instapay')}
+                                            className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors"
+                                        >
+                                            {copiedMethod === 'Instapay' ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Telda Card */}
+                                <div className="p-4 rounded-2xl bg-white/5 border border-sky-500/20 hover:border-sky-500/40 transition-colors backdrop-blur-sm group">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-sky-500/20 flex items-center justify-center border border-sky-500/30">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-sky-400"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] uppercase font-black tracking-widest text-sky-400 mb-0.5">Telda</p>
+                                                <p className="text-sm font-bold text-white tracking-wide">{TELDA_HANDLE}</p>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => copyToClipboard(TELDA_HANDLE, 'Telda')}
+                                            className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors"
+                                        >
+                                            {copiedMethod === 'Telda' ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a 
+                                href={INSTAGRAM_URL} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="block w-full py-4 text-center rounded-2xl font-black text-sm text-white tracking-wide shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:scale-[1.02] transition-transform"
+                                style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' }}
+                            >
+                                Send Screenshot via Instagram
+                            </a>
+                            
+                            <button 
+                                onClick={() => setShowPaymentModal(false)}
+                                className="w-full mt-4 py-3 text-center text-[11px] font-bold text-white/50 hover:text-white uppercase tracking-widest transition-colors"
+                            >
+                                Close & Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
