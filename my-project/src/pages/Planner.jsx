@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import {
     ChevronLeft, ChevronRight, Calendar as CalendarIcon,
-    Clock, Plus, X, Layout, Target, Activity
+    Plus, X, Layout, Trash2
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { Card } from '../components/Card';
@@ -18,15 +18,10 @@ import { PageInsight } from '../components/PageInsight';
 
 dayjs.extend(isBetween);
 
-const EVENT_COLORS = {
-    task: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' },
-    habit: { bg: 'bg-[var(--accent)]/10', text: 'text-[var(--accent)]', border: 'border-[var(--accent)]/20' },
-    session: { bg: 'bg-[var(--primary)]/10', text: 'text-[var(--primary)]', border: 'border-[var(--primary)]/20' },
-    plan: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
-};
+// Default fallbacks handled in backend or inline
 
 export function Planner() {
-    const { calendarEvents = [], addCalendarBlock, fetchCalendarEvents } = useData();
+    const { calendarEvents = [], addCalendarBlock, deleteCalendarBlock, deleteTask, fetchCalendarEvents, tasks = [], categories = [] } = useData();
     useSEO('Tactical Planner', 'Plan your week with time-blocked focus sessions. ProgressCircle helps you schedule deep work and achieve more.');
     const [currentDate, setCurrentDate] = useState(dayjs());
     const [selectedDate, setSelectedDate] = useState(null);
@@ -35,8 +30,7 @@ export function Planner() {
     const [loading, setLoading] = useState(true);
 
     const [newBlock, setNewBlock] = useState({
-        title: '',
-        type: 'focus',
+        taskId: '',
         startTime: '',
         endTime: '',
         notes: ''
@@ -91,23 +85,52 @@ export function Planner() {
     const handlePrevMonth = () => setCurrentDate(currentDate.subtract(1, 'month'));
 
     const handleAddBlock = async () => {
-        if (!newBlock.title || !newBlock.startTime || !newBlock.endTime) {
-            return toast.error('Please fill in all required fields');
+        if (!newBlock.taskId) {
+            return toast.error('Please select a task');
         }
+        const selectedTask = tasks.find(t => t.id === newBlock.taskId);
+        if (!selectedTask) return toast.error('Task not found');
         try {
-            const startStr = `${selectedDate.format('YYYY-MM-DD')}T${newBlock.startTime}`;
-            const endStr = `${selectedDate.format('YYYY-MM-DD')}T${newBlock.endTime}`;
+            let startStr = null;
+            let endStr = null;
+            if (newBlock.startTime) {
+                startStr = `${selectedDate.format('YYYY-MM-DD')}T${newBlock.startTime}`;
+            }
+            if (newBlock.endTime) {
+                endStr = `${selectedDate.format('YYYY-MM-DD')}T${newBlock.endTime}`;
+            }
+
+            const cat = categories.find(c => c.id === (selectedTask.categoryId?._id || selectedTask.categoryId));
 
             await addCalendarBlock({
-                ...newBlock,
-                startTime: dayjs(startStr).toISOString(),
-                endTime: dayjs(endStr).toISOString()
+                title: selectedTask.title,
+                taskId: selectedTask.id,
+                type: 'focus',
+                startTime: startStr,
+                endTime: endStr,
+                date: selectedDate.format('YYYY-MM-DD'),
+                color: cat?.color || '#6366f1',
+                notes: newBlock.notes
             });
-            toast.success('Focus block scheduled! 🚀');
+            toast.success('Task scheduled! 🚀');
             setIsAddingBlock(false);
-            setNewBlock({ title: '', type: 'focus', startTime: '', endTime: '', notes: '' });
+            setNewBlock({ taskId: '', startTime: '', endTime: '', notes: '' });
         } catch (error) {
-            toast.error('Failed to schedule block');
+            toast.error('Failed to schedule task');
+        }
+    };
+
+    const handleDeleteEvent = async (event) => {
+        try {
+            if (event.type === 'task') {
+                const taskId = event.id.split('-')[1];
+                await deleteTask(taskId);
+            } else if (event.type === 'block') {
+                await deleteCalendarBlock(event.id);
+            }
+            toast.success('Event removed');
+        } catch (error) {
+            toast.error('Failed to remove event');
         }
     };
 
@@ -164,7 +187,7 @@ export function Planner() {
                         </div>
                     ))}
                 </div>
-                <div className="grid grid-cols-7 grid-rows-6 h-[700px]">
+                <div className="grid grid-cols-7 grid-rows-6 min-h-[750px] bg-surface rounded-3xl border border-border overflow-hidden shadow-2xl shadow-[var(--primary)]/5">
                     {days.map((day, idx) => {
                         const dayEvents = getDayEvents(day.date);
                         const isToday = day.date.isSame(dayjs(), 'day');
@@ -184,30 +207,54 @@ export function Planner() {
                                 `}
                             >
                                 <div className="flex justify-between items-start">
-                                    <span className={`text-xs font-black w-6 h-6 flex items-center justify-center rounded-lg transition-colors
-                                        ${isToday ? 'bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30' : 'text-slate-400'}
+                                    <span className={`text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-lg transition-all
+                                        ${isToday ? 'bg-[var(--primary)] text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)]' : 'text-slate-500/50'}
                                     `}>
                                         {day.date.date()}
                                     </span>
                                     {dayEvents.length > 0 && (
-                                        <span className="text-[9px] font-black text-[var(--primary)] bg-[var(--primary)]/10 px-1.5 py-0.5 rounded-md uppercase tracking-tighter">
-                                            {dayEvents.length}
-                                        </span>
+                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                            <div className="w-1 h-1 rounded-full bg-[var(--primary)]" />
+                                            <span className="text-[8px] font-black text-muted uppercase tracking-tighter">
+                                                {dayEvents.length}
+                                            </span>
+                                        </div>
                                     )}
                                 </div>
 
-                                <div className="mt-2 space-y-1 overflow-hidden h-20">
-                                    {dayEvents.slice(0, 3).map((event, eIdx) => (
+                                <div className="mt-1.5 space-y-0.5 overflow-hidden h-[86px]">
+                                    {dayEvents.slice(0, 4).map((event, eIdx) => (
                                         <div
                                             key={eIdx}
-                                            className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold truncate border ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text} ${EVENT_COLORS[event.type]?.border}`}
+                                            className="rounded-md font-bold truncate border transition-all hover:scale-[1.02] active:scale-[0.98] overflow-hidden group/item relative"
+                                            style={{ 
+                                                backgroundColor: `${event.color}12`, 
+                                                borderColor: `${event.color}25`,
+                                                borderLeftColor: event.color,
+                                                borderLeftWidth: 3,
+                                            }}
                                         >
-                                            {event.title}
+                                            <div className="flex flex-col px-1.5 py-0.5 min-w-0">
+                                                <div 
+                                                    className="text-[9px] truncate leading-tight mb-0.5"
+                                                    style={{ color: event.color }}
+                                                >
+                                                    {event.title}
+                                                </div>
+                                                {event.categoryName && (
+                                                    <div 
+                                                        className="text-[7px] truncate opacity-60 font-black uppercase tracking-tight leading-none"
+                                                        style={{ color: event.color }}
+                                                    >
+                                                        {event.categoryName}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
-                                    {dayEvents.length > 3 && (
-                                        <div className="text-[8px] text-muted font-bold text-center pt-1 animate-pulse">
-                                            + {dayEvents.length - 3} more
+                                    {dayEvents.length > 4 && (
+                                        <div className="text-[8px] text-muted font-black text-center pt-0.5 opacity-50 uppercase tracking-tighter">
+                                            + {dayEvents.length - 4} more
                                         </div>
                                     )}
                                 </div>
@@ -237,47 +284,86 @@ export function Planner() {
                                         </div>
                                     ) : (
                                         getDayEvents(selectedDate).map((event, idx) => (
-                                            <div key={idx} className="flex items-center gap-4 p-3 bg-surface2 rounded-2xl border border-border">
-                                                <div className={`p-3 rounded-xl ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text}`}>
-                                                    {event.type === 'task' && <Layout size={20} />}
-                                                    {event.type === 'habit' && <Activity size={20} />}
-                                                    {event.type === 'session' && <Clock size={20} />}
-                                                    {event.type === 'plan' && <Target size={20} />}
+                                            <div 
+                                                key={idx} 
+                                                className="group flex items-center gap-4 p-3 rounded-2xl border overflow-hidden"
+                                                style={{ borderColor: `${event.color}30`, borderLeftColor: event.color, borderLeftWidth: 4, backgroundColor: `${event.color}08` }}
+                                            >
+                                                <div 
+                                                    className="p-3 rounded-xl flex-shrink-0"
+                                                    style={{ backgroundColor: `${event.color}18`, color: event.color }}
+                                                >
+                                                    {event.type === 'block' ? <CalendarIcon size={18} /> : <Layout size={18} />}
                                                 </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-black text-sm">{event.title}</h4>
-                                                    <div className="flex items-center gap-3 mt-1">
-                                                        <span className="text-[10px] font-black uppercase text-muted tracking-widest">
-                                                            {dayjs(event.start).format('HH:mm')}
-                                                            {event.end && event.type !== 'task' && event.type !== 'habit' && ` - ${dayjs(event.end).format('HH:mm')}`}
-                                                        </span>
-                                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${EVENT_COLORS[event.type]?.bg} ${EVENT_COLORS[event.type]?.text}`}>
-                                                            {event.type}
-                                                        </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-black text-sm truncate">{event.title}</h4>
+                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                        {event.categoryName && (
+                                                            <span 
+                                                                className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md"
+                                                                style={{ backgroundColor: `${event.color}18`, color: event.color }}
+                                                            >
+                                                                {event.categoryName}
+                                                            </span>
+                                                        )}
+                                                        {event.type === 'block' && event.start ? (
+                                                            <span className="text-[10px] font-black uppercase text-muted tracking-widest">
+                                                                {dayjs(event.start).format('HH:mm')}{event.end ? ` – ${dayjs(event.end).format('HH:mm')}` : ''}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[10px] font-black uppercase text-muted tracking-widest">
+                                                                {event.priority} priority
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteEvent(event);
+                                                    }}
+                                                    className="p-2 text-muted hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </div>
                                         ))
                                     )}
                                 </div>
                                 <Button className="w-full flex items-center justify-center gap-2 pc-btn-primary" onClick={() => setIsAddingBlock(true)}>
-                                    <Plus size={18} /> Add Focus Block
+                                    <Plus size={18} /> Schedule a Task
                                 </Button>
                             </>
                         ) : (
                             <div className="space-y-5">
+                                {/* Task Picker */}
                                 <div>
-                                    <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Block Name</label>
-                                    <input
-                                        className="pc-input"
-                                        placeholder="e.g. Deep Work: Algorithm prep"
-                                        value={newBlock.title}
-                                        onChange={(e) => setNewBlock({ ...newBlock, title: e.target.value })}
-                                    />
+                                    <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Select Task</label>
+                                    <select
+                                        className="pc-input h-12 text-sm"
+                                        value={newBlock.taskId}
+                                        onChange={(e) => setNewBlock({ ...newBlock, taskId: e.target.value })}
+                                    >
+                                        <option value="">— Pick a task —</option>
+                                        {tasks
+                                            .filter(t => t.status !== 'completed' && !t.parentId)
+                                            .map(t => {
+                                                const cat = categories.find(c => c.id === (t.categoryId?._id || t.categoryId));
+                                                return (
+                                                    <option key={t.id} value={t.id}>
+                                                        {cat ? `[${cat.name}] ` : ''}{t.title}
+                                                    </option>
+                                                );
+                                            })
+                                        }
+                                    </select>
                                 </div>
+
+                                {/* Optional time range */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Start</label>
+                                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Start <span className="normal-case opacity-50">(optional)</span></label>
                                         <input
                                             type="time"
                                             className="pc-input"
@@ -286,7 +372,7 @@ export function Planner() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">End</label>
+                                        <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">End <span className="normal-case opacity-50">(optional)</span></label>
                                         <input
                                             type="time"
                                             className="pc-input"
@@ -295,17 +381,20 @@ export function Planner() {
                                         />
                                     </div>
                                 </div>
+
+                                {/* Notes */}
                                 <div>
-                                    <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Strategic Notes</label>
+                                    <label className="block text-[11px] font-black text-muted uppercase tracking-widest mb-2">Notes <span className="normal-case opacity-50">(optional)</span></label>
                                     <textarea
-                                        className="pc-input min-h-[100px] resize-none"
-                                        placeholder="What are the specific outputs for this block?"
+                                        className="pc-input min-h-[80px] resize-none"
+                                        placeholder="Any specifics for this session?"
                                         value={newBlock.notes}
                                         onChange={(e) => setNewBlock({ ...newBlock, notes: e.target.value })}
                                     />
                                 </div>
+
                                 <div className="flex gap-3 pt-2">
-                                    <Button className="flex-1 h-12" onClick={handleAddBlock}>Sync with Universe</Button>
+                                    <Button className="flex-1 h-12" onClick={handleAddBlock}>Schedule Task</Button>
                                     <Button variant="secondary" onClick={() => setIsAddingBlock(false)}>Cancel</Button>
                                 </div>
                             </div>

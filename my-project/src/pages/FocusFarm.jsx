@@ -98,7 +98,7 @@ export function FocusFarm() {
                                 <span className="text-2xl">{meta.icon}</span>
                                 <p className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{meta.name}</p>
                                 <p className="text-[10px] text-muted">{g.range}</p>
-                                <p className="text-[10px] font-bold text-indigo-400">{g.pts}</p>
+                                <p className="text-[10px] font-bold" style={{ color: 'var(--primary)' }}>{g.pts}</p>
                             </div>
                         );
                     })}
@@ -116,7 +116,8 @@ export function FocusFarm() {
                             <button
                                 onClick={handlePrev}
                                 disabled={currentFarmIdx === 0}
-                                className="p-1 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 disabled:opacity-30 transition-all"
+                                className="p-1 rounded hover:opacity-80 disabled:opacity-30 transition-all"
+                                style={{ background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)' }}
                             >
                                 <ChevronLeft size={16} />
                             </button>
@@ -124,7 +125,8 @@ export function FocusFarm() {
                             <button
                                 onClick={handleNext}
                                 disabled={currentFarmIdx === totalFarms - 1}
-                                className="p-1 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 disabled:opacity-30 transition-all"
+                                className="p-1 rounded hover:opacity-80 disabled:opacity-30 transition-all"
+                                style={{ background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)' }}
                             >
                                 <ChevronRight size={16} />
                             </button>
@@ -148,10 +150,10 @@ export function FocusFarm() {
             {/* Community Garden */}
             <div
                 className="flex items-center gap-4 p-4 rounded-2xl"
-                style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.08))', border: '1px solid rgba(16,185,129,0.2)' }}
+                style={{ background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.12), rgba(var(--primary-rgb),0.05))', border: '1px solid rgba(var(--primary-rgb),0.2)' }}
             >
-                <div className="p-2.5 rounded-xl" style={{ background: 'rgba(16,185,129,0.15)' }}>
-                    <Globe size={22} className="text-emerald-400" />
+                <div className="p-2.5 rounded-xl" style={{ background: 'rgba(var(--primary-rgb),0.15)' }}>
+                    <Globe size={22} style={{ color: 'var(--primary)' }} />
                 </div>
                 <div>
                     <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>Community Forest</p>
@@ -161,7 +163,7 @@ export function FocusFarm() {
                             : 'Loading community stats…'}
                     </p>
                 </div>
-                <TreePine size={32} className="ml-auto text-emerald-400 opacity-30" />
+                <TreePine size={32} style={{ color: 'var(--primary)' }} className="ml-auto opacity-30" />
             </div>
         </div>
     );

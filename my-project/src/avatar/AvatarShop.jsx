@@ -193,7 +193,7 @@ export function AvatarShop() {
                         onClick={() => setActiveTab(cat.key)}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
                         style={{
-                            background: activeTab === cat.key ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'var(--color-surface-2)',
+                            background: activeTab === cat.key ? 'var(--primary)' : 'var(--color-surface-2)',
                             color: activeTab === cat.key ? 'white' : 'var(--color-text-muted)',
                         }}
                     >
@@ -230,8 +230,8 @@ export function AvatarShop() {
                                 onClick={() => handlePreview(activeTab, optValue)}
                                 className="relative flex flex-col items-center p-2.5 rounded-2xl cursor-pointer transition-all"
                                 style={{
-                                    background: isPreviewing ? 'rgba(99,102,241,0.15)' : 'var(--color-surface-2)',
-                                    border: isPreviewing ? '2px solid #6366f1' : '2px solid transparent',
+                                    background: isPreviewing ? 'rgba(var(--primary-rgb), 0.15)' : 'var(--color-surface-2)',
+                                    border: isPreviewing ? '2px solid var(--primary)' : '2px solid transparent',
                                     opacity: isOwned ? 1 : 0.9,
                                 }}
                             >
@@ -289,13 +289,10 @@ export function AvatarShop() {
 
                                 {/* Action Buttons Container */}
                                 <div className="flex flex-col gap-1 w-full mt-auto">
-                                    {/* Preview Button */}
                                     <button
                                             onClick={(e) => { e.stopPropagation(); handlePreview(activeTab, optValue); }}
-                                            className={`text-[9px] font-semibold px-2 py-1 rounded-lg border transition-all ${isPreviewing
-                                                ? 'bg-indigo-500 border-indigo-500 text-white shadow-sm'
-                                                : 'border-white/10 hover:border-white/30 text-muted'
-                                                }`}
+                                            className={`text-[9px] font-semibold px-2 py-1 rounded-lg border transition-all ${!isPreviewing ? 'border-white/10 hover:border-white/30 text-muted' : 'text-white shadow-sm'}`}
+                                            style={isPreviewing ? { background: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
                                         >
                                             Preview
                                         </button>
@@ -310,7 +307,7 @@ export function AvatarShop() {
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleEquip(activeTab, optValue); }}
                                             className="text-[9px] font-semibold h-6 rounded-lg text-white shadow-sm"
-                                            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                                            style={{ background: 'var(--primary)' }}
                                         >
                                             Equip
                                         </button>
@@ -319,7 +316,7 @@ export function AvatarShop() {
                                             onClick={(e) => { e.stopPropagation(); handleBuy(item.id, item.price); }}
                                             disabled={buying === item.id || gamData.points < item.price}
                                             className="text-[9px] font-bold h-6 rounded-lg text-white disabled:opacity-50 shadow-sm"
-                                            style={{ background: gamData.points >= item.price ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : '#6b7280' }}
+                                            style={{ background: gamData.points >= item.price ? 'var(--primary)' : '#6b7280' }}
                                         >
                                             {buying === item.id ? '...' : `${item.price} pts`}
                                         </button>

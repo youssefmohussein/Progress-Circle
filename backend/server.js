@@ -97,7 +97,7 @@ app.use(maintenanceMiddleware); // Apply after auth-check or limiters?
 // Stricter limiter for auth routes
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 10, // Stricter auth limit
+    max: 100, // Stricter auth limit
     message: { success: false, message: 'Too many authentication attempts. Sequence locked.' },
 });
 app.use('/api/auth', authLimiter);

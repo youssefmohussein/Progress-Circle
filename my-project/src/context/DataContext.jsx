@@ -13,7 +13,7 @@ import { useAuth } from './AuthContext';
 const DataContext = createContext(undefined);
 
 export function DataProvider({ children }) {
-    const { isAuthenticated, refreshUser } = useAuth();
+    const { isAuthenticated, refreshUser, user } = useAuth();
 
     const [tasks, setTasks] = useState([]);
     const [habits, setHabits] = useState([]);
@@ -41,7 +41,20 @@ export function DataProvider({ children }) {
                 sessionsAPI.getAll(),
                 calendarAPI.getEvents(dayjs().startOf('month').toISOString(), dayjs().endOf('month').toISOString()),
             ]);
-            setTasks(tasksRes.data.data.map(normalizeId));
+            const fetchedTasks = tasksRes.data.data.map(normalizeId);
+            
+            // Hybrid Sorting: Check localStorage first, then DB 'position', then fallback
+            const localOrder = JSON.parse(localStorage.getItem(`task_order_${user?._id || user?.id}`) || '[]');
+            setTasks(fetchedTasks.sort((a, b) => {
+                if (localOrder.length > 0) {
+                    const idxA = localOrder.indexOf(a.id);
+                    const idxB = localOrder.indexOf(b.id);
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                }
+                return (a.position || 0) - (b.position || 0);
+            }));
             setHabits(habitsRes.data.data.map(normalizeId));
             setLeaderboard(leaderboardRes.data.data);
             setCategories(categoriesRes.data.data.map(normalizeId));
@@ -51,7 +64,7 @@ export function DataProvider({ children }) {
         } catch (error) {
             console.error('Failed to fetch data:', error.message);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, user]);
 
     useEffect(() => {
         fetchAll();
@@ -62,8 +75,15 @@ export function DataProvider({ children }) {
 
     // ─── Tasks ─────────────────────────────────────────────────────────────────
     const addTask = async (task) => {
-        const res = await tasksAPI.create(task);
-        setTasks((prev) => [normalizeId(res.data.data), ...prev]);
+        // Put new tasks at the top
+        const res = await tasksAPI.create({ ...task, position: 0 });
+        const newTask = normalizeId(res.data.data);
+        setTasks((prev) => {
+            const updated = [newTask, ...prev];
+            // Update localStorage to reflect the new top task
+            localStorage.setItem(`task_order_${user?._id || user?.id}`, JSON.stringify(updated.map(t => t.id)));
+            return updated;
+        });
         if (refreshUser) await refreshUser();
     };
 
@@ -75,7 +95,34 @@ export function DataProvider({ children }) {
 
     const deleteTask = async (id) => {
         await tasksAPI.delete(id);
-        setTasks((prev) => prev.filter((t) => t.id !== id));
+        setTasks((prev) => {
+            const updated = prev.filter((t) => t.id !== id);
+            localStorage.setItem(`task_order_${user?._id || user?.id}`, JSON.stringify(updated.map(t => t.id)));
+            return updated;
+        });
+    };
+
+    const reorderTasks = async (reorderedTasks) => {
+        setTasks(reorderedTasks);
+
+        // 1. Persist to LocalStorage for immediate cross-session reliability
+        localStorage.setItem(`task_order_${user?._id || user?.id}`, JSON.stringify(reorderedTasks.map(t => t.id)));
+
+        // 2. Persist to DB using 'position' field
+        try {
+            const updates = reorderedTasks
+                .filter(t => !t.parentId)
+                .map((task, index) => {
+                    return tasksAPI.update(task.id, { position: index });
+                });
+            
+            await Promise.all(updates);
+            toast.success('Order synced to cloud');
+        } catch (error) {
+            console.error('Failed to persist task order:', error);
+            // LocalStorage fallback will still keep the order on this device
+            toast.info('Saved locally - sync pending');
+        }
     };
 
     // ─── Habits ─────────────────────────────────────────────────────────────
@@ -158,21 +205,29 @@ export function DataProvider({ children }) {
     const addCalendarBlock = async (data) => {
         await calendarAPI.createBlock(data);
         setCalendarCache({}); // Invalidate cache
-        const start = dayjs(data.startTime).startOf('month').toISOString();
-        const end = dayjs(data.startTime).endOf('month').toISOString();
+        const refreshDate = data.startTime || data.date || dayjs();
+        const start = dayjs(refreshDate).startOf('month').toISOString();
+        const end = dayjs(refreshDate).endOf('month').toISOString();
         await fetchCalendarEvents(start, end);
         await refreshUser();
+    };
+
+    const deleteCalendarBlock = async (id) => {
+        const blockId = id.includes('-') ? id.split('-')[1] : id;
+        await calendarAPI.deleteBlock(blockId);
+        setCalendarCache({}); // Invalidate cache
+        await fetchAll();
     };
 
     return (
         <DataContext.Provider
             value={{
                 tasks, habits, categories, leaderboard, sessions, calendarEvents,
-                addTask, updateTask, deleteTask,
+                addTask, updateTask, deleteTask, reorderTasks,
                 addHabit, toggleHabit, deleteHabit,
                 addCategory, updateCategory, deleteCategory,
                 activeSession, startSession, endSession, logManual,
-                addCalendarBlock, fetchCalendarEvents,
+                addCalendarBlock, deleteCalendarBlock, fetchCalendarEvents,
                 refreshData: fetchAll,
             }}
         >

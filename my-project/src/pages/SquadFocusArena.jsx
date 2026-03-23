@@ -441,13 +441,20 @@ export default function SquadFocusArena() {
                                 const peerName = p.user?.name?.toLowerCase().trim();
 
                                 const isMe = (myId && peerId && myId === peerId) || (myName && peerName && myName === peerName);
-                                return !isMe;
-                            }).map((peer) => (
+                                return true;
+                            }).map((peer) => {
+                                const myId = (currentUser?._id || currentUser?.id)?.toString();
+                                const peerId = (peer.user?._id || peer.user?.id || peer.user)?.toString();
+                                const isMe = (myId && peerId && myId === peerId);
+                                return (
                                 <div key={peer._id} className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <Avatar src={peer.user?.avatar} name={peer.user?.name} size="xs" />
-                                            <span className="text-[11px] font-black text-white uppercase tracking-tighter">{peer.user?.name}</span>
+                                            <span className="text-[11px] font-black text-white uppercase tracking-tighter">
+                                                {peer.user?.name}
+                                                {isMe && <span className="ml-1 text-indigo-400 font-bold">(YOU)</span>}
+                                            </span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className={`w-1.5 h-1.5 rounded-full ${peer.status === 'focusing' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
@@ -476,7 +483,7 @@ export default function SquadFocusArena() {
                                     )}
 
                                     {/* Task Assignment for Host */}
-                                    {isHost && (
+                                    {isHost && !isMe && (
                                         <button
                                             onClick={() => { setTargetUserId(peer.user?._id || peer.user?.id || peer.user); setShowTaskSelector(true); }}
                                             className="w-full py-2.5 rounded-xl border border-dashed border-white/10 text-[9px] font-black uppercase text-muted hover:text-indigo-400 hover:border-indigo-400/30 transition-all flex items-center justify-center gap-2"
@@ -485,7 +492,8 @@ export default function SquadFocusArena() {
                                         </button>
                                     )}
                                 </div>
-                            ))}
+                            );
+                            })}
                         </div>
                     </div>
 

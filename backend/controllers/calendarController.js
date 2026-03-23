@@ -15,93 +15,53 @@ const getCalendarEvents = async (req, res, next) => {
         const startDate = start ? new Date(start) : dayjs().startOf('month').toDate();
         const endDate = end ? new Date(end) : dayjs().endOf('month').toDate();
 
-        const [tasks, habits, sessions, scheduleBlocks] = await Promise.all([
+        const [tasks, scheduleBlocks] = await Promise.all([
             Task.find({
                 userId,
                 deadline: { $gte: startDate, $lte: endDate }
-            }),
-
-            Habit.find({
-                userId,
-                // We fetch habits that have completions, but we'll still need to filter dates in JS 
-                // unless we use aggregation. Aggregation is better for performance.
-            }),
-
-            Session.find({
-                userId,
-                startTime: { $gte: startDate, $lte: endDate }
-            }),
+            }).populate('categoryId', 'name color'),
 
             ScheduleBlock.find({
                 userId,
                 startTime: { $gte: startDate, $lte: endDate }
-            }).select('title startTime endTime type color notes')
+            }).populate({
+                path: 'taskId',
+                populate: { path: 'categoryId', select: 'name color' }
+            })
         ]);
 
         const events = [];
 
-        // 1. Tasks (Deadlines)
+        // Tasks only — each colored by its category
         tasks.forEach(task => {
             events.push({
                 id: `task-${task._id}`,
-                title: `Task: ${task.title}`,
+                title: task.title,
                 start: task.deadline,
                 end: task.deadline,
                 type: 'task',
                 status: task.status,
                 priority: task.priority,
-                color: task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f59e0b' : '#10b981',
+                categoryName: task.categoryId?.name || null,
+                categoryId: task.categoryId?._id || null,
+                color: task.categoryId?.color || (task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f59e0b' : '#10b981'),
                 allDay: false
             });
         });
 
-        // 2. Habits (Completions) - Optimized filtering
-        habits.forEach(habit => {
-            if (!habit.completedDates) return;
-            habit.completedDates.forEach(dateStr => {
-                // Quick string comparison if possible, or date compare
-                const d = dayjs(dateStr);
-                if (d.isAfter(startDate) && d.isBefore(endDate) || d.isSame(startDate) || d.isSame(endDate)) {
-                    events.push({
-                        id: `habit-${habit._id}-${dateStr}`,
-                        title: `Habit: ${habit.name}`,
-                        start: d.toDate(),
-                        end: d.toDate(),
-                        type: 'habit',
-                        color: habit.color || '#ec4899',
-                        allDay: true
-                    });
-                }
-            });
-        });
-
-        // 3. Sessions (Focus time)
-        sessions.forEach(session => {
-            let className = session.classification || 'Universal';
-            if (className.length > 30 && className.includes(':')) {
-                className = 'Universal';
-            }
-            events.push({
-                id: `session-${session._id}`,
-                title: `Focus: ${className}`,
-                start: session.startTime,
-                end: session.endTime || session.startTime,
-                type: 'session',
-                color: '#6366f1',
-                allDay: false
-            });
-        });
-
-        // 4. Schedule Blocks
+        // Scheduled Blocks (task-linked, optionally timed)
         scheduleBlocks.forEach(block => {
+            const cat = block.taskId?.categoryId;
             events.push({
                 id: `block-${block._id}`,
                 title: block.title,
                 start: block.startTime,
-                end: block.endTime,
-                type: 'plan',
-                color: block.color || '#3b82f6',
-                allDay: false,
+                end: block.endTime || block.startTime,
+                type: 'block',
+                categoryName: cat?.name || null,
+                categoryId: cat?._id || null,
+                color: cat?.color || block.color || '#6366f1',
+                allDay: !block.startTime,
                 notes: block.notes
             });
         });
@@ -117,16 +77,24 @@ const getCalendarEvents = async (req, res, next) => {
 // @access  Private
 const createScheduleBlock = async (req, res, next) => {
     try {
-        const { title, startTime, endTime, type, color, notes } = req.body;
+        const { title, startTime, endTime, type, color, notes, taskId, date } = req.body;
+        
+        // Build startTime: use provided time string or fall back to just the date
+        let resolvedStart = startTime ? new Date(startTime) : (date ? new Date(date) : null);
+        let resolvedEnd = endTime ? new Date(endTime) : resolvedStart;
+        
         const block = await ScheduleBlock.create({
             userId: req.user._id,
+            taskId: taskId || null,
             title,
-            startTime,
-            endTime,
+            startTime: resolvedStart,
+            endTime: resolvedEnd,
             type,
             color,
             notes
         });
+        // Populate the created block for the response
+        await block.populate({ path: 'taskId', populate: { path: 'categoryId', select: 'name color' } });
         res.status(201).json({ success: true, data: block });
     } catch (error) {
         next(error);

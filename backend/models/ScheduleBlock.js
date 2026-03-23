@@ -7,6 +7,11 @@ const scheduleBlockSchema = new mongoose.Schema(
             ref: 'User',
             required: true,
         },
+        taskId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Task',
+            default: null,
+        },
         title: {
             type: String,
             required: [true, 'Title is required'],
@@ -14,11 +19,11 @@ const scheduleBlockSchema = new mongoose.Schema(
         },
         startTime: {
             type: Date,
-            required: [true, 'Start time is required'],
+            default: null,
         },
         endTime: {
             type: Date,
-            required: [true, 'End time is required'],
+            default: null,
         },
         type: {
             type: String,

@@ -1,7 +1,7 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, memo, useEffect } from 'react';
 import { useSEO } from '../hooks/useSEO';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Repeat, Trash2, CheckCircle2, Circle, Calendar, Clock, Sparkles, MoreHorizontal } from 'lucide-react';
+import { Plus, Repeat, Trash2, CheckCircle2, Circle, Calendar, Clock, Sparkles, MoreHorizontal, Tag } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -618,9 +618,16 @@ const HabitCard = memo(function HabitCard({ habit, colorScheme, icon, index, onT
    ═══════════════════════════════════════════════════════════════ */
 /* ─── New Habit Modal (Isolated for Performance) ────────────── */
 const HabitFormModal = memo(function HabitFormModal({ open, onClose, onSave, saving }) {
+    const { categories } = useData();
     const [form, setForm] = useState({
-        name: '', description: '', frequency: 1, duration: 4
+        name: '', description: '', frequency: 1, duration: 4, categoryId: ''
     });
+
+    useEffect(() => {
+        if (!form.categoryId && categories?.length > 0) {
+            setForm(prev => ({ ...prev, categoryId: categories[0].id }));
+        }
+    }, [categories, form.categoryId]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -631,10 +638,10 @@ const HabitFormModal = memo(function HabitFormModal({ open, onClose, onSave, sav
         <Modal open={open} onClose={onClose}>
             <div style={{ padding: '8px 4px' }}>
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-black bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent uppercase tracking-tighter">
+                    <h2 className="text-xl font-black pc-gradient-text tracking-tighter uppercase mb-0.5">
                         New Habit Loop
                     </h2>
-                    <p className="text-muted text-xs font-bold tracking-widest uppercase mt-1 opacity-60">Initialize Neural Routine</p>
+                    <p className="text-pc-muted text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">Initialize Neural Routine</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -691,12 +698,14 @@ const HabitFormModal = memo(function HabitFormModal({ open, onClose, onSave, sav
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
 
                     <button
                         type="submit"
                         disabled={saving}
-                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-black uppercase tracking-[0.25em] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.4)] hover:shadow-indigo-500/50 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                        className="w-full h-12 text-white font-black uppercase tracking-widest text-xs rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
+                        style={{ background: 'var(--primary)', boxShadow: '0 4px 12px rgba(var(--primary-rgb), 0.25)' }}
                     >
                         {saving ? (
                             <><div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> INITIALIZING...</>
@@ -711,7 +720,7 @@ const HabitFormModal = memo(function HabitFormModal({ open, onClose, onSave, sav
 });
 
 export function Habits() {
-    const { habits, addHabit, toggleHabit, deleteHabit } = useData();
+    const { habits, addHabit, toggleHabit, deleteHabit, categories } = useData();
     const { user } = useAuth();
     useSEO('Habit Tracker', 'Build atomic routines and track daily habit completion with ProgressCircle.');
 
@@ -816,16 +825,26 @@ export function Habits() {
                     gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
                     gap: 20,
                 }}>
-                    {habits.map((habit, i) => (
-                        <HabitCard
-                            key={habit.id}
-                            habit={habit}
-                            colorScheme={themeColorScheme}
-                            index={i}
-                            onToggle={handleToggle}
-                            onDelete={handleDelete}
-                        />
-                    ))}
+                    {habits.map((habit, i) => {
+                        const category = habit.categoryId?._id ? habit.categoryId : categories?.find(c => c.id === habit.categoryId);
+                        const habitColor = category?.color || 'var(--primary)';
+                        const customColorScheme = {
+                            accent: habitColor,
+                            bg: `${habitColor}15`,
+                            ring: `${habitColor}30`,
+                            label: category?.name || 'Global'
+                        };
+                        return (
+                            <HabitCard
+                                key={habit.id}
+                                habit={habit}
+                                colorScheme={customColorScheme}
+                                index={i}
+                                onToggle={handleToggle}
+                                onDelete={handleDelete}
+                            />
+                        );
+                    })}
                 </div>
             )}
 

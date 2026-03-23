@@ -91,9 +91,9 @@ export function AvatarDisplay({
                 <div 
                     className="absolute z-10 drop-shadow-lg flex items-center justify-center pointer-events-none animate-bounce"
                     style={{ 
-                        bottom: size === 'xs' || size === 'sm' ? 0 : `-${px * 0.1}px`, 
-                        right: size === 'xs' || size === 'sm' ? 0 : `-${px * 0.1}px`,
-                        fontSize: size === 'xs' || size === 'sm' ? `${px * 0.45}px` : `${px * 0.35}px`,
+                        bottom: size === 'xs' || size === 'sm' ? `-${px * 0.02}px` : `-${px * 0.1}px`, 
+                        right: size === 'xs' || size === 'sm' ? `-${px * 0.02}px` : `-${px * 0.1}px`,
+                        fontSize: size === 'xs' || size === 'sm' ? `${px * 0.32}px` : `${px * 0.28}px`,
                         animationDuration: '3s'
                     }}
                 >

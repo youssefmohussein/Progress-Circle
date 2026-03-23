@@ -40,7 +40,7 @@ const getHabits = async (req, res, next) => {
 // @access  Private
 const createHabit = async (req, res, next) => {
     try {
-        const { name, description, frequency, duration } = req.body;
+        const { name, description, frequency, duration, categoryId } = req.body;
         if (!name) return res.status(400).json({ success: false, message: 'Habit name is required' });
         if (!frequency) return res.status(400).json({ success: false, message: 'Frequency is required' });
         if (!duration) return res.status(400).json({ success: false, message: 'Duration is required' });
@@ -61,7 +61,8 @@ const createHabit = async (req, res, next) => {
             name,
             description,
             frequency,
-            duration
+            duration,
+            categoryId: categoryId || null
         });
         res.status(201).json({ success: true, data: habit });
     } catch (error) {

@@ -213,11 +213,6 @@ export function Dashboard() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Link to="/focus" id="tour-focus-mode">
-                        <Button className="rounded-full px-5 h-11 text-white border-none" style={{ background: 'var(--primary)', boxShadow: '0 10px 15px -3px rgba(var(--primary-rgb), 0.3)' }}>
-                            <Zap size={16} className="fill-current" /> Focus Mode
-                        </Button>
-                    </Link>
                     <div className="text-right hidden sm:block">
                         <p className="text-[10px] font-black uppercase tracking-widest text-pc-muted">Current Streak</p>
                         <p className="text-lg font-black flex items-center gap-1 justify-end pc-streak-glow">{user?.streak || 0} <Flame size={16} className="text-orange-500" /></p>

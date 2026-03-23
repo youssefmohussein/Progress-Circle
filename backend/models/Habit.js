@@ -8,6 +8,11 @@ const habitSchema = new mongoose.Schema(
             ref: 'User',
             required: true,
         },
+        categoryId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Category',
+            default: null,
+        },
         name: {
             type: String,
             required: [true, 'Habit name is required'],

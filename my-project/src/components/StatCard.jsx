@@ -29,7 +29,7 @@ export function StatCard({ label, value, icon: Icon, color = 'indigo', suffix = 
                         <span className="text-[10px] font-black uppercase text-[var(--muted)] mb-1">{suffix}</span>
                     </div>
                 </div>
-                <div className="p-4 rounded-2xl flex-shrink-0 transition-transform group-hover:scale-110 duration-500" style={{ background: `${iconColor.replace('rgb', 'rgba').replace(')', ', 0.1)')}` }}>
+                <div className="p-4 rounded-2xl flex-shrink-0 transition-transform group-hover:scale-110 duration-500" style={{ background: `color-mix(in srgb, ${iconColor} 15%, transparent)` }}>
                     <Icon size={22} style={{ color: iconColor }} />
                 </div>
             </div>
