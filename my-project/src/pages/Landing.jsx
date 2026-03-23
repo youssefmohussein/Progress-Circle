@@ -10,6 +10,8 @@ import {
     Users, Shield, Globe, Cpu, Star,
     Menu, X, ChevronRight, Layers, Sparkles, Github
 } from 'lucide-react';
+import SoftAurora from '../../Animations/SoftAuora/SoftAurora';
+import { Footer } from '../components/Footer';
 
 const FEATURES = [
     { label: 'Daily Progress Circle', free: true, premium: true },
@@ -52,10 +54,17 @@ export function Landing() {
     };
 
     useEffect(() => {
+        let ticking = false;
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    setIsScrolled(window.scrollY > 50);
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
 
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
         fetch(`${apiUrl}/subscription/pricing`)
@@ -98,35 +107,34 @@ export function Landing() {
 
             {/* Navigation */}
             <nav
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${isScrolled
-                        ? 'bg-[#0B0B0F]/90 backdrop-blur-xl border-white/[0.08] py-3'
-                        : 'bg-transparent border-transparent py-6'
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isScrolled
+                    ? 'bg-[#0B0B0F]/80 backdrop-blur-xl border-b border-white/[0.05] py-4'
+                    : 'bg-transparent py-8'
                     }`}
             >
-                <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+                <div className="max-w-[1600px] mx-auto px-10 flex items-center justify-between">
                     <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-                        <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform duration-300">
-                            <Target size={18} className="text-white" />
+                        <div className="w-10 h-10 bg-white/[0.03] border border-white/[0.08] rounded-xl flex items-center justify-center transition-all duration-500 group-hover:bg-white/[0.07]">
+                            <Target size={20} className="text-white" />
                         </div>
-                        <span className="font-outfit font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+                        <span className="font-outfit font-bold text-xl tracking-tight text-white">
                             ProgressCircle
                         </span>
                     </div>
 
-                    <div className="hidden md:flex items-center gap-10">
+                    <div className="hidden md:flex items-center gap-8">
                         <NavLink href="#features">Features</NavLink>
                         <NavLink href="#ecosystem">Ecosystem</NavLink>
                         <NavLink href="#pricing">Pricing</NavLink>
                     </div>
 
-                    <div className="hidden md:flex items-center gap-6">
-                        <Link to={ref ? `/login?ref=${ref}` : "/login"} className="text-sm font-medium text-white/50 hover:text-white transition-colors">Sign In</Link>
+                    <div className="hidden md:flex items-center gap-8">
+                        <Link to={ref ? `/login?ref=${ref}` : "/login"} className="text-sm font-medium text-white/40 hover:text-white transition-colors">Sign In</Link>
                         <button
                             onClick={handleGetStarted}
-                            className="relative group px-6 py-2.5 bg-white text-[#0B0B0F] text-sm font-bold rounded-full overflow-hidden transition-all hover:scale-[1.03] active:scale-[0.98] shadow-xl shadow-white/5"
+                            className="px-6 py-2.5 bg-white text-[#0B0B0F] rounded-full font-semibold text-sm hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-white/5"
                         >
-                            <span className="relative z-10">Get Started</span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-neutral-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            Join Now
                         </button>
                     </div>
 
@@ -151,7 +159,7 @@ export function Landing() {
                                 <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium">Pricing</a>
                                 <hr className="border-white/5" />
                                 <Link to={ref ? `/login?ref=${ref}` : "/login"} onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium text-indigo-400">Sign In</Link>
-                                <button onClick={handleGetStarted} className="w-full py-4 bg-white text-[#0B0B0F] rounded-2xl font-bold text-lg">Get Started</button>
+                                <button onClick={handleGetStarted} className="w-full py-4 bg-white text-[#0B0B0F] rounded-2xl font-bold text-lg">Join Now</button>
                             </div>
                         </motion.div>
                     )}
@@ -160,7 +168,26 @@ export function Landing() {
 
             <main>
                 {/* Hero Section */}
-                <section className="relative pt-48 pb-32 px-6">
+                <section className="relative pt-48 pb-32 px-6 overflow-hidden">
+                    <div className="absolute inset-0 z-0">
+                        <SoftAurora
+                            speed={0.6}
+                            scale={1.5}
+                            brightness={1}
+                            color1="#f7f7f7"
+                            color2="#e100ff"
+                            noiseFrequency={2.5}
+                            noiseAmplitude={1}
+                            bandHeight={0.5}
+                            bandSpread={1}
+                            octaveDecay={0.1}
+                            layerOffset={0}
+                            colorSpeed={1}
+                            enableMouseInteraction
+                            mouseInfluence={0.25}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0F]/10 via-transparent to-[#0B0B0F]" />
+                    </div>
                     <div className="max-w-6xl mx-auto text-center relative z-10">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -168,59 +195,50 @@ export function Landing() {
                             transition={{ duration: 0.8 }}
                             className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] mb-12 shadow-sm"
                         >
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                            <span className="text-[10px] font-black tracking-[0.3em] uppercase text-indigo-400/90 py-0.5">
-                                Redefining Focus
+                            <Sparkles size={14} className="text-indigo-400" />
+                            <span className="text-xs font-bold text-white/90 uppercase tracking-wider">
+                                Astra AI Powered
                             </span>
                         </motion.div>
 
                         <motion.h1
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-5xl md:text-8xl font-outfit font-bold tracking-tight mb-10 leading-[1.02]"
-                        >
-                            Elevate your <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-400 to-indigo-400 bg-[length:200%_auto] animate-gradient-slow">
-                                Productivity
-                            </span> <br className="md:hidden" /> with simple precision.
+                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-4xl md:text-6xl font-sans font-semibold tracking-tight text-white mb-8 leading-[1.1]">
+                            Master your time.<br />
+                            <span className="opacity-40">Expand your circle.</span>
                         </motion.h1>
 
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-lg md:text-xl text-white/40 max-w-2xl mx-auto mb-16 leading-relaxed font-light tracking-tight"
+                            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-xl md:text-2xl text-white/40 max-w-2xl mx-auto mb-14 font-light leading-relaxed"
                         >
-                            A clean, high-performance ecosystem designed for high-performers. <br className="hidden sm:block" />
-                            Sync your tasks, habits, and biological rhythms into a unified mission.
+                            Everything you need to focus, track, and grow — in one seamless system.
                         </motion.p>
+
 
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                             className="flex flex-col sm:flex-row items-center justify-center gap-6"
                         >
                             <button
                                 onClick={handleGetStarted}
-                                className="group relative w-full sm:w-auto px-10 py-4.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full font-bold text-lg shadow-2xl shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
+                                className="group relative w-full sm:w-auto px-12 py-4 bg-white text-[#0B0B0F] rounded-full font-bold text-lg hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden shadow-xl"
                             >
-                                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <span>Start Your Mission</span>
-                                <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                <span>Join Now</span>
                             </button>
                             <button
-                                className="w-full sm:w-auto px-10 py-4.5 bg-white/[0.03] border border-white/[0.1] rounded-full font-bold text-lg text-white/70 hover:bg-white/[0.06] hover:text-white hover:border-white/20 transition-all active:scale-[0.98]"
+                                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                                className="w-full sm:w-auto px-12 py-4 bg-white/[0.03] border border-white/[0.1] rounded-full font-bold text-lg text-white/50 hover:bg-white/[0.06] hover:text-white transition-all active:scale-[0.98]"
                             >
                                 Learn More
                             </button>
                         </motion.div>
-                    </div>
-
-                    {/* Subtle Motion Decor */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-full max-w-6xl aspect-square">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 via-transparent to-violet-500/5 blur-[120px] rounded-full animate-pulse-soft" />
                     </div>
                 </section>
 
@@ -285,7 +303,7 @@ export function Landing() {
                 <section id="ecosystem" className="py-32 px-6 bg-white/[0.01] border-y border-white/[0.03] relative overflow-hidden">
                     <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
                         <div className="flex-1">
-                            <h2 className="text-4xl md:text-6xl font-outfit font-bold mb-8 leading-tight tracking-tight">Your digital <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-500">expansion.</span></h2>
+                            <h2 className="text-3xl md:text-5xl font-sans font-semibold mb-8 leading-tight tracking-tight text-white">Your digital <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-500">expansion.</span></h2>
                             <p className="text-white/40 text-lg mb-12 leading-relaxed font-light">
                                 ProgressCircle isn't just a tracker; it's a living digital structure of your efforts. Watch your potential grow as you manifest your goals.
                             </p>
@@ -308,7 +326,7 @@ export function Landing() {
                                             </div>
                                             <div>
                                                 <div className="text-xs font-black tracking-widest uppercase text-white/30 mb-1">Current Sync</div>
-                                                <div className="text-xl font-bold font-outfit uppercase">Legacy Master V</div>
+                                                <div className="text-xl font-semibold font-sans uppercase text-white">Legacy Master V</div>
                                             </div>
                                         </div>
                                         <div className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase rounded-lg">Top 1%</div>
@@ -324,11 +342,11 @@ export function Landing() {
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl">
                                             <div className="text-[10px] font-black uppercase text-white/30 tracking-widest mb-1">Focus Points</div>
-                                            <div className="text-2xl font-bold font-outfit">1,240</div>
+                                            <div className="text-2xl font-semibold font-sans text-white">1,240</div>
                                         </div>
                                         <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl">
                                             <div className="text-[10px] font-black uppercase text-white/30 tracking-widest mb-1">Day Streak</div>
-                                            <div className="text-2xl font-bold font-outfit text-indigo-400">12 Days</div>
+                                            <div className="text-2xl font-semibold font-sans text-indigo-400">12 Days</div>
                                         </div>
                                     </div>
                                 </div>
@@ -341,7 +359,7 @@ export function Landing() {
                 <section id="pricing" className="py-32 px-6">
                     <div className="max-w-7xl mx-auto flex flex-col items-center">
                         <div className="text-center mb-24">
-                            <h2 className="text-3xl md:text-5xl font-outfit font-bold mb-6">Simple, fair pricing.</h2>
+                            <h2 className="text-3xl md:text-5xl font-sans font-semibold mb-6 text-white tracking-tight">Simple, fair pricing.</h2>
                             <p className="text-white/40 text-lg">Choose the tier that fits your journey.</p>
                         </div>
 
@@ -351,7 +369,7 @@ export function Landing() {
                                 price="0"
                                 period="EGP / forever"
                                 features={FEATURES.map(f => ({ label: f.label, value: f.free }))}
-                                btnText="Get Started"
+                                btnText="Join Now"
                                 onAction={handleGetStarted}
                             />
                             <PricingCard
@@ -374,53 +392,22 @@ export function Landing() {
                         <div className="absolute bottom-0 right-0 w-64 h-64 bg-violet-500/10 blur-[100px] group-hover:bg-violet-500/20 transition-colors duration-1000" />
 
                         <div className="relative z-10">
-                            <h2 className="text-4xl md:text-6xl font-outfit font-bold mb-8 tracking-tight">Ready to master your time?</h2>
-                            <p className="text-white/40 text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed font-light">
+                            <h2 className="text-3xl md:text-4xl font-sans font-semibold mb-8 tracking-tight text-white">Ready to master your time?</h2>
+                            <p className="text-white/40 text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed font-normal opacity-60">
                                 Join our circle of high-performers today and begin your digital expansion.
                             </p>
                             <button
                                 onClick={handleGetStarted}
-                                className="px-12 py-5 bg-white text-[#0B0B0F] rounded-full font-bold text-xl hover:scale-105 hover:bg-neutral-100 transition-all duration-300 shadow-2xl shadow-white/10 active:scale-95"
+                                className="px-12 py-4 bg-white text-[#0B0B0F] rounded-full font-semibold text-lg hover:scale-[1.02] hover:bg-neutral-100 transition-all duration-300 shadow-xl shadow-white/5 active:scale-95"
                             >
-                                Get Started Free
+                                Join Now
                             </button>
                         </div>
                     </div>
                 </section>
             </main>
 
-            {/* Footer */}
-            <footer className="py-24 px-6 border-t border-white/[0.03] bg-white/[0.01]">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10 mb-16">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                            <Target size={16} className="text-white" />
-                        </div>
-                        <span className="font-outfit font-bold text-lg tracking-tight">ProgressCircle</span>
-                    </div>
-
-                    <div className="flex gap-12">
-                        <FooterLink href="#">Privacy</FooterLink>
-                        <FooterLink href="#">Terms</FooterLink>
-                        <FooterLink href="#">Security</FooterLink>
-                        <FooterLink href="#">Blog</FooterLink>
-                    </div>
-
-                    <div className="flex gap-6 grayscale opacity-30 hover:opacity-100 hover:grayscale-0 transition-all duration-500">
-                        <Github className="cursor-pointer" size={20} />
-                        <Globe className="cursor-pointer" size={20} />
-                        <Cpu className="cursor-pointer" size={20} />
-                    </div>
-                </div>
-                <div className="max-w-7xl mx-auto pt-10 border-t border-white/[0.03] flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p className="text-white/20 text-[10px] font-black tracking-[0.2em] uppercase">
-                        &copy; 2026 PROGRESS CIRCLE. ALL SYSTEMS NOMINAL.
-                    </p>
-                    <p className="text-white/10 text-[10px] font-mono uppercase">
-                        Protocol v4.2.0-Alpha
-                    </p>
-                </div>
-            </footer>
+            <Footer />
 
             <style jsx global>{`
                 @keyframes gradient-slow {
@@ -448,10 +435,9 @@ function NavLink({ href, children }) {
     return (
         <a
             href={href}
-            className="relative text-sm font-semibold text-white/40 hover:text-white transition-colors duration-300 py-1 group"
+            className="text-sm font-medium text-white/40 hover:text-white transition-all duration-300 py-1"
         >
             {children}
-            <span className="absolute bottom-0 left-0 w-0 h-px bg-indigo-500 transition-all duration-500 group-hover:w-full" />
         </a>
     );
 }
@@ -473,7 +459,7 @@ function FeatureCard({ icon, title, desc, color }) {
             <div className={`w-14 h-14 bg-white/[0.03] rounded-2xl flex items-center justify-center mb-8 transition-all duration-500 ${colorClasses[color]}`}>
                 {icon}
             </div>
-            <h3 className="text-2xl font-bold font-outfit mb-4 group-hover:text-white transition-colors">{title}</h3>
+            <h3 className="text-2xl font-semibold font-sans mb-4 group-hover:text-white transition-colors text-white">{title}</h3>
             <p className="text-white/30 text-base leading-relaxed group-hover:text-white/50 transition-colors">{desc}</p>
         </motion.div>
     );
@@ -487,7 +473,7 @@ function StatItem({ icon, label, value }) {
             </div>
             <div>
                 <div className="text-[10px] font-black tracking-[0.2em] text-white/30 mb-0.5">{label}</div>
-                <div className="text-2xl font-bold font-outfit">{value}</div>
+                <div className="text-2xl font-semibold font-sans text-white">{value}</div>
             </div>
         </div>
     );
@@ -502,8 +488,8 @@ function FeatureValue({ value }) {
 function PricingCard({ title, price, period, features, featured = false, btnText, onAction }) {
     return (
         <div className={`p-10 rounded-[3rem] border transition-all duration-500 flex flex-col relative overflow-hidden ${featured
-                ? 'bg-gradient-to-b from-indigo-500/[0.07] to-transparent border-indigo-500/30 shadow-2xl shadow-indigo-500/10'
-                : 'bg-white/[0.02] border-white/[0.05] hover:border-white/10'
+            ? 'bg-gradient-to-b from-indigo-500/[0.07] to-transparent border-indigo-500/30 shadow-2xl shadow-indigo-500/10'
+            : 'bg-white/[0.02] border-white/[0.05] hover:border-white/10'
             }`}>
             {featured && (
                 <div className="absolute top-6 right-8 px-4 py-1.5 bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
@@ -511,9 +497,9 @@ function PricingCard({ title, price, period, features, featured = false, btnText
                 </div>
             )}
             <div className="mb-10">
-                <h3 className="text-2xl font-bold font-outfit mb-3">{title}</h3>
+                <h3 className="text-2xl font-semibold font-sans mb-3 text-white">{title}</h3>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-bold font-outfit tracking-tighter">{price}</span>
+                    <span className="text-5xl font-semibold font-sans tracking-tighter text-white">{price}</span>
                     {period && <span className="text-white/30 text-xs font-black tracking-widest uppercase">{period}</span>}
                 </div>
             </div>
@@ -527,9 +513,9 @@ function PricingCard({ title, price, period, features, featured = false, btnText
             </ul>
             <button
                 onClick={onAction}
-                className={`w-full py-5 rounded-full font-bold text-lg transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] ${featured
-                        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30'
-                        : 'bg-white/[0.04] border border-white/10 text-white hover:bg-white/10'
+                className={`w-full py-5 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] ${featured
+                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30'
+                    : 'bg-white/[0.04] border border-white/10 text-white hover:bg-white/10'
                     }`}
             >
                 {btnText}
@@ -539,6 +525,13 @@ function PricingCard({ title, price, period, features, featured = false, btnText
 }
 
 function FooterLink({ href, children }) {
+    if (href.startsWith('/')) {
+        return (
+            <Link to={href} className="text-[11px] font-black tracking-[0.2em] uppercase text-white/30 hover:text-indigo-400 transition-colors duration-300">
+                {children}
+            </Link>
+        );
+    }
     return (
         <a href={href} className="text-[11px] font-black tracking-[0.2em] uppercase text-white/30 hover:text-indigo-400 transition-colors duration-300">
             {children}

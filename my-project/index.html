@@ -37,9 +37,14 @@
     <link rel="apple-touch-icon" href="/logo.svg" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- ═══════════════════════════════ FONTS PRECONNECT ═══════════════════════════════ -->
+    <!-- ═══════════════════════════════ FONTS PRECONNECT & PRELOAD ═══════════════════════════════ -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Preload critical fonts for LCP -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v11/Q_kS9S9OPrf-HGFCAvU.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZhrib2Bg-4.woff2" as="font" type="font/woff2" crossorigin />
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@100;200;300;400;500;600;700;800;900&family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- ═══════════════════════════════ STRUCTURED DATA (JSON-LD) ═══════════════════════════════ -->

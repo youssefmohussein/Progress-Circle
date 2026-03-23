@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -163,70 +163,70 @@ export function Login() {
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {!isLogin && (
                             <>
-                            <div>
-                                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 6 }}>Name</label>
-                                <input
-                                    className="pc-input"
-                                    type="text" value={name} placeholder="Your full name"
-                                    onChange={(e) => setName(e.target.value)}
-                                    required={!isLogin}
-                                />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Gender</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setGender('male')}
-                                        style={{
-                                            padding: '12px 16px', borderRadius: '0.75rem', border: '2px solid',
-                                            borderColor: gender === 'male' ? '#3b82f6' : 'var(--border)',
-                                            background: gender === 'male' ? 'rgba(59,130,246,0.12)' : 'var(--surface2)',
-                                            color: gender === 'male' ? '#3b82f6' : 'var(--muted)',
-                                            fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                                            transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                        }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gender === 'male' ? '#3b82f6' : 'currentColor'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="10" cy="14" r="5"/>
-                                            <line x1="21" y1="3" x2="15" y2="9"/>
-                                            <polyline points="16 3 21 3 21 8"/>
-                                        </svg>
-                                        Male
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setGender('female')}
-                                        style={{
-                                            padding: '12px 16px', borderRadius: '0.75rem', border: '2px solid',
-                                            borderColor: gender === 'female' ? '#ec4899' : 'var(--border)',
-                                            background: gender === 'female' ? 'rgba(236,72,153,0.12)' : 'var(--surface2)',
-                                            color: gender === 'female' ? '#ec4899' : 'var(--muted)',
-                                            fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                                            transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                        }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gender === 'female' ? '#ec4899' : 'currentColor'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="12" cy="8" r="5"/>
-                                            <line x1="12" y1="13" x2="12" y2="21"/>
-                                            <line x1="9" y1="18" x2="15" y2="18"/>
-                                        </svg>
-                                        Female
-                                    </button>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 6 }}>Name</label>
+                                    <input
+                                        className="pc-input"
+                                        type="text" value={name} placeholder="Your full name"
+                                        onChange={(e) => setName(e.target.value)}
+                                        required={!isLogin}
+                                    />
                                 </div>
-                            </div>
-                            {ref && (
-                                <div style={{ 
-                                    padding: '8px 12px', background: 'rgba(99,102,241,0.1)', 
-                                    borderRadius: '0.5rem', border: '1px solid rgba(99,102,241,0.2)',
-                                    display: 'flex', alignItems: 'center', gap: 8, marginTop: 4
-                                }}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                    </svg>
-                                    <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>Referred by friend: {ref}</span>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 8 }}>Gender</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setGender('male')}
+                                            style={{
+                                                padding: '12px 16px', borderRadius: '0.75rem', border: '2px solid',
+                                                borderColor: gender === 'male' ? '#3b82f6' : 'var(--border)',
+                                                background: gender === 'male' ? 'rgba(59,130,246,0.12)' : 'var(--surface2)',
+                                                color: gender === 'male' ? '#3b82f6' : 'var(--muted)',
+                                                fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                                                transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                            }}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gender === 'male' ? '#3b82f6' : 'currentColor'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="10" cy="14" r="5" />
+                                                <line x1="21" y1="3" x2="15" y2="9" />
+                                                <polyline points="16 3 21 3 21 8" />
+                                            </svg>
+                                            Male
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setGender('female')}
+                                            style={{
+                                                padding: '12px 16px', borderRadius: '0.75rem', border: '2px solid',
+                                                borderColor: gender === 'female' ? '#ec4899' : 'var(--border)',
+                                                background: gender === 'female' ? 'rgba(236,72,153,0.12)' : 'var(--surface2)',
+                                                color: gender === 'female' ? '#ec4899' : 'var(--muted)',
+                                                fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                                                transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                            }}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gender === 'female' ? '#ec4899' : 'currentColor'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="8" r="5" />
+                                                <line x1="12" y1="13" x2="12" y2="21" />
+                                                <line x1="9" y1="18" x2="15" y2="18" />
+                                            </svg>
+                                            Female
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
+                                {ref && (
+                                    <div style={{
+                                        padding: '8px 12px', background: 'rgba(99,102,241,0.1)',
+                                        borderRadius: '0.5rem', border: '1px solid rgba(99,102,241,0.2)',
+                                        display: 'flex', alignItems: 'center', gap: 8, marginTop: 4
+                                    }}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                        </svg>
+                                        <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>Referred by friend: {ref}</span>
+                                    </div>
+                                )}
                             </>
                         )}
                         <div>
@@ -247,6 +247,14 @@ export function Login() {
                                 required
                             />
                         </div>
+                        {!isLogin && (
+                            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: -4, marginBottom: 8, lineHeight: 1.5 }}>
+                                By clicking "Create Account", you acknowledge that you have read and agree to our{' '}
+                                <Link to="/terms" style={{ color: '#818cf8', fontWeight: 600, textDecoration: 'none' }}>Terms of Operation</Link>
+                                {' '}and{' '}
+                                <Link to="/privacy" style={{ color: '#818cf8', fontWeight: 600, textDecoration: 'none' }}>Privacy Protocol</Link>.
+                            </p>
+                        )}
                         <button
                             type="submit"
                             disabled={loading}

@@ -30,6 +30,9 @@ import FocusBattleArena from './pages/FocusBattleArena';
 import SquadFocusArena from './pages/SquadFocusArena';
 import PaymentSuccess from './pages/PaymentSuccess';
 import { SquadLeaderboard } from './pages/SquadLeaderboard';
+import { About } from './pages/About';
+import { Privacy } from './pages/Privacy';
+import { Terms } from './pages/Terms';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -108,6 +111,11 @@ function AppRoutes() {
       <Route path="/battle/:id/*" element={<PrivateRoute><FocusBattleArena /></PrivateRoute>} />
       <Route path="/squad/focus/:id" element={<PrivateRoute><SquadFocusArena /></PrivateRoute>} />
       <Route path="/squad/leaderboard" element={<PrivateRoute><Layout><SquadLeaderboard /></Layout></PrivateRoute>} />
+
+      {/* Public Info Pages */}
+      <Route path="/about" element={<About />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" />} />
